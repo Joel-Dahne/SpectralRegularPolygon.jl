@@ -10,9 +10,30 @@ points.
 maximum_boundary_estimate(
     u::Eigenfunction{T},
     λ::T;
-    num_points = 9num_coefficients(u),
+    num_points = 8num_coefficients(u),
 ) where {T} =
-# FIXME: Take into account symmetries when taking boundary points
-    maximum(boundary_points(u.domain, num_points), init = zero(T)) do xy
+    maximum(boundary_points_symmetry(u.domain, num_points), init = zero(T)) do xy
         abs(u(xy, λ))
     end
+
+"""
+    maximum_boundary_enclosure(u::Eigenfunction{Arb}, λ::Arb)
+
+Compute an enclosure of the maximum of `abs(u)` on the boundary of the
+domain.
+"""
+maximum_boundary_enclosure(
+    u::Eigenfunction{Arb},
+    λ::Arb;
+    degree::Integer = 2num_coefficients(u),
+    threaded::Bool = true,
+    verbose::Bool = false,
+) = ArbExtras.maximum_enclosure(
+    t -> u(boundary_parameterized_symmetry(u.domain, t), λ),
+    Arf(0),
+    Arf(1),
+    abs_value = true;
+    degree,
+    threaded,
+    verbose,
+)

@@ -122,10 +122,26 @@ function plot_convergence!(u::Eigenfunction, λ, Ns;)
 
     defects = map(Ns) do N
         sigma!(u, λ, N)
-        maximum_boundary_estimate(u, λ) / norm_estimate(u, λ)
+        maximum_boundary_estimate(u, λ) / norm_lower_estimate(u, λ)
     end
 
-    GLMakie.lines!(Ns, defects)
+    GLMakie.scatterlines!(Ns, defects)
+
+    return fig
+end
+
+function plot_convergence_vertices(λs, Ns, n)
+    fig = GLMakie.Figure()
+
+    axis = GLMakie.Axis(fig[1, 1])
+
+    defects = map(λs, Ns) do λ, N
+        u = Eigenfunction(RegularPolygon{eltype(λ)}(N))
+        sigma!(u, λ, n)
+        maximum_boundary_estimate(u, λ) / norm_lower_estimate(u, λ)
+    end
+
+    GLMakie.scatterlines!(Ns, defects)
 
     return fig
 end

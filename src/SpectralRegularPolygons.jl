@@ -1,5 +1,9 @@
 module SpectralRegularPolygons
 
+import Arblib
+import ArbExtras
+import CSV
+import DataFrames
 import GLMakie
 import GenericLinearAlgebra
 import GeometryBasics
@@ -8,8 +12,13 @@ import LinearAlgebra
 import Optim
 import Random
 
+import Arblib: Arf, Arb, ArbSeries
 import GeometryBasics: Point, Point2
 import SpecialFunctions: besselj
+
+export RegularPolygon, Eigenfunction
+
+include("arb.jl")
 
 include("Polar.jl")
 include("RegularPolygon.jl")
@@ -20,6 +29,7 @@ include("MPS/mps.jl")
 include("MPS/enclosing/maximum_boundary.jl")
 include("MPS/enclosing/norm.jl")
 
+include("precomputed_eigenvalues.jl")
 include("plotting.jl")
 
 end # module SpectralRegularPolygons

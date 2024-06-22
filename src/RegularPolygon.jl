@@ -71,6 +71,23 @@ account the symmetries.
 boundary_points_symmetry(domain::RegularPolygon, n::Integer) =
     boundary_points(domain, domain.N, 2n - 1)[n:2n-1]
 
+"""
+    boundary_parameterized_symmetry(domain::RegularPolygon{T}, t::T)
+
+Given a parameterization on the interval ``[0, 1]`` of the boundary of
+the domain that takes into account the symmetry, return the point at
+value `t`.
+
+The parameterization is for the upper part of the boundary between
+the first and last vertices.
+"""
+function boundary_parameterized_symmetry(domain::RegularPolygon, t)
+    v = vertex(domain, 1)
+    # Multiplication by one(t) is needed to support ArbSeries
+    # correctly.
+    position = Point(one(t) * v[1], t * v[2])
+    return BoundaryPoint2{eltype(position)}(position, (boundary = domain.N,))
+end
 
 """
     interior_points_random(domain::RegularPolygon, n::Integer; rng = Random.MersenneTwister(42))
@@ -122,7 +139,7 @@ The argument `dy` makes points count as inside if they are at most
 `dy` distance away from the domain in the y-direction. This is
 mostly used to play nicely with `heatmap`.
 """
-function interior_points_grid(domain::RegularPolygon{T}, n::Integer; dy = 2 / n) where {T}
+function interior_points_grid(domain::RegularPolygon{T}, n::Integer; dr = 2 / n) where {T}
     n > 1 || throw(ArgumentError("requires n > 1, got n = $n"))
 
     x_min = vertex(domain, (domain.N + 1) ÷ 2)[1]
@@ -130,6 +147,8 @@ function interior_points_grid(domain::RegularPolygon{T}, n::Integer; dy = 2 / n)
 
     y_min = vertex(domain, (domain.N + 3) ÷ 4)[2]
     y_max = vertex(domain, (3domain.N + 3) ÷ 4)[2]
+
+    max_norm = LinearAlgebra.norm(vertex(domain, 1)) + dr
 
     points = Vector{Union{Point2{T},Missing}}(undef, n^2)
     inside = similar(points, Bool)
@@ -141,7 +160,7 @@ function interior_points_grid(domain::RegularPolygon{T}, n::Integer; dy = 2 / n)
                 x_min + (i - 1) // (n - 1) * (x_max - x_min),
                 y_min + (j - 1) // (n - 1) * (y_max - y_min),
             )
-            inside[idx] = true
+            inside[idx] = LinearAlgebra.norm(points[idx]) < max_norm
 
             idx += 1
         end
@@ -151,13 +170,13 @@ function interior_points_grid(domain::RegularPolygon{T}, n::Integer; dy = 2 / n)
 end
 
 """
-    polar_vertex(domain::RegularPolygon{T}, xy::Point2{T}, i::Integer) where {T}
+    polar_vertex(domain::RegularPolygon, xy::Point2, i::Integer)
 
 Convert from Cartesian coordinates to polar coordinates around vertex
 `i` of the domain with the angle taken to be zero along the edge
 between vertex `i` and `i + 1`.
 """
-function polar_vertex(domain::RegularPolygon{T}, xy::Point2{T}, i::Integer) where {T}
+function polar_vertex(domain::RegularPolygon{T}, xy::Point2, i::Integer) where {T}
     # Compute required rotation as a rational multiple of π
     angle = (domain.N - 2) // domain.N
     outer_angle = 2 - angle
@@ -167,11 +186,10 @@ function polar_vertex(domain::RegularPolygon{T}, xy::Point2{T}, i::Integer) wher
 end
 
 """
-    polar_center(domain::RegularPolygon{T}, xy::Point2{T}) where {T}
+    polar_center(domain::RegularPolygon, xy::Point2)
 
 Convert from Cartesian coordinates to polar coordinates around
 `center(domain)` with the angle taken to be zero in the direction of
 the positive x-axis.
 """
-polar_center(domain::RegularPolygon{T}, xy::Point2{T}) where {T} =
-    Polar(xy - center(domain))
+polar_center(domain::RegularPolygon, xy::Point2) = Polar(xy - center(domain))

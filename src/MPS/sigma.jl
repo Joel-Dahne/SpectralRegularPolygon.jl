@@ -71,6 +71,10 @@ function sigma!(
     # Compute the matrix A
     A = sigma_matrix(u, λ, N; num_boundary, num_interior)
 
+    if T == Arb
+        A = BigFloat.(A)
+    end
+
     # Compute a QR factorization of A
     q = LinearAlgebra.qr(A)
     Q = Matrix(q.Q)
@@ -85,7 +89,7 @@ function sigma!(
 
     # Compute the coefficients
     coefficients = try
-        q \ (Q * v)
+        convert.(T, q \ (Q * v))
     catch
         @warn "Failed computing q \\ (Q * v)"
         zeros(T, N)
@@ -93,5 +97,5 @@ function sigma!(
 
     set_coefficients!(u, coefficients)
 
-    return σ
+    return convert(T, σ)
 end

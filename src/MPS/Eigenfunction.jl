@@ -101,11 +101,11 @@ function (v::VertexExpansion{T})(p::Polar{T}, λ::T, ks::UnitRange{Int}) where {
 end
 
 # FIXME: Handle symmetry
-function (v::VertexExpansion{T})(p::Polar{T}, λ::T) where {T}
+function (v::VertexExpansion{T})(p::Polar, λ::T) where {T}
     r_sqrt_λ = p.r * sqrt(λ)
     π_div_θ = π / v.θ
 
-    return sum(eachindex(v.coefficients), init = zero(T)) do k
+    return sum(eachindex(v.coefficients), init = zero(r_sqrt_λ)) do k
         ν = (1 + 2(k - 1)) * π_div_θ
         v.coefficients[k] * besselj(ν, r_sqrt_λ) * sin(ν * p.φ)
     end
@@ -138,12 +138,12 @@ function (v::InteriorExpansion{T})(p::Polar{T}, λ::T, ks::UnitRange{Int}) where
     end
 end
 
-function (v::InteriorExpansion{T})(p::Polar{T}, λ::T) where {T}
+function (v::InteriorExpansion{T})(p::Polar, λ::T) where {T}
     r_sqrt_λ = p.r * sqrt(λ)
 
     # IMPROVE: Precompute besselj for all used ν values
 
-    return sum(eachindex(v.coefficients), init = zero(T)) do k
+    return sum(eachindex(v.coefficients), init = zero(r_sqrt_λ)) do k
         #ν = convert(T, k ÷ 2)
         #if k == 1
         #    term = besselj(ν, r_sqrt_λ)
@@ -183,8 +183,7 @@ function (u::Eigenfunction{T})(
 
         res_interior = u.interior_expansion(polar_center(u.domain, xy), λ, ks_2)
     else
-        res_vertices = sum(1:u.domain.N) do i
-            # IMPROVE: Avoid evaluation on points where it is zero
+        res_vertices = sum(mod1.(xy.boundary .+ (2:u.domain.N-1), u.domain.N)) do i
             u.vertex_expansion(polar_vertex(u.domain, xy.position, i), λ, ks_1)
         end
 
@@ -202,7 +201,7 @@ function (u::Eigenfunction{T})(
     return res
 end
 
-function (u::Eigenfunction{T})(xy::Point2{T}, λ::T) where {T}
+function (u::Eigenfunction{T})(xy::Point2, λ::T) where {T}
     res_vertices = sum(1:u.domain.N) do i
         u.vertex_expansion(polar_vertex(u.domain, xy, i), λ)
     end
@@ -212,9 +211,8 @@ function (u::Eigenfunction{T})(xy::Point2{T}, λ::T) where {T}
     return res_vertices + res_interior
 end
 
-function (u::Eigenfunction{T})(xy::BoundaryPoint2{T}, λ::T) where {T}
-    res_vertices = sum(1:u.domain.N) do i
-        # IMPROVE: Don't evaluate when zero
+function (u::Eigenfunction{T})(xy::BoundaryPoint2, λ::T) where {T}
+    res_vertices = sum(mod1.(xy.boundary .+ (2:u.domain.N-1), u.domain.N)) do i
         u.vertex_expansion(polar_vertex(u.domain, xy.position, i), λ)
     end
 
