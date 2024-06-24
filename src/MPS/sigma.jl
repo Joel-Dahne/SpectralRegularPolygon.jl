@@ -43,16 +43,19 @@ function sigma(
     N::Integer;
     num_boundary::Integer = 2N,
     num_interior::Integer = 2N,
+    qr_eltype = ifelse(T == Arb, BigFloat, T),
 ) where {T}
     # Compute the matrix A
-    A = sigma_matrix(u, λ, N; num_boundary, num_interior)
+    A = convert(Matrix{qr_eltype}, sigma_matrix(u, λ, N; num_boundary, num_interior))
 
     # Compute a QR factorization of A
     Q = Matrix(LinearAlgebra.qr(A).Q)
 
     # Compute the smallest singular value of the top part of Q,
     # corresponding to the boundary points
-    return LinearAlgebra.svdvals(Q[1:num_boundary, :])[end]
+    σ = LinearAlgebra.svdvals(Q[1:num_boundary, :])[end]
+
+    return convert(T, σ)
 end
 
 """
@@ -67,13 +70,10 @@ function sigma!(
     N::Integer;
     num_boundary::Integer = 2N,
     num_interior::Integer = 2N,
+    qr_eltype = ifelse(T == Arb, BigFloat, T),
 ) where {T}
     # Compute the matrix A
-    A = sigma_matrix(u, λ, N; num_boundary, num_interior)
-
-    if T == Arb
-        A = BigFloat.(A)
-    end
+    A = convert(Matrix{qr_eltype}, sigma_matrix(u, λ, N; num_boundary, num_interior))
 
     # Compute a QR factorization of A
     q = LinearAlgebra.qr(A)
@@ -89,13 +89,13 @@ function sigma!(
 
     # Compute the coefficients
     coefficients = try
-        convert.(T, q \ (Q * v))
+        q \ (Q * v)
     catch
         @warn "Failed computing q \\ (Q * v)"
-        zeros(T, N)
+        zeros(qr_eltype, N)
     end
 
-    set_coefficients!(u, coefficients)
+    set_coefficients!(u, convert(Vector{T}, coefficients))
 
     return convert(T, σ)
 end

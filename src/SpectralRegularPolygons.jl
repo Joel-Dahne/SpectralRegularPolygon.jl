@@ -26,8 +26,10 @@ include("RegularPolygon.jl")
 include("MPS/Eigenfunction.jl")
 include("MPS/sigma.jl")
 include("MPS/mps.jl")
+
 include("MPS/enclosing/maximum_boundary.jl")
 include("MPS/enclosing/norm.jl")
+include("MPS/enclosing/eigenvalue.jl")
 
 include("precomputed_eigenvalues.jl")
 include("plotting.jl")
