@@ -6,7 +6,7 @@ end
 Polar(r::T, φ::T) where {T<:Number} = Polar{T}(r, φ)
 
 function Polar(xy::Point2)
-    r = sqrt(xy[1]^2 + xy[2]^2)
+    r = hypot(xy[1], xy[2])
     φ = atan(xy[2], xy[1])
     return Polar(r, φ)
 end
@@ -19,7 +19,7 @@ function Polar(xy::Point2, rotation)
     x = c * xy[1] - s * xy[2]
     y = s * xy[1] + c * xy[2]
 
-    r = sqrt(x^2 + y^2)
+    r = hypot(x, y)
     φ = atan(y, x)
 
     return Polar(r, φ)

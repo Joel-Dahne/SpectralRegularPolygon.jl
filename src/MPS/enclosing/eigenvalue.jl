@@ -1,7 +1,4 @@
-function eigenvalue_lower_upper_estimate(
-    u::Eigenfunction{T},
-    λ::T,
-) where {T}
+function eigenvalue_lower_upper_estimate(u::Eigenfunction{T}, λ::T) where {T}
     m = maximum_boundary_estimate(u, λ)
     n = norm_estimate(u, λ)
 

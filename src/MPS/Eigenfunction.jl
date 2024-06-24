@@ -82,7 +82,7 @@ end
 
 function (v::VertexExpansion{T})(p::Polar, λ::T) where {T}
     r_sqrt_λ = p.r * sqrt(λ)
-    π_div_θ = π / v.θ
+    π_div_θ = π / v.θ # IMPROVE: Issues if this is exact integer
 
     return sum(eachindex(v.coefficients), init = zero(r_sqrt_λ)) do k
         ν = (1 + 2(k - 1)) * π_div_θ

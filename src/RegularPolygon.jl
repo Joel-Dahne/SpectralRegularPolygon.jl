@@ -38,14 +38,13 @@ Return `n` points from boundary number `i`.
 """
 function boundary_points(domain::RegularPolygon{T}, i::Integer, n::Integer) where {T}
     v = vertex(domain, i)
-    w = vertex(domain, mod1(i + 1, domain.N))
+    w = vertex(domain, i + 1)
 
     points = Vector{BoundaryPoint2{T}}(undef, n)
     for j = 1:n
-        # TODO: Defined other distributions than Chebyshev
-        t = 1 - (cospi(convert(eltype(v), 2j - 1) / 2n) + 1) / 2
+        t = 1 - (cospi(T((2j - 1) // 2n)) + 1) / 2
 
-        points[j] = BoundaryPoint2{T}(v + t * (w - v), (boundary = i))
+        points[j] = BoundaryPoint2{T}(v + t * (w - v), boundary = i)
     end
 
     return points
@@ -86,7 +85,7 @@ function boundary_parameterized_symmetry(domain::RegularPolygon, t)
     # Multiplication by one(t) is needed to support ArbSeries
     # correctly.
     position = Point(one(t) * v[1], t * v[2])
-    return BoundaryPoint2{eltype(position)}(position, (boundary = domain.N,))
+    return BoundaryPoint2{eltype(position)}(position, boundary = domain.N)
 end
 
 """
@@ -106,7 +105,7 @@ function interior_points_random(
     for i = 1:n
         # Generate random point on the triangle formed between the
         # x-axis and the line between the origin and the first vertex.
-        u1, u2 = rand(rng), rand(rng)
+        u1, u2 = rand(rng, Float64), rand(rng, Float64)
         if u1 + u2 > 1
             u1, u2 = 1 - u1, 1 - u2
         end
@@ -160,6 +159,7 @@ function interior_points_grid(domain::RegularPolygon{T}, n::Integer; dr = 2 / n)
                 x_min + (i - 1) // (n - 1) * (x_max - x_min),
                 y_min + (j - 1) // (n - 1) * (y_max - y_min),
             )
+            # IMPROVE: Properly check if inside or not
             inside[idx] = LinearAlgebra.norm(points[idx]) < max_norm
 
             idx += 1
@@ -180,8 +180,8 @@ function polar_vertex(domain::RegularPolygon{T}, xy::Point2, i::Integer) where {
     # Compute required rotation as a rational multiple of π
     angle = (domain.N - 2) // domain.N
     outer_angle = 2 - angle
-    # FIXME: Handle rotation
     rotation = mod(-outer_angle + 1 // 2 - (i - 1) * (1 - angle), 2)
+
     return Polar(xy - vertex(domain, i), π * T(rotation))
 end
 

@@ -56,9 +56,9 @@ function norm_lower_enclosure(
     λ::T,
     scaling::T = T(0.65);
     degree::Integer = num_coefficients(u),
-    rtol = 1e-5,
-    maxevals::Integer = 1000,
-    depth::Integer = 20,
+    rtol = 1e-3,
+    maxevals::Integer = 100,
+    depth::Integer = 10,
     threaded::Bool = true,
     verbose::Bool = false,
 ) where {T}

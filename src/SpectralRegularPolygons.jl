@@ -9,6 +9,7 @@ import GenericLinearAlgebra
 import GeometryBasics
 import LaTeXStrings
 import LinearAlgebra
+import OhMyThreads
 import Optim
 import Random
 

@@ -26,20 +26,20 @@ maximum_boundary_enclosure(
     u::Eigenfunction{Arb},
     λ::Arb;
     degree::Integer = 2num_coefficients(u),
-    rtol = 1e-10,
-    maxevals::Integer = 1000,
-    depth::Integer = 20,
+    rtol = 1e-3,
+    maxevals::Integer = 100,
+    depth::Integer = 10,
     threaded::Bool = true,
     verbose::Bool = false,
 ) = ArbExtras.maximum_enclosure(
-        t -> u(boundary_parameterized_symmetry(u.domain, t), λ),
-        Arf(0),
-        Arf(1),
-        abs_value = true;
-        degree,
-        rtol,
-        maxevals,
-        depth,
-        threaded,
-        verbose,
-    )
+    t -> u(boundary_parameterized_symmetry(u.domain, t), λ),
+    Arf(0),
+    Arf(1),
+    abs_value = true;
+    degree,
+    rtol,
+    maxevals,
+    depth,
+    threaded,
+    verbose,
+)

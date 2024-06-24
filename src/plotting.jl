@@ -51,18 +51,26 @@ function plot_eigenfunction(u::Eigenfunction, λ; num_grid_points = 32)
 
     axis = GLMakie.Axis(fig[1, 1], aspect = GLMakie.DataAspect())
 
-    GLMakie.poly!(axis, vertices(u.domain), color = :transparent, strokewidth = 2.0)
+    GLMakie.hidespines!(axis)
+    GLMakie.hidedecorations!(axis)
 
-    points, inside = interior_points_grid(u.domain, 32)
+    GLMakie.poly!(axis, vertices(u.domain), color = :transparent, strokewidth = 5.0)
 
-    values = map((xy, in) -> in ? u(xy, λ) : missing, points, inside)
+    points, inside = interior_points_grid(u.domain, num_grid_points)
+
+    values = OhMyThreads.tmap((xy, in) -> in ? u(xy, λ) : missing, points, inside)
+
+    colorrange = let v = abs(u(center(u.domain), λ))
+        (-v, v)
+    end
 
     GLMakie.heatmap!(
         axis,
         getindex.(points, 1),
         getindex.(points, 2),
         values,
-        interpolate = true,
+        interpolate = true;
+        colorrange,
     )
 
     return fig
