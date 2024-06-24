@@ -30,7 +30,7 @@ end
 function Eigenfunction(domain::RegularPolygon{T}) where {T}
     u = Eigenfunction(
         domain,
-        VertexExpansion{T}(π * T((domain.N - 2) // domain.N), T[]),
+        VertexExpansion{T}(angle(domain, 1), T[]),
         InteriorExpansion{T}(T[], domain.N),
     )
 
@@ -70,26 +70,6 @@ function normalise_sign!(u::Eigenfunction{T}, λ::T) where {T}
     return u
 end
 
-#"""
-#    is_active(u::Eigenfunction, i::Integer, xy)
-#
-#Return true if expansion at vertex `i` is active (i.e. non-zero) on
-#the boundary at which the point `xy` lies. If `xy` is not a
-#`BoundaryPoint2` then this will always return true.
-#"""
-#function is_active(u::Eigenfunction, i::Integer, xy::BoundaryPoint2)
-#    if u.vertex_expansions[i] isa VertexExpansion
-#        # These expansions are active on the boundary opposite of the
-#        # vertex they are centered at.
-#        return mod1(i + 1, 3) == xy.boundary
-#    else
-#        return true
-#    end
-#end
-#
-#is_active(u::Eigenfunction, i::Integer, xy::Point2) = true
-
-# FIXME: Handle symmetry
 function (v::VertexExpansion{T})(p::Polar{T}, λ::T, ks::UnitRange{Int}) where {T}
     r_sqrt_λ = p.r * sqrt(λ)
     π_div_θ = π / v.θ
@@ -100,7 +80,6 @@ function (v::VertexExpansion{T})(p::Polar{T}, λ::T, ks::UnitRange{Int}) where {
     end
 end
 
-# FIXME: Handle symmetry
 function (v::VertexExpansion{T})(p::Polar, λ::T) where {T}
     r_sqrt_λ = p.r * sqrt(λ)
     π_div_θ = π / v.θ
@@ -114,18 +93,7 @@ end
 function (v::InteriorExpansion{T})(p::Polar{T}, λ::T, ks::UnitRange{Int}) where {T}
     r_sqrt_λ = p.r * sqrt(λ)
 
-    # IMPROVE: Precompute besselj for all used ν values
-
     return map(ks) do k
-        #ν = convert(T, k ÷ 2)
-        #if k == 1
-        #    term = besselj(ν, r_sqrt_λ)
-        #elseif iseven(k)
-        #    term = besselj(ν, r_sqrt_λ) * sin(ν * p.φ)
-        #else
-        #    term = besselj(ν, r_sqrt_λ) * cos(ν * p.φ)
-        #end
-
         if k == 1
             ν = zero(T)
             term = besselj(ν, r_sqrt_λ)
@@ -141,18 +109,7 @@ end
 function (v::InteriorExpansion{T})(p::Polar, λ::T) where {T}
     r_sqrt_λ = p.r * sqrt(λ)
 
-    # IMPROVE: Precompute besselj for all used ν values
-
     return sum(eachindex(v.coefficients), init = zero(r_sqrt_λ)) do k
-        #ν = convert(T, k ÷ 2)
-        #if k == 1
-        #    term = besselj(ν, r_sqrt_λ)
-        #elseif iseven(k)
-        #    term = besselj(ν, r_sqrt_λ) * sin(ν * p.φ)
-        #else
-        #    term = besselj(ν, r_sqrt_λ) * cos(ν * p.φ)
-        #end
-
         if k == 1
             ν = zero(T)
             term = besselj(ν, r_sqrt_λ)
