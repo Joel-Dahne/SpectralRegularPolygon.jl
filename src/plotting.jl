@@ -90,23 +90,22 @@ function plot_boundary(
     if full_boundary
         points = boundary_points(u.domain, num_boundary_points)
 
-        values = map(xy -> u(xy, λ), points)
+        values = OhMyThreads.tmap(xy -> u(xy, λ), points)
 
         GLMakie.lines!(axis, values)
 
         return fig
     end
 
-
     points = boundary_points_symmetry(u.domain, num_boundary_points)
 
-    values = map(xy -> u(xy, λ), points)
+    values = OhMyThreads.tmap(xy -> u(xy, λ), points)
 
     GLMakie.scatter!(axis, getindex.(points, 2), values)
 
     points = boundary_points(u.domain, u.domain.N, num_boundary_points)
 
-    values = map(xy -> u(xy, λ), points)
+    values = OhMyThreads.tmap(xy -> u(xy, λ), points)
 
     GLMakie.lines!(axis, getindex.(points, 2), values)
 
@@ -115,7 +114,10 @@ function plot_boundary(
             GLMakie.lines!(
                 axis,
                 getindex.(points, 2),
-                map(xy -> u(xy, λ), boundary_points(u.domain, i, num_boundary_points)),
+                OhMyThreads.tmap(
+                    xy -> u(xy, λ),
+                    boundary_points(u.domain, i, num_boundary_points),
+                ),
             )
         end
     end
