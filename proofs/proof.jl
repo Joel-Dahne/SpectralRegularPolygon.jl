@@ -38,7 +38,7 @@ _λs = SRP.get_eigenvalue_approximation.(T, Ns)
 us, λs = let
     us = Eigenfunction.(domains)
 
-    M = 8
+    M = 3
 
     λs = tmap(us, _λs) do u, _λ
         if !isfinite(_λ)
@@ -88,6 +88,7 @@ let
     fig = GLMakie.Figure()
     axis = GLMakie.Axis(fig[1, 1], yscale = log10)
     scatterlines!(axis, Ns, λs .- λ_circle)
+    scatterlines!(axis, Ns, Arblib.radius.(λs_enclosures))
     fig
 end
 
@@ -96,7 +97,22 @@ let
     fig = GLMakie.Figure()
     axis = GLMakie.Axis(fig[1, 1], yscale = log10)
 
-    plot!(axis, Ns, Arblib.radius.(λs_enclosures))
+    scatter!(axis, Ns, Arblib.radius.(λs_enclosures))
+
+    fig
+end
+
+# ╔═╡ bda98e53-cb8d-4a8d-a3c9-f521dae9a187
+let
+    fig = GLMakie.Figure()
+    axis = GLMakie.Axis(fig[1, 1], yscale = log10)
+
+    λs_diff = λs[1:end-1] - λs[2:end]
+    radius_sum =
+        Arblib.radius.(λs_enclosures[1:end-1]) + Arblib.radius.(λs_enclosures[2:end])
+
+    scatter!(axis, Ns[1:end-1], λs_diff)
+    scatter!(axis, Ns[1:end-1], radius_sum)
 
     fig
 end
@@ -114,3 +130,4 @@ end
 # ╠═e771c0f7-9e80-4c92-ab37-fc8f3e9866df
 # ╠═8e96f457-c878-441e-b70b-c47980439963
 # ╠═194bc594-4cf3-4a87-acba-5b0b59f820aa
+# ╠═bda98e53-cb8d-4a8d-a3c9-f521dae9a187
