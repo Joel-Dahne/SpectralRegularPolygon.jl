@@ -42,7 +42,23 @@ function boundary_points(domain::RegularPolygon{T}, i::Integer, n::Integer) wher
 
     points = Vector{BoundaryPoint2{T}}(undef, n)
     for j = 1:n
-        t = 1 - (cospi(T((2j - 1) // 2n)) + 1) / 2
+        # We currently only make use of Chebyshev spaced points, the
+        # root exponential version is here for reference.
+        if true
+            # Take Chebyshev spaced points
+            t = 1 - (cospi(T((2j - 1) // 2n)) + 1) / 2
+        else
+            # Take root exponentially spaced points
+            m = (n + 1) // 2
+            d = exp(-4(sqrt(T(m)) - sqrt(T(min(j, n - j + 1)))))
+            t = if j < m
+                d / 2
+            elseif j > m
+                1 - d / 2
+            else
+                T(0.5)
+            end
+        end
 
         points[j] = BoundaryPoint2{T}(v + t * (w - v), boundary = i)
     end
@@ -183,6 +199,29 @@ function polar_vertex(domain::RegularPolygon{T}, xy::Point2, i::Integer) where {
     rotation = mod(-outer_angle + 1 // 2 - (i - 1) * (1 - angle), 2)
 
     return Polar(xy - vertex(domain, i), π * T(rotation))
+end
+
+"""
+    cartesian_vertex(domain::RegularPolygon, xy::Point2, i::Integer)
+
+Convert from original Cartesian coordinates to Cartesian coordinates
+where vertex `i` is at the origin and the positive x-axis goes through
+the middle of the angle. The orientation is preserved, meaning that
+the edge between vertex `i` and `i + 1` is below the x-axis.
+"""
+function cartesian_vertex(domain::RegularPolygon{T}, xy::Point2, i::Integer) where {T}
+    # Place vertex at origin
+    xy = xy - vertex(domain, i)
+
+    # Compute required rotation as a rational multiple of π
+    angle = (domain.N - 2) // domain.N
+    rotation = mod((2 - 1 // 2 - angle) + (i - 1) * (1 - angle) + angle / 2, 2)
+
+    s, c = sincospi(T(-rotation))
+    x = c * xy[1] - s * xy[2]
+    y = s * xy[1] + c * xy[2]
+
+    return Point2(x, y)
 end
 
 """

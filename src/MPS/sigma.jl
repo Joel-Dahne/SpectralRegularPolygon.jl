@@ -36,6 +36,27 @@ end
     sigma(u, λ, N)
 
 Compute ``σ(λ)``.
+
+# Numerical stability
+In some cases when using the lightning expansions there are issues
+with the numerical stability in the computations. For example for
+```
+u = Eigenfunction(RegularPolygon{T}(12), lightning = true)
+```
+with `N = 8`.
+
+It seems like these numerical instabilities come from the
+QR-decomposition.
+
+If we compute the QR-decomposition at a fixed precision (say 2048
+bits) and then compute the SVD-values at lower precisions (say
+`64:64:2048` (we first truncate to the lower precision)), we get that
+the SVD-values are stable.
+
+If we instead compute the QR-decomposition at different precisions
+(say `64:64:2048`), and then compute the SVD-values at high precision
+(say 2048) we get that they vary a lot.
+
 """
 function sigma(
     u::Eigenfunction{T},
