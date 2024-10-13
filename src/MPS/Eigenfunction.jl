@@ -72,6 +72,26 @@ function normalise_sign!(u::Eigenfunction{T}, λ::T) where {T}
     return u
 end
 
+"""
+    normalise_leading_interior!(u::Eigenfunction{T})
+
+Normalise the eigenfunction so that the leading coefficient for the
+interior expansion is one. If the interior expansion has no
+coefficients this doesn't do anything.
+"""
+function normalise_leading_interior!(u::Eigenfunction{T}) where {T}
+    if !isempty(u.vertex_expansion.coefficients)
+        leading_interior = u.interior_expansion.coefficients[1]
+
+        u.vertex_expansion.coefficients ./= leading_interior
+        u.interior_expansion.coefficients ./= leading_interior
+
+        u.interior_expansion.coefficients[1] = 1 # Ensure the leading is exactly 1
+    end
+
+    return u
+end
+
 function (v::VertexExpansion{T})(p::Polar{T}, λ::T, ks::UnitRange{Int}) where {T}
     r_sqrt_λ = p.r * sqrt(λ)
     π_div_θ = π / v.θ

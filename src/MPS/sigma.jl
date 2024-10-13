@@ -92,6 +92,7 @@ function sigma!(
     num_boundary::Integer = 2N,
     num_interior::Integer = 2N,
     qr_eltype = ifelse(T == Arb, BigFloat, T),
+    normalise::Bool = true,
 ) where {T}
     # Compute the matrix A
     A = convert(Matrix{qr_eltype}, sigma_matrix(u, λ, N; num_boundary, num_interior))
@@ -117,6 +118,10 @@ function sigma!(
     end
 
     set_coefficients!(u, convert(Vector{T}, coefficients))
+
+    if normalise
+        normalise_leading_interior!(u)
+    end
 
     return convert(T, σ)
 end
