@@ -6,14 +6,6 @@ struct VertexExpansion{T} <: AbstractVertexExpansion{T}
     coefficients::Vector{T}
 end
 
-struct LightningExpansion{T} <: AbstractVertexExpansion{T}
-    l::T
-    σ::T
-    θ::T
-    even::Bool
-    coefficients::Vector{T}
-end
-
 struct InteriorExpansion{T} <: AbstractInteriorExpansion{T}
     coefficients::Vector{T}
     symmetry::Int
@@ -100,51 +92,6 @@ function (v::VertexExpansion{T})(p::Polar, λ::T) where {T}
     end
 end
 
-charge_distance(v::LightningExpansion{T}, i::Integer, n::Integer) where {T} =
-    v.l * exp(-v.σ * (sqrt(T(n)) - sqrt(T(n + 1 - i))))
-
-"""
-    lightning_charge_transformation(v::LightningExpansion, xy::Point2, i::Integer, n::Integer)
-
-For a point `xy` as return by `cartesian_vertex`, return polar
-coordinates of the point around the charge with index `i`, assuming a
-total of `n` charges are used.
-"""
-lightning_charge_transformation(v::LightningExpansion, xy::Point2, i::Integer, n::Integer) =
-    Polar(Point2(xy[1] + charge_distance(v, i, n), xy[2]))
-
-function (v::LightningExpansion{T})(xy::Point2, λ::T, ks::UnitRange{Int}) where {T}
-    n = (ks[end] - 1) ÷ 3 + 1 # Number of charges
-
-    # IMPROVE: Precompute things that are used multiple times
-    return map(ks) do k
-        # Find which charge k belongs to
-        charge_index = (k - 1) ÷ 3 + 1
-
-        # Compute polar coordinates around current charge
-        p_charge = lightning_charge_transformation(v, xy, charge_index, n)
-
-        # Evaluate eigenfunction
-        r_sqrt_λ = p_charge.r * sqrt(λ)
-
-        # Find type of function
-        function_type = v.even ? mod1(k, 2) : mod1(k, 3)
-
-        if function_type == 1
-            bessely0(r_sqrt_λ)
-        elseif function_type == 2
-            bessely1(r_sqrt_λ) * cos(p_charge.φ)
-        elseif function_type == 3
-            bessely1(r_sqrt_λ) * sin(p_charge.φ)
-        end
-    end
-end
-
-function (v::LightningExpansion{T})(xy::Point2, λ::T; verbose = false) where {T}
-    isempty(v.coefficients) && return zero(λ * xy[1])
-    return sum(v.coefficients .* v(xy, λ, UnitRange(eachindex(v.coefficients))))
-end
-
 function (v::InteriorExpansion{T})(p::Polar{T}, λ::T, ks::UnitRange{Int}) where {T}
     r_sqrt_λ = p.r * sqrt(λ)
 
@@ -177,21 +124,6 @@ function (v::InteriorExpansion{T})(p::Polar, λ::T) where {T}
     end
 end
 
-# Helper function to pick between polar_vertex and cartesian_vertex
-# for the different expansions
-auto_vertex(
-    v::VertexExpansion{T},
-    domain::RegularPolygon{T},
-    xy::Point2,
-    i::Integer,
-) where {T} = polar_vertex(domain, xy, i)
-auto_vertex(
-    v::LightningExpansion{T},
-    domain::RegularPolygon{T},
-    xy::Point2,
-    i::Integer,
-) where {T} = cartesian_vertex(domain, xy, i)
-
 # Return which vertices for which evaluation of the given boundary
 # point is non-zero
 active_vertices(
@@ -199,6 +131,7 @@ active_vertices(
     domain::RegularPolygon{T},
     xy::BoundaryPoint2,
 ) where {T} = mod1.(xy.boundary .+ (2:domain.N-1), domain.N)
+
 active_vertices(
     v::LightningExpansion{T},
     domain::RegularPolygon{T},
@@ -218,14 +151,14 @@ function (u::Eigenfunction{T})(
 
     if xy isa Point2
         res_vertices = sum(1:u.domain.N) do i
-            u.vertex_expansion(auto_vertex(u.vertex_expansion, u.domain, xy, i), λ, ks_1)
+            u.vertex_expansion(polar_vertex(u.domain, xy, i), λ, ks_1)
         end
 
         res_interior = u.interior_expansion(polar_center(u.domain, xy), λ, ks_2)
     else
         res_vertices = sum(active_vertices(u.vertex_expansion, u.domain, xy)) do i
             u.vertex_expansion(
-                auto_vertex(u.vertex_expansion, u.domain, xy.position, i),
+                polar_vertex(u.domain, xy.position, i),
                 λ,
                 ks_1,
             )
@@ -247,7 +180,7 @@ end
 
 function (u::Eigenfunction{T})(xy::Point2, λ::T) where {T}
     res_vertices = sum(1:u.domain.N) do i
-        u.vertex_expansion(auto_vertex(u.vertex_expansion, u.domain, xy, i), λ)
+        u.vertex_expansion(polar_vertex(u.domain, xy, i), λ)
     end
 
     res_interior = u.interior_expansion(polar_center(u.domain, xy), λ)
@@ -257,7 +190,7 @@ end
 
 function (u::Eigenfunction{T})(xy::BoundaryPoint2, λ::T) where {T}
     res_vertices = sum(active_vertices(u.vertex_expansion, u.domain, xy)) do i
-        u.vertex_expansion(auto_vertex(u.vertex_expansion, u.domain, xy.position, i), λ)
+        u.vertex_expansion(polar_vertex(u.domain, xy.position, i), λ)
     end
 
     res_interior = u.interior_expansion(polar_center(u.domain, xy.position), λ)
