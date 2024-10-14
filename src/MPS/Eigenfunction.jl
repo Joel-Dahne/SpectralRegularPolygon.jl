@@ -157,11 +157,7 @@ function (u::Eigenfunction{T})(
         res_interior = u.interior_expansion(polar_center(u.domain, xy), λ, ks_2)
     else
         res_vertices = sum(active_vertices(u.vertex_expansion, u.domain, xy)) do i
-            u.vertex_expansion(
-                polar_vertex(u.domain, xy.position, i),
-                λ,
-                ks_1,
-            )
+            u.vertex_expansion(polar_vertex(u.domain, xy.position, i), λ, ks_1)
         end
 
         res_interior = u.interior_expansion(polar_center(u.domain, xy.position), λ, ks_2)
