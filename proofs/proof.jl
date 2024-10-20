@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.47
+# v0.20.0
 
 using Markdown
 using InteractiveUtils
@@ -23,10 +23,10 @@ end
 
 # ╔═╡ 6fae0fd4-3232-11ef-1c63-21b4630e06dc
 begin
-    using Pkg, Revise
+    using Pkg
     Pkg.activate("..", io = devnull)
     using SpectralRegularPolygons
-    using GLMakie
+    using CairoMakie
     using Arblib
     using ArbExtras
     using OhMyThreads

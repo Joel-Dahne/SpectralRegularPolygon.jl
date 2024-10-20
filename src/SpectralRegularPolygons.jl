@@ -4,7 +4,6 @@ import Arblib
 import ArbExtras
 import CSV
 import DataFrames
-import GLMakie
 import GenericLinearAlgebra
 import GeometryBasics
 import LaTeXStrings
@@ -33,6 +32,5 @@ include("MPS/enclosing/norm.jl")
 include("MPS/enclosing/eigenvalue.jl")
 
 include("precomputed_eigenvalues.jl")
-include("plotting.jl")
 
 end # module SpectralRegularPolygons
