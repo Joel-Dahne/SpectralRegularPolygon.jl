@@ -28,11 +28,7 @@ function Eigenfunction(
 end
 
 function Eigenfunction(domain::RegularPolygon{T}; lightning::Bool = false) where {T}
-    vertex_expansion = if lightning
-        LightningExpansion{T}(T(1.0), T(2.5), angle(domain, 1), true, T[])
-    else
-        VertexExpansion{T}(angle(domain, 1), T[])
-    end
+    vertex_expansion = VertexExpansion{T}(angle(domain, 1), T[])
 
     u = Eigenfunction(domain, vertex_expansion, InteriorExpansion{T}(T[], domain.N))
 
@@ -151,12 +147,6 @@ active_vertices(
     domain::RegularPolygon{T},
     xy::BoundaryPoint2,
 ) where {T} = mod1.(xy.boundary .+ (2:domain.N-1), domain.N)
-
-active_vertices(
-    v::LightningExpansion{T},
-    domain::RegularPolygon{T},
-    xy::BoundaryPoint2,
-) where {T} = 1:domain.N
 
 function (u::Eigenfunction{T})(
     xy::Union{Point2{T},BoundaryPoint2{T}},
