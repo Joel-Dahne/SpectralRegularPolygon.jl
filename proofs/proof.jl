@@ -1,24 +1,19 @@
 ### A Pluto.jl notebook ###
-# v0.20.0
+# v0.20.3
 
 using Markdown
 using InteractiveUtils
 
 # This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
 macro bind(def, element)
+    #! format: off
     quote
-        local iv = try
-            Base.loaded_modules[Base.PkgId(
-                Base.UUID("6e696c72-6542-2067-7265-42206c756150"),
-                "AbstractPlutoDingetjes",
-            )].Bonds.initial_value
-        catch
-            b -> missing
-        end
+        local iv = try Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"), "AbstractPlutoDingetjes")].Bonds.initial_value catch; b -> missing; end
         local el = $(esc(element))
         global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : iv(el)
         el
     end
+    #! format: on
 end
 
 # ╔═╡ 6fae0fd4-3232-11ef-1c63-21b4630e06dc
@@ -136,6 +131,9 @@ md"""
 The code above computes the eigenvalues for $N \geq 5$. We also want to check the conditions for $N = 3$ and $N = 4$, so we create a vector with those two added.
 """
 
+# ╔═╡ c115ab1e-cd48-4c95-aebf-3c04715c28fa
+Ns_full = 3:Ns[end]
+
 # ╔═╡ 468dccc1-36f7-4441-a410-7d5c99341d63
 λs_full = [4Arb(π) / sqrt(Arb(3)); 2Arb(π); λs]
 
@@ -175,12 +173,12 @@ Check this box to set the code to save the figures.
 
 # ╔═╡ e771c0f7-9e80-4c92-ab37-fc8f3e9866df
 let
-    fig = GLMakie.Figure()
-    ax = GLMakie.Axis(fig[1, 1], xlabel = L"N", ylabel = L"\lambda")
+    fig = Figure()
+    ax = Axis(fig[1, 1], xlabel = L"N", ylabel = L"\lambda")
 
     scatterlines!(ax, Ns, λs)
 
-    save_figures && save("figures/eigenvalues.png", fig, px_per_unit = 4)
+    save_figures && save("figures/eigenvalues.pdf", fig)
 
     fig
 end
@@ -190,36 +188,65 @@ let
     a1s = map(u -> u.vertex_expansion.coefficients[1], us)
     a2s = map(u -> u.vertex_expansion.coefficients[2], us)
 
-    fig = GLMakie.Figure()
-    ax = GLMakie.Axis(fig[1, 1], xlabel = L"N")
+    fig = Figure()
+    ax = Axis(fig[1, 1], xlabel = L"N")
 
     scatterlines!(ax, Ns, a1s, label = L"a_1")
-    scatterlines!(ax, Ns, a2s, label = L"a_2")
+    scatterlines!(ax, Ns, a2s, label = L"a_2", marker = :cross)
     axislegend(ax)
 
-    save_figures && save("figures/coefficients.png", fig, px_per_unit = 4)
+    save_figures && save("figures/coefficients.pdf", fig)
 
     fig
 end
 
 # ╔═╡ bda98e53-cb8d-4a8d-a3c9-f521dae9a187
 let
-    fig = GLMakie.Figure()
-    ax = GLMakie.Axis(fig[1, 1], xlabel = L"N", yscale = log10)
+    fig = Figure()
+    ax = Axis(fig[1, 1], xlabel = L"N", yscale = log10)
 
-    λs_diff = λs[1:end-1] - λs[2:end]
-    radius_sum = Arblib.radius.(λs[1:end-1]) + Arblib.radius.(λs[2:end])
+    λs_diff = λs_full[1:end-1] - λs_full[2:end]
+    radius_sum = Arblib.radius.(λs_full[1:end-1]) + Arblib.radius.(λs_full[2:end])
 
     scatterlines!(
         ax,
-        Ns[1:end-1],
-        λs_diff,
+        Ns_full[1:end-2],
+        λs_diff[1:end-1],
         label = L"\lambda_{1}(\mathcal{P}_N) - \lambda_{1}(\mathcal{P}_{N + 1})",
     )
-    scatterlines!(ax, Ns[1:end-1], radius_sum, label = "Error bound")
+    scatterlines!(
+        ax,
+        Ns_full[2:end-2],
+        radius_sum[2:end-1],
+        label = "Error bound",
+        marker = :cross,
+    )
     axislegend(ax)
 
-    save_figures && save("figures/difference.png", fig, px_per_unit = 4)
+    save_figures && save("figures/difference-eigenvalues.pdf", fig)
+
+    fig
+end
+
+# ╔═╡ f594e504-9527-4c43-8e15-96713c15f9de
+let
+    fig = Figure()
+    ax = Axis(fig[1, 1], xlabel = L"N", yscale = log10)
+
+    qs_diff = qs_full[1:end-1] - qs_full[2:end]
+    radius_sum = Arblib.radius.(qs_full[1:end-1]) + Arblib.radius.(qs_full[2:end])
+
+    scatterlines!(ax, Ns_full[1:end-2], qs_diff, label = L"q_{N} - q_{N + 1}")
+    scatterlines!(
+        ax,
+        Ns_full[2:end-2],
+        radius_sum[2:end],
+        label = "Error bound",
+        marker = :cross,
+    )
+    axislegend(ax)
+
+    save_figures && save("figures/difference-q-n.pdf", fig)
 
     fig
 end
@@ -233,13 +260,13 @@ md"""
 let
     λ_circle = ArbExtras.refine_root(besselj0, Arb((sqrt(Arf(5.7)), sqrt(Arf(5.8)))))^2
 
-    fig = GLMakie.Figure()
-    ax = GLMakie.Axis(fig[1, 1], xlabel = L"N", yscale = log10)
+    fig = Figure()
+    ax = Axis(fig[1, 1], xlabel = L"N", yscale = log10)
 
     scatterlines!(
         ax,
-        Ns,
-        λs_approx .- λ_circle,
+        Ns_full,
+        λs_full .- λ_circle,
         label = L"\lambda_{1}(\mathcal{P}_N) - \lambda_{1}(\mathbb{D})",
     )
     scatterlines!(ax, Ns, Arblib.radius.(λs), label = "Error bound")
@@ -261,6 +288,7 @@ end
 # ╟─540eabb1-4dd7-4e80-890a-5577bb64cf36
 # ╠═d5b9ea36-fee2-4b8b-a090-16c2ecf308f3
 # ╟─fac49c09-f365-4fe7-a05a-7b6bfa306e50
+# ╠═c115ab1e-cd48-4c95-aebf-3c04715c28fa
 # ╠═468dccc1-36f7-4441-a410-7d5c99341d63
 # ╟─e44b149a-6c13-4464-a39c-17317e9a4ff5
 # ╠═827a5af8-ac00-414c-b79b-e8f98a907969
@@ -272,5 +300,6 @@ end
 # ╟─e771c0f7-9e80-4c92-ab37-fc8f3e9866df
 # ╟─1190007b-9b1a-4063-ba96-f98b93137b10
 # ╟─bda98e53-cb8d-4a8d-a3c9-f521dae9a187
+# ╟─f594e504-9527-4c43-8e15-96713c15f9de
 # ╟─ea97c15b-b03f-4b6b-8e80-73ff12eaa215
 # ╟─8e96f457-c878-441e-b70b-c47980439963
