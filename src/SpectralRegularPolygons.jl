@@ -14,7 +14,7 @@ import Random
 
 import Arblib: Arf, Arb, ArbSeries
 import GeometryBasics: Point, Point2
-import SpecialFunctions: besselj, bessely0, bessely1
+import SpecialFunctions: besselj, besselj0, bessely0, bessely1
 
 export RegularPolygon, Eigenfunction
 
