@@ -77,15 +77,15 @@ function norm_lower_enclosure(
 ) where {T}
     # Check Faber-Krahn condition
     λ_unit_disc = let
-        # The eigenvalue is approximately 2.4048 and is unique on the
-        # interval [0, 2.5]. To compute an enclosure we verify that
-        # there is a unique root on the interval [0, 2.5] and enclose
-        # it.
+        # The first zero of besselj0 is approximately 2.4048, and is
+        # unique on the interval [0, 2.5]. To compute an enclosure we
+        # verify that there is a unique root on the interval [0, 2.5]
+        # and enclose it.
         zeros, flags = ArbExtras.isolate_roots(besselj0, Arf(0), Arf(2.5))
         # Verify uniqueness
         only(flags) || error("could not prove unique root on [0, 2.5] for besselj0")
 
-        ArbExtras.refine_root(besselj0, Arb(only(zeros)))
+        ArbExtras.refine_root(besselj0, Arb(only(zeros)))^2
     end
     λ_scaled_disc = λ_unit_disc / scaling^2
 
