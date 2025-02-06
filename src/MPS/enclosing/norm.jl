@@ -89,8 +89,8 @@ function norm_lower_enclosure(
     end
     λ_scaled_disc = λ_unit_disc / scaling^2
 
-    if λ < λ_scaled_disc
-        return zero(T) # Faber-Krahn condition not satisfied
+    if !(λ < λ_scaled_disc)
+        error("Faber-Krahn condition not satisfied")
     end
 
     # Lower bound on boundary
