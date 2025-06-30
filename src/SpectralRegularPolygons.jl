@@ -12,9 +12,9 @@ import OhMyThreads
 import Optim
 import Random
 
-import Arblib: Arf, Arb, ArbSeries
+import Arblib: Arf, Arb, Acb, ArbSeries
 import GeometryBasics: Point, Point2
-import SpecialFunctions: besselj, besselj0, bessely0, bessely1
+import SpecialFunctions: besselj, besselj0, besselj1, bessely0, bessely1, zeta, gamma
 
 export RegularPolygon, Eigenfunction
 
@@ -32,5 +32,8 @@ include("MPS/enclosing/norm.jl")
 include("MPS/enclosing/eigenvalue.jl")
 
 include("precomputed_eigenvalues.jl")
+
+include("large_N/section_2.1.jl")
+include("large_N/section_2.1_lemmas.jl")
 
 end # module SpectralRegularPolygons
