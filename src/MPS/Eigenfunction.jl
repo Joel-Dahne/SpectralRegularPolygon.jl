@@ -146,7 +146,7 @@ active_vertices(
     v::VertexExpansion{T},
     domain::RegularPolygon{T},
     xy::BoundaryPoint2,
-) where {T} = mod1.(xy.boundary .+ (2:domain.N-1), domain.N)
+) where {T} = mod1.(xy.boundary .+ (2:(domain.N-1)), domain.N)
 
 function (u::Eigenfunction{T})(
     xy::Union{Point2{T},BoundaryPoint2{T}},

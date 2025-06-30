@@ -5,7 +5,7 @@
 
             for i = 1:N
                 # Compute coordinates for all other vertices
-                ps = map(i .+ (1:domain.N-1)) do j
+                ps = map(i .+ (1:(domain.N-1))) do j
                     SRP.polar_vertex(domain, SRP.vertex(domain, j), i)
                 end
 
@@ -13,13 +13,13 @@
                 # vertex and be increasing
                 @test Arblib.contains_zero(ps[1].φ)
                 @test Arblib.overlaps(ps[end].φ, SRP.angle(domain, i))
-                @test all(j -> ps[j].φ < ps[j+1].φ, 1:lastindex(ps)-1)
+                @test all(j -> ps[j].φ < ps[j+1].φ, 1:(lastindex(ps)-1))
 
                 # Radius should be increasing for first half and mirrored
-                for j = 1:lastindex(ps)÷2-1
+                for j = 1:(lastindex(ps)÷2-1)
                     @test ps[j].r < ps[j+1].r
                 end
-                for j = 1:lastindex(ps)÷2
+                for j = 1:(lastindex(ps)÷2)
                     @test Arblib.overlaps(ps[j].r, ps[end-(j-1)].r)
                 end
 

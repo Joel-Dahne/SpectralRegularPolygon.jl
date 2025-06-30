@@ -63,7 +63,7 @@ md"""
 """
 
 # ╔═╡ 674a8185-fe50-4f70-a0a5-e4cbe95460c4
-Ns = 5:1:N₀+1
+Ns = 5:1:(N₀+1)
 
 # ╔═╡ 5a88affb-12d4-46ed-a3dc-c02e00d1ecdf
 domains = RegularPolygon{Arb}.(Ns)
@@ -143,7 +143,7 @@ Next we verify that the inequality $\lambda_{1}(\mathcal{P}_{N}) > \lambda_{1}(\
 """
 
 # ╔═╡ 827a5af8-ac00-414c-b79b-e8f98a907969
-all(eachindex(λs_full)[1:end-1]) do i
+all(eachindex(λs_full)[1:(end-1)]) do i
     λs_full[i] > λs_full[i+1]
 end
 
@@ -153,10 +153,10 @@ Finally we compute the values for $q_N$, and verify that $q_{N} > q_{N + 1}$ hol
 """
 
 # ╔═╡ a65680cb-6cc5-445d-9658-4cf94c79306a
-qs_full = λs_full[1:end-1] ./ λs_full[2:end]
+qs_full = λs_full[1:(end-1)] ./ λs_full[2:end]
 
 # ╔═╡ bcbd6354-5212-4efc-a42c-0f70a1e49bc2
-all(eachindex(qs_full)[1:end-1]) do i
+all(eachindex(qs_full)[1:(end-1)]) do i
     qs_full[i] > qs_full[i+1]
 end
 
@@ -205,19 +205,19 @@ let
     fig = Figure()
     ax = Axis(fig[1, 1], xlabel = L"N", yscale = log10)
 
-    λs_diff = λs_full[1:end-1] - λs_full[2:end]
-    radius_sum = Arblib.radius.(λs_full[1:end-1]) + Arblib.radius.(λs_full[2:end])
+    λs_diff = λs_full[1:(end-1)] - λs_full[2:end]
+    radius_sum = Arblib.radius.(λs_full[1:(end-1)]) + Arblib.radius.(λs_full[2:end])
 
     scatterlines!(
         ax,
-        Ns_full[1:end-2],
-        λs_diff[1:end-1],
+        Ns_full[1:(end-2)],
+        λs_diff[1:(end-1)],
         label = L"\lambda_{1}(\mathcal{P}_N) - \lambda_{1}(\mathcal{P}_{N + 1})",
     )
     scatterlines!(
         ax,
-        Ns_full[2:end-2],
-        radius_sum[2:end-1],
+        Ns_full[2:(end-2)],
+        radius_sum[2:(end-1)],
         label = "Error bound",
         marker = :cross,
     )
@@ -233,13 +233,13 @@ let
     fig = Figure()
     ax = Axis(fig[1, 1], xlabel = L"N", yscale = log10)
 
-    qs_diff = qs_full[1:end-1] - qs_full[2:end]
-    radius_sum = Arblib.radius.(qs_full[1:end-1]) + Arblib.radius.(qs_full[2:end])
+    qs_diff = qs_full[1:(end-1)] - qs_full[2:end]
+    radius_sum = Arblib.radius.(qs_full[1:(end-1)]) + Arblib.radius.(qs_full[2:end])
 
-    scatterlines!(ax, Ns_full[1:end-2], qs_diff, label = L"q_{N} - q_{N + 1}")
+    scatterlines!(ax, Ns_full[1:(end-2)], qs_diff, label = L"q_{N} - q_{N + 1}")
     scatterlines!(
         ax,
-        Ns_full[2:end-2],
+        Ns_full[2:(end-2)],
         radius_sum[2:end],
         label = "Error bound",
         marker = :cross,

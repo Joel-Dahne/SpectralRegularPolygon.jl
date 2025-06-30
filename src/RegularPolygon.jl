@@ -84,7 +84,7 @@ Return `n` points from the boundary, taken in a way that takes into
 account the symmetries.
 """
 boundary_points_symmetry(domain::RegularPolygon, n::Integer) =
-    boundary_points(domain, domain.N, 2n - 1)[n:2n-1]
+    boundary_points(domain, domain.N, 2n - 1)[n:(2n-1)]
 
 """
     boundary_parameterized_symmetry(domain::RegularPolygon{T}, t::T)
@@ -129,7 +129,7 @@ function interior_points_random(
         triangle_point = u1 * v + u2 * w
 
         # Randomize rotation
-        rotation = rand(rng, 0:domain.N-1)
+        rotation = rand(rng, 0:(domain.N-1))
 
         s, c = sincospi(T(2 * rotation // domain.N))
 
