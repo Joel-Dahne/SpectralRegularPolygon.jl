@@ -1,63 +1,37 @@
-polylog(s::Int, z::Union{Arblib.ArbOrRef,Arblib.AcbOrRef}) = Arblib.polylog!(zero(z), s, z)
-
-"""
-    polylog_disc(s::Int, z::Arblib.AcbOrRef)
-
-Compute `polylog(s, z)` assuming that `abs(z) <= 1`. It is intended to
-be used for `z` overlapping `1`, otherwise there are much more
-efficient methods.
-
-It uses the power series expansion at `z = 0` and bounds the tail by
-```
-sum(k -> 1 / k^s, N:Inf) = polygamma(1, N)
-```
-
-IMPROVE: The bound is very slowly converging. It might be sufficient
-for what we need though.
-"""
-function polylog_disc(s::Int, z::Arblib.AcbOrRef)
-    N = 10000
-
-    res = sum(1:(N-1)) do k
-        z^k / Arb(k)^s
-    end
-
-    tail = abs(Arblib.polygamma!(zero(z), one(z), Acb(N)))
-
-    return Arblib.add_error!(res, tail)
-end
-
 λ_disc() = ArbExtras.refine_root(besselj0, Arb((sqrt(Arf(5.7)), sqrt(Arf(5.8)))))^2
 
-function S(n::Int, p::Int, z::Union{Arblib.ArbOrRef,Arblib.AcbOrRef})
-    if p == 1
-        s = n + 1
-        if Arblib.contains(z, one(z))
-            # TODO: We here assume that this is only ever called with
-            # z in the unit disc.
-            return polylog_disc(s, z)
-        else
-            return polylog(s, z)
-        end
-    else
-        #@warn "S(n, p) not implemented for p = $p"
-        return zero(z)
-    end
+# c_2(z) = S(2, z) + S(2, conj(z))) / 2
+function c_2(z::Acb)
+    return real(mean_value_theorem_bound(z -> S(2, z), z))
 end
 
-function S(n::Int, z)
-    sum(1:(n-1)) do j
-        (-1)^(j - 1) * 2^(n - j) * S(j, n - j, z)
-    end
+# c_3(z) = (S(3, z) + S(3, conj(z))) / 2
+function c_3(z::Acb)
+    return real(mean_value_theorem_bound(z -> S(3, z), z))
 end
 
-c_2(z) = (S(2, z) + S(2, conj(z))) / 2
+# c_4(z) = -(S(2, z) - S(2, conj(z)))^2 / 8 + (S(4, z) + S(4, conj(z))) / 2
+function c_4(z::Acb)
+    S2_imag = imag(mean_value_theorem_bound(z -> S(2, z), z))
+    S4_real = real(mean_value_theorem_bound(z -> S(4, z), z))
 
-c_3(z) = (S(3, z) + S(3, conj(z))) / 2
+    return S2_imag^2 / 2 + S4_real
+end
 
-c_4(z) = -(S(2, z) - S(2, conj(z)))^2 / 8 + (S(4, z) + S(4, conj(z))) / 2
+#c_5(z) =
+#    (
+#        -(S(2, z) - S(2, conj(z))) * (S(3, z) - S(3, conj(z))) +
+#        2(S(5, z) + S(5, conj(z)) - 2λ_disc() * zeta(Arb(5)))
+#    ) / 4
+function c_5(z::Acb)
+    S2_imag = imag(mean_value_theorem_bound(z -> S(2, z), z))
+    S3_imag = imag(mean_value_theorem_bound(z -> S(3, z), z))
+    S5_real = real(mean_value_theorem_bound(z -> S(5, z), z))
 
-c_5(z) = (-(S(2, z) - S(2, conj(z))) + 2(S(5, z) + S(5, conj(z) - 2λ_disc() * zeta(5))))
+    return S2_imag * S3_imag + S5_real - λ_disc() * zeta(Arb(5))
+end
+_c_5_real(z) = S(5, z) - λ_disc() * zeta(Arb(5))
+_c_5_imag(z) = imag(S(2, z)) * imag(S(3, z))
 
 
 function g_dw3(w)
@@ -75,8 +49,7 @@ function V_3(z)
     return (λ^2 / 16 - λ + 2) * polylog(3, z) +
            (3λ - 12) * (
                log(1 - z)^2 * log(z) / 2 + log(1 - z) * polylog(2, 1 - z) -
-               polylog(3, 1 - z),
-               zeta(oftype(λ, 3)),
+               polylog(3, 1 - z) + zeta(oftype(λ, 3))
            ) +
            (λ - 4) * (
                -log(1 - z) / 6 * (oftype(λ, π)^2 + 6polylog(2, 1 - z)) +
@@ -93,8 +66,194 @@ function V_4(z)
            (2λ - 8) * polylog_2_1_1(z) +
            (6λ - 24) * polylog_1_2_1(z) +
            (14λ - 56) * polylog_1_1_2(z) +
-           2^4 * polylog_1_1_1(z) +
+           2^4 * polylog_1_1_1_1(z) +
            2λ * zeta(oftype(λ, 3)) * polylog(1, z)
+end
+
+V(l::Int, z) =
+    if l == 1
+        V_1(z)
+    elseif l == 2
+        V_2(z)
+    elseif l == 3
+        V_3(z)
+    elseif l == 4
+        V_4(z)
+    end
+
+function d_0(z, t)
+    return 1
+end
+
+function d_1(z, t)
+    λ = λ_disc()
+    return λ * log(t / z) / 4
+end
+
+function d_2(z, t)
+    λ = λ_disc()
+    return (1 // 64) * λ^2 * log(t / z)^2 +
+           (1 // 8) * λ * (log(t / z)^2 + 4 * polylog(2, t) - 4polylog_unsafe(2, z))
+end
+
+function d_3(z, t)
+    λ = λ_disc()
+    #z = Arblib.midpoint(Acb, z)
+
+    return λ^3 * log(t / z)^3 / 2304 +
+           (1 // 64) * λ^2 * log(t / z) * (log(t / z)^2 + 2S(2, t) - 2S(2, z)) +
+           (1 // 24) *
+           λ *
+           (
+               log(t / z)^3 +
+               6log(t / z) * S(2, t) +
+               6log(t / z) * S(2, conj(z)) +
+               6S(3, t) - 6S(3, z)
+           )
+end
+
+function d_3_p1(z, t)
+    λ = λ_disc()
+    return λ^3 * log(t / z)^3 / 2304 +
+           (1 // 64) * λ^2 * log(t / z) * (log(t / z)^2 + 2S(2, t) - 2S(2, z)) +
+           (1 // 24) *
+           λ *
+           (log(t / z)^3 + 6log(t / z) * S(2, t) + 6log(t / z) * S(2, conj(z)) + 6S(3, t))
+end
+
+function d_3_p2(z)
+    λ = λ_disc()
+    return (1 // 24) * λ * (-6S(3, z))
+end
+
+function d_3_part_1(z, t)
+    λ = λ_disc()
+    return λ^3 * log(t / z)^3 / 2304 +
+           (1 // 64) * λ^2 * log(t / z) * (log(t / z)^2 + 2S(2, t) - 2S(2, z)) +
+           (1 // 24) * λ * (log(t / z)^3 + 6log(t / z) * S(2, t) + 6S(3, t) - 6S(3, z))
+end
+
+function d_3_part_2(z, t)
+    λ = λ_disc()
+    return (1 // 24) * λ * 6log(t / z) * S(2, conj(z))
+end
+
+d(k::Int, z, t) =
+    if k == 0
+        d_0(z, t)
+    elseif k == 1
+        d_1(z, t)
+    elseif k == 2
+        d_2(z, t)
+    elseif k == 3
+        d_3(z, t)
+    end
+
+function integral_d_k_V_l(k::Int, l::Int, z::Acb)
+    a = 0.001Arblib.midpoint(Acb, z)
+    b = Arblib.midpoint(Acb, z)
+
+    # Integrate from 0 to a
+    # TODO: Implement this
+    res1 = zero(z)
+
+    # Integrate from a to b
+    # TODO: We need to verify analyticity for this to be correct,
+    # which we might not have.
+    if k == 3
+        res2_part1 = Arblib.integrate(
+            a,
+            b,
+            atol = 1e-8,
+            opts = Arblib.calc_integrate_opt_struct(0, 2_000, 0, 0, 0),
+        ) do t
+            d_3_p1(z, t) * V(l, t) / t
+        end
+
+        res2_part2 =
+            mean_value_theorem_bound(d_3_p2, z) * Arblib.integrate(
+                a,
+                b,
+                atol = 1e-8,
+                opts = Arblib.calc_integrate_opt_struct(0, 2_000, 0, 0, 0),
+            ) do t
+                V(l, t) / t
+            end
+
+        res2 = res2_part1 + res2_part2
+    else
+        res2 = Arblib.integrate(
+            a,
+            b,
+            atol = 1e-8,
+            opts = Arblib.calc_integrate_opt_struct(0, 2_000, 0, 1, 0),
+        ) do t
+            d(k, z, t) * V(l, t) / t
+        end
+    end
+
+    # Integrate from b to z by enclosing integrand on z and
+    # multiplying by radius.
+    # TODO: Verify that this is correct
+    if k == 3
+        res3_part1 = abs(z - b) * mean_value_theorem_bound(z) do z
+            d_3_part_1(z, z) * V(l, z) / z
+        end
+        res3_part2 = d_3_part_2(z, z) * V(l, z) / z
+
+        res3 = res3_part1 + res3_part2
+    else
+        res3 = abs(z - b) * mean_value_theorem_bound(z) do z
+            d(k, z, z) * V(l, z) / z
+        end
+    end
+
+    return res1 + res2 + res3
+end
+
+function integral_d_k_V_l_other_limit(k::Int, l::Int, z::Acb, b::Acb)
+    a = 0.001b
+
+    # Integrate from 0 to a
+    # TODO: Implement this
+    res1 = zero(z)
+
+    # Integrate from a to b
+    # TODO: We need to verify analyticity for this to be correct,
+    # which we might not have.
+    if k == 3
+        res2_part1 = Arblib.integrate(
+            a,
+            b,
+            atol = 1e-8,
+            opts = Arblib.calc_integrate_opt_struct(0, 2_000, 0, 0, 0),
+        ) do t
+            d_3_p1(z, t) * V(l, t) / t
+        end
+
+        res2_part2 =
+            mean_value_theorem_bound(d_3_p2, z) * Arblib.integrate(
+                a,
+                b,
+                atol = 1e-8,
+                opts = Arblib.calc_integrate_opt_struct(0, 2_000, 0, 0, 0),
+            ) do t
+                V(l, t) / t
+            end
+
+        res2 = res2_part1 + res2_part2
+    else
+        res2 = Arblib.integrate(
+            a,
+            b,
+            atol = 1e-8,
+            opts = Arblib.calc_integrate_opt_struct(0, 2_000, 0, 0, 0),
+        ) do t
+            d(k, z, t) * V(l, t) / t
+        end
+    end
+
+    return res1 + res2
 end
 
 function polylog_1_3(z)
@@ -121,13 +280,15 @@ function polylog_1_3(z)
 end
 
 function polylog_2_2(z)
-    return -Arb(π)^4 / 36 +
-           polylog(2, 1 - z)^2 +
-           (Arb(π)^2 / 6) * polylog(2, z) +
-           2 * log(z) * polylog(3, 1 - z) - 2 * log(z) * zeta(Arb(3)) - (
+    p1 =
+        -Arb(π)^4 / 36 +
+        polylog(2, 1 - z)^2 +
+        (Arb(π)^2 / 6) * polylog(2, z) +
+        2 * log(z) * polylog(3, 1 - z) - 2 * log(z) * zeta(Arb(3))
+    p2 = -(
         (11 * Arb(π)^4 / 360) +
         (1 // 12) * (
-            -3 * log(1/z)^4 - 4 * log(1 - z) * (log(1/z) - 2 * log(z)) -
+            -3 * log(1/z)^4 - 4 * log(1 - z)^3 * (log(1/z) - 2 * log(z)) -
             2 *
             log(1 - z) *
             (2 * Arb(π)^2 * log(1/z) + 6 * log(1/z)^3 + Arb(π)^2 * log(z)) -
@@ -135,7 +296,62 @@ function polylog_2_2(z)
             log(1 - z)^2 *
             (Arb(π)^2 + 6 * log(1/z)^2 - 6 * log(1/z) * log(z) - 3 * log(z)^2)
         ) +
-        1 // 2 * polylog(2, 1 - z)^2 - log(-1 + 1/z)^2 * polylog((z - 1)/z) +
+        1 // 2 * polylog(2, 1 - z)^2 - log(-1 + 1/z)^2 * polylog(2, (z - 1)/z) +
+        (log(-1 + 1/z)^2 + log(1 - z) * log(z)) * polylog(2, z) +
+        2 * (log(-1 + 1/z) + log(z)) * polylog(3, 1 - z) +
+        2 * log(-1 + 1/z) * polylog(3, (z - 1)/z) +
+        2 * log(1/z) * polylog(3, z) - 2 * polylog(4, 1 - z) -
+        2 * polylog(4, (z - 1) / z) + 2 * polylog(4, z)
+    )
+
+    p21 = -(
+        (11 * Arb(π)^4 / 360) +
+        (1 // 12) * (
+            -3 * log(1/z)^4 - 4 * log(1 - z)^3 * (log(1/z) - 2 * log(z)) -
+            2 *
+            log(1 - z) *
+            (2 * Arb(π)^2 * log(1/z) + 6 * log(1/z)^3 + Arb(π)^2 * log(z)) -
+            2 *
+            log(1 - z)^2 *
+            (Arb(π)^2 + 6 * log(1/z)^2 - 6 * log(1/z) * log(z) - 3 * log(z)^2)
+        )
+    )
+
+    p212 = -((
+        -3 * log(1/z)^4 - 4 * log(1 - z)^3 * (log(1/z) - 2 * log(z)) -
+        2 * log(1 - z) * (2 * Arb(π)^2 * log(1/z) + 6 * log(1/z)^3 + Arb(π)^2 * log(z)) -
+        2 *
+        log(1 - z)^2 *
+        (Arb(π)^2 + 6 * log(1/z)^2 - 6 * log(1/z) * log(z) - 3 * log(z)^2)
+    ))
+
+    p22 = -(
+        1 // 2 * polylog(2, 1 - z)^2 - log(-1 + 1/z)^2 * polylog(2, (z - 1)/z) +
+        (log(-1 + 1/z)^2 + log(1 - z) * log(z)) * polylog(2, z) +
+        2 * (log(-1 + 1/z) + log(z)) * polylog(3, 1 - z) +
+        2 * log(-1 + 1/z) * polylog(3, (z - 1)/z) +
+        2 * log(1/z) * polylog(3, z) - 2 * polylog(4, 1 - z) -
+        2 * polylog(4, (z - 1) / z) + 2 * polylog(4, z)
+    )
+
+    #@show p21
+    #@show p212
+
+    return -Arb(π)^4 / 36 +
+           polylog(2, 1 - z)^2 +
+           (Arb(π)^2 / 6) * polylog(2, z) +
+           2 * log(z) * polylog(3, 1 - z) - 2 * log(z) * zeta(Arb(3)) - (
+        -(11 * Arb(π)^4 / 360) +
+        (1 // 12) * (
+            -3 * log(1/z)^4 - 4 * log(1 - z)^3 * (log(1/z) - 2 * log(z)) -
+            2 *
+            log(1 - z) *
+            (2 * Arb(π)^2 * log(1/z) + 6 * log(1/z)^3 + Arb(π)^2 * log(z)) -
+            2 *
+            log(1 - z)^2 *
+            (Arb(π)^2 + 6 * log(1/z)^2 - 6 * log(1/z) * log(z) - 3 * log(z)^2)
+        ) +
+        1 // 2 * polylog(2, 1 - z)^2 - log(-1 + 1/z)^2 * polylog(2, (z - 1)/z) +
         (log(-1 + 1/z)^2 + log(1 - z) * log(z)) * polylog(2, z) +
         2 * (log(-1 + 1/z) + log(z)) * polylog(3, 1 - z) +
         2 * log(-1 + 1/z) * polylog(3, (z - 1)/z) +
@@ -166,148 +382,6 @@ function polylog_1_1_2(z)
 end
 
 function polylog_1_1_1_1(z)
-    return (1 // 24) * log(1 - z)^4
-end
-
-function polylog_1_3_v2(z)
-    return Arb(π)^4 / 360 +
-           (1 // 24) * (
-        -90 * polylog(2, 1 - z)^2 + 90 * polylog(2, z)^2 -
-        360 * log(z) * polylog(3, 1 - z) +
-        180 * log(z / (z - 1)) * polylog(3, 1 - z) +
-        180 * (log(1 - z) + log(z / (z - 1))) * polylog(3, z) +
-        180 * log(z / (z - 1)) * polylog(3, z / (z - 1)) +
-        360 * (log(z) - log(z / (z - 1)))^2 * polylog(2, 1 - z) +
-        360 * log(z) * (log(z) - 2 * log(1 - z) - 2 * log(z / (z - 1))) * polylog(2, z) -
-        360 * log(z / (z - 1))^2 * polylog(2, z / (z - 1)) + 360 * polylog(4, 1 - z) -
-        360 * polylog(4, z) - 360 * polylog(4, z / (z - 1)) - 360 * log(z) * zeta(Arb(3)) +
-        180 * log(z / (z - 1)) * zeta(Arb(3)) -
-        90 * (
-            -6 * log(1 - z)^2 * log(z)^2 + 8 * log(1 - z) * log(z)^3 + log(z)^4 -
-            12 * log(1 - z) * log(z)^2 * log(z / (z - 1)) -
-            4 * log(z)^3 * log(z / (z - 1)) + 6 * log(z)^2 * log(z / (z - 1))^2 -
-            4 * log(1 - z) * log(z / (z - 1))^3 - 4 * log(z) * log(z / (z - 1))^3 +
-            log(z / (z - 1))^4
-        )
-    )
-end
-
-function polylog_2_2_v2(z)
-    return -Arb(π)^4 / 36 +
-           polylog(2, 1 - z)^2 +
-           Arb(π)^2 / 6 * polylog(2, z) +
-           2 * log(z) * polylog(3, 1 - z) - 2 * log(z) * zeta(Arb(3)) - (
-        (11 * Arb(π)^4) // 360 +
-        (1 // 12) * (
-            -3 * log(1 / z)^4 - 4 * log(1 - z)^3 * (log(1 / z) - 2 * log(z)) -
-            2 *
-            log(1 - z) *
-            (2 * Arb(π)^2 * log(1 / z) + 6 * log(1 / z)^3 + Arb(π)^2 * log(z)) -
-            2 *
-            log(1 - z)^2 *
-            (Arb(π)^2 + 6 * log(1 / z)^2 - 6 * log(1 / z) * log(z) - 3 * log(z)^2)
-        ) +
-        (1 // 2) * polylog(2, 1 - z)^2 - log(-1 + 1 / z)^2 * polylog(2, (z - 1) / z) +
-        (log(-1 + 1 / z)^2 + log(1 - z) * log(z)) * polylog(2, z) +
-        2 * (log(-1 + 1 / z) + log(z)) * polylog(3, 1 - z) +
-        2 * log(-1 + 1 / z) * polylog(3, (z - 1) / z) +
-        2 * log(1 / z) * polylog(3, z) - 2 * polylog(4, 1 - z) -
-        2 * polylog(4, (z - 1) / z) + 2 * polylog(4, z)
-    )
-end
-
-function polylog_3_1_v2(z)
-    return -(1 // 2) * polylog(2, z)^2 - log(1 - z) * polylog(3, z)
-end
-
-function polylog_2_1_1_v2(z)
-    return Arb(π)^4 / 30 +
-           (1 // 12) * Arb(π)^2 * log(1 - z)^2 +
-           log(1 - z) * polylog(3, 1 - z) - 3 * polylog(4, 1 - z) +
-           2 * (-im * Arb(π) + log(z - 1)) * zeta(Arb(3))
-end
-
-function polylog_1_2_1_v2(z)
-    return -Arb(π)^4 / 30 +
-           (1 // 2) * log(1 - z)^2 * polylog(2, 1 - z) +
-           3 * polylog(4, 1 - z) - log(1 - z) * (2 * polylog(3, 1 - z) + zeta(Arb(3)))
-end
-
-function polylog_1_1_1_1_v2(z)
-    return (1 // 24) * log(1 - z)^4
-end
-
-function polylog_1_3_v3(z)
-    return Arb(π)^4 / 360 +
-           (1 // 24) * (
-        -90 * polylog(2, 1 - z)^2 + 90 * polylog(2, z)^2 -
-        360 * log(z) * polylog(3, 1 - z) +
-        180 * log(z / (z - 1)) * polylog(3, 1 - z) +
-        180 * (log(1 - z) + log(z / (z - 1))) * polylog(3, z) +
-        180 * log(z / (z - 1)) * polylog(3, z / (z - 1)) +
-        360 * (log(z) - log(z / (z - 1)))^2 * polylog(2, 1 - z) +
-        360 * log(z) * (log(z) - 2 * log(1 - z) - 2 * log(z / (z - 1))) * polylog(2, z) -
-        360 * log(z / (z - 1))^2 * polylog(2, z / (z - 1)) + 360 * polylog(4, 1 - z) -
-        360 * polylog(4, z) - 360 * polylog(4, z / (z - 1)) - 360 * log(z) * zeta(Arb(3)) +
-        180 * log(z / (z - 1)) * zeta(Arb(3)) -
-        90 * (
-            -6 * log(1 - z)^2 * log(z)^2 + 8 * log(1 - z) * log(z)^3 + log(z)^4 -
-            12 * log(1 - z) * log(z)^2 * log(z / (z - 1)) -
-            4 * log(z)^3 * log(z / (z - 1)) + 6 * log(z)^2 * log(z / (z - 1))^2 -
-            4 * log(1 - z) * log(z / (z - 1))^3 - 4 * log(z) * log(z / (z - 1))^3 +
-            log(z / (z - 1))^4
-        )
-    )
-end
-
-function polylog_2_2_v3(z)
-    return -Arb(π)^4 / 36 +
-           polylog(2, 1 - z)^2 +
-           (Arb(π)^2 / 6) * polylog(2, z) +
-           2 * log(z) * polylog(3, 1 - z) - 2 * log(z) * zeta(Arb(3)) - (
-               (11 * Arb(π)^4) / 360 +
-               (1 // 12) * (
-                   -3 * log(1 / z)^4 - 4 * log(1 - z)^3 * (log(1 / z) - 2 * log(z)) -
-                   2 *
-                   log(1 - z) *
-                   (2 * Arb(π)^2 * log(1 / z) + 6 * log(1 / z)^3 + Arb(π)^2 * log(z)) -
-                   2 *
-                   log(1 - z)^2 *
-                   (Arb(π)^2 + 6 * log(1 / z)^2 - 6 * log(1 / z) * log(z) - 3 * log(z)^2)
-               )
-           ) + (1 // 2) * polylog(2, 1 - z)^2 -
-           log(-1 + 1 / z)^2 * polylog(2, (z - 1) / z) +
-           (log(-1 + 1 / z)^2 + log(1 - z) * log(z)) * polylog(2, z) +
-           2 * (log(-1 + 1 / z) + log(z)) * polylog(3, 1 - z) +
-           2 * log(-1 + 1 / z) * polylog(3, (z - 1) / z) +
-           2 * log(1 / z) * polylog(3, z) - 2 * polylog(4, 1 - z) -
-           2 * polylog(4, (z - 1) / z) + 2 * polylog(4, z)
-end
-
-function polylog_3_1_v3(z)
-    return -1 // 2 * polylog(2, z)^2 - log(1 - z) * polylog(3, z)
-end
-
-function polylog_2_1_1_v3(z)
-    return Arb(π)^4 / 30 +
-           (1 // 12) * Arb(π)^2 * log(1 - z)^2 +
-           log(1 - z) * polylog(3, 1 - z) - 3 * polylog(4, 1 - z) +
-           2 * (-im * Arb(π) + log(z - 1)) * zeta(Arb(3))
-end
-
-function polylog_1_2_1_v3(z)
-    return -Arb(π)^4 / 30 +
-           (1 // 2) * log(1 - z)^2 * polylog(2, 1 - z) +
-           3 * polylog(4, 1 - z) - log(1 - z) * (2 * polylog(3, 1 - z) + zeta(Arb(3)))
-end
-
-function polylog_1_1_2_v3(z)
-    return Arb(π)^4 / 90 - (1 // 6) * log(1 - z)^3 * log(z) -
-           (1 // 2) * log(1 - z)^2 * polylog(2, 1 - z) + log(1 - z) * polylog(3, 1 - z) -
-           polylog(4, 1 - z)
-end
-
-function polylog_1_1_1_1_v3(z)
     return (1 // 24) * log(1 - z)^4
 end
 

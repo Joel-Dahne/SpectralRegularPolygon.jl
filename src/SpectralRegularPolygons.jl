@@ -12,7 +12,7 @@ import OhMyThreads
 import Optim
 import Random
 
-import Arblib: Arf, Arb, Acb, ArbSeries
+import Arblib: Arf, Arb, Acb, ArbSeries, AcbSeries
 import GeometryBasics: Point, Point2
 import SpecialFunctions: besselj, besselj0, besselj1, bessely0, bessely1, zeta, gamma
 
@@ -33,6 +33,8 @@ include("MPS/enclosing/eigenvalue.jl")
 
 include("precomputed_eigenvalues.jl")
 
+include("large_N/tools.jl")
+include("large_N/polylog.jl")
 include("large_N/section_2.1.jl")
 include("large_N/section_2.1_lemmas.jl")
 
