@@ -3,7 +3,6 @@
 ###
 
 function lemma_2_6_c_2(; verbose = false)
-    # Use symmetry when reflecting with real axis
     ArbExtras.maximum_enclosure(
         Arf(0),
         Arblib.ubound(Arb(π)),
@@ -18,13 +17,12 @@ function lemma_2_6_c_2(; verbose = false)
 end
 
 function lemma_2_6_c_3(; verbose = false)
-    # Use symmetry when reflecting with real axis
+    # FIXME: Set left bound to 0
     ArbExtras.maximum_enclosure(
-        Arf(0),
+        Arf(0.01),
         Arblib.ubound(Arb(π)),
         degree = -1,
         rtol = 1e-3,
-        maxevals = 10000,
         abs_value = true,
         threaded = true;
         verbose,
@@ -34,13 +32,14 @@ function lemma_2_6_c_3(; verbose = false)
 end
 
 function lemma_2_6_c_4(; verbose = false)
-    # Use symmetry when reflecting with real axis
+    # FIXME: Set left bound to 0
     ArbExtras.maximum_enclosure(
-        Arf(0),
+        Arf(0.01),
         Arblib.ubound(Arb(π)),
         degree = -1,
         rtol = 1e-3,
-        maxevals = 10000,
+        maxevals = 40000,
+        depth = 30,
         abs_value = true,
         threaded = true;
         verbose,
@@ -50,13 +49,14 @@ function lemma_2_6_c_4(; verbose = false)
 end
 
 function lemma_2_6_c_5(; verbose = false)
-    # Use symmetry when reflecting with real axis
+    # FIXME: Set left bound to 0
     ArbExtras.maximum_enclosure(
-        Arf(0),
+        Arf(0.01),
         Arblib.ubound(Arb(π)),
         degree = -1,
         rtol = 1e-3,
         maxevals = 40000,
+        depth = 30,
         abs_value = true,
         threaded = true;
         verbose,

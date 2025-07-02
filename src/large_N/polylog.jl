@@ -62,6 +62,30 @@ function S(n::Int, p::Int, z::Union{Arblib.ArbOrRef,Arblib.AcbOrRef,ArbSeries,Ac
     s = n + 1
     if p == 1
         return polylog_unsafe(s, z)
+    elseif n == 1 && p == 2
+        return polylog_1_2(z)
+    elseif n == 1 && p == 3
+        return polylog_1_1_2(z)
+    elseif n == 1 && p == 4
+        return polylog_1_1_1_2(z)
+    elseif n == 2 && p == 2
+        return polylog_1_3(z)
+    elseif false #n == 2 && p == 3
+        return polylog_1_1_3(z) # TODO: Implement this
+    elseif false #n == 2 && p == 3
+        return polylog_1_4(z) # TODO: Implement this
+    elseif n == 1
+        # TODO: We currently use hard coded versions above. It might
+        # or might not be beneficial to use this recurrence.
+
+        # Use recurrence relation from Proposition 2 in
+        # https://arxiv.org/pdf/1908.04770. Using that S(1, p, 1) =
+        # zeta(1 + p).
+        # TODO: Handle z overlapping one
+        # PROVE: The Proposition requires z != 1, but that doesn't seem required.
+        (-1)^p // factorial(p) * log(z) * log(1 - z)^p + zeta(Arb(1 + p)) - sum(0:(p-1)) do k
+            (-1)^k // factorial(k) * log(1 - z)^k * S(p - k, 1, 1 - z)
+        end
     elseif p == 2
         # FIXME: This is not rigorous and converges slowly for abs(z)
         # = 1. Should prefer to rewrite in terms of polylog using
@@ -70,12 +94,14 @@ function S(n::Int, p::Int, z::Union{Arblib.ArbOrRef,Arblib.AcbOrRef,ArbSeries,Ac
             z^(k₁ + 1) / k₁ * lerch_phi(z, s, k₁ + 1)
         end
     elseif p == 3
-        sum(1:100) do k₁
-            sum((k₁+1):101) do k₂
+        # FIXME: Same as above
+        sum(1:50) do k₁
+            sum((k₁+1):51) do k₂
                 z^(k₂ + 1) / k₂ * lerch_phi(z, s, k₂ + 1)
             end / k₁
         end
     elseif p == 4
+        # FIXME: Same as above
         sum(1:20) do k₁
             sum((k₁+1):21) do k₂
                 sum((k₂+1):22) do k₃
@@ -90,4 +116,117 @@ function S(n::Int, z)
     sum(1:(n-1)) do j
         (-1)^(j - 1) * 2^(n - j) * S(j, n - j, z)
     end
+end
+
+function polylog_1_3(z)
+    return -polylog(4, 1 - z) + polylog(4, z) + polylog(4, z / (z - 1)) -
+           polylog(3, z) * log(1 - z) + log(1 - z)^4 / factorial(4) -
+           log(z) * log(1 - z)^3 / factorial(3) +
+           zeta(Arb(2)) * log(1 - z)^2 / factorial(2) +
+           zeta(Arb(3)) * log(1 - z) +
+           zeta(Arb(4))
+end
+
+function polylog_1_3_v2(z)
+    return (1 // 360) * (
+               Arb(π)^4 +
+               15 * (
+                   -6 * log(1 - z)^2 * log(z)^2 + 8 * log(1 - z) * log(z)^3 + log(z)^4 -
+                   12 * log(1 - z) * log(z)^2 * log(-z / (-1 + z)) -
+                   4 * log(z)^3 * log(-z / (-1 + z)) + 6 * log(z)^2 * log(-z / (-1 + z))^2 -
+                   4 * log(1 / (1 - z)) * log(-z / (-1 + z))^3 -
+                   4 * log(z) * log(-z / (-1 + z))^3 +
+                   log(-z / (-1 + z))^4 +
+                   12 * (log(z) - log(-z / (-1 + z)))^2 * polylog(2, 1 - z) -
+                   12 * polylog(2, 1 - z)^2 +
+                   12 *
+                   log(z) *
+                   (log(z) - 2 * (log(1 - z) + log(-z / (-1 + z)))) *
+                   polylog(2, z) - 12 * log(-z / (-1 + z))^2 * polylog(2, z / (-1 + z)) -
+                   48 * log(z) * polylog(3, 1 - z) +
+                   24 * log(-z / (-1 + z)) * polylog(3, 1 - z) +
+                   24 * log(1 - z) * polylog(3, z) +
+                   24 * log(-z / (-1 + z)) * polylog(3, z) +
+                   24 * log(-z / (-1 + z)) * polylog(3, z / (-1 + z)) +
+                   24 * polylog(4, 1 - z) - 24 * polylog(4, z) -
+                   24 * polylog(4, z / (-1 + z)) + 24 * log(z) * zeta(Arb(3))
+               )
+           ) - (11 // 360) * Arb(π)^4 +
+           (1 // 12) * (
+               -3 * log(1 / z)^4 - 4 * log(1 - z)^3 * (log(1 / z) - 2 * log(z)) -
+               2 *
+               log(1 - z) *
+               (2 * Arb(π)^2 * log(1 / z) + 6 * log(1 / z)^3 + Arb(π)^2 * log(z)) -
+               2 *
+               log(1 - z)^2 *
+               (Arb(π)^2 + 6 * log(1 / z)^2 - 6 * log(1 / z) * log(z) - 3 * log(z)^2)
+           ) +
+           (1 // 2) * polylog(2, 1 - z)^2 - log(-1 + 1 / z)^2 * polylog(2, (-1 + z) / z) +
+           (log(-1 + 1 / z)^2 + log(1 - z) * log(z)) * polylog(2, z) +
+           2 * (log(-1 + 1 / z) + log(z)) * polylog(3, 1 - z) +
+           2 * log(-1 + 1 / z) * polylog(3, (-1 + z) / z) +
+           2 * log(1 / z) * polylog(3, z) - 2 * polylog(4, 1 - z) -
+           2 * polylog(4, (-1 + z) / z) + 2 * polylog(4, z)
+end
+
+function polylog_2_2(z)
+    return -Arb(π)^4 / 36 +
+           polylog(2, 1 - z)^2 +
+           (Arb(π)^2 / 6) * polylog(2, z) +
+           2 * log(z) * polylog(3, 1 - z) - 2 * log(z) * zeta(Arb(3)) - (
+        -(11 * Arb(π)^4 / 360) +
+        (1 // 12) * (
+            -3 * log(1/z)^4 - 4 * log(1 - z)^3 * (log(1/z) - 2 * log(z)) -
+            2 *
+            log(1 - z) *
+            (2 * Arb(π)^2 * log(1/z) + 6 * log(1/z)^3 + Arb(π)^2 * log(z)) -
+            2 *
+            log(1 - z)^2 *
+            (Arb(π)^2 + 6 * log(1/z)^2 - 6 * log(1/z) * log(z) - 3 * log(z)^2)
+        ) +
+        1 // 2 * polylog(2, 1 - z)^2 - log(-1 + 1/z)^2 * polylog(2, (z - 1)/z) +
+        (log(-1 + 1/z)^2 + log(1 - z) * log(z)) * polylog(2, z) +
+        2 * (log(-1 + 1/z) + log(z)) * polylog(3, 1 - z) +
+        2 * log(-1 + 1/z) * polylog(3, (z - 1)/z) +
+        2 * log(1/z) * polylog(3, z) - 2 * polylog(4, 1 - z) - 2 * polylog(4, (z - 1) / z) +
+        2 * polylog(4, z)
+    )
+end
+
+function polylog_3_1(z)
+    return -polylog(2, z)^2 / 2 - log(1 - z) * polylog(3, z)
+end
+
+function polylog_2_1_1(z)
+    return Arb(π)^4 / 30 + Arb(π)^2 / 12 * log(1 - z)^2 + log(1 - z) * polylog(3, 1 - z) -
+           3 * polylog(4, 1 - z) + 2 * (-Acb(0, π) + log(z - 1)) * zeta(Arb(3))
+end
+
+function polylog_1_2_1(z)
+    return -Arb(π)^4 / 30 +
+           1 // 2 * log(1 - z)^2 * polylog(2, 1 - z) +
+           3 * polylog(4, 1 - z) - log(1 - z) * (2 * polylog(3, 1 - z) + zeta(Arb(3)))
+end
+
+function polylog_1_1_2(z)
+    return Arb(π)^4 / 90 - (1 // 6) * log(1 - z)^3 * log(z) -
+           1 // 2 * log(1 - z)^2 * polylog(2, 1 - z) + log(1 - z) * polylog(3, 1 - z) -
+           polylog(4, 1 - z)
+end
+
+function polylog_1_1_1_1(z)
+    return (1 // 24) * log(1 - z)^4
+end
+
+function polylog_1_2(z)
+    return log(1 - z)^2 * log(z) / 2 + log(1 - z) * polylog(2, 1 - z) - polylog(3, 1 - z) +
+           zeta(Arb(3))
+end
+
+function polylog_1_1_1_2(z)
+    return 1 // 24 * (
+        log(1 - z)^4 * log(z) + 4log(1 - z)^3 * polylog(2, 1 - z) -
+        12log(1 - z)^2 * polylog(3, 1 - z) + 24log(1 - z) * polylog(4, 1 - z) -
+        24polylog(5, 1 - z)
+    )
 end
