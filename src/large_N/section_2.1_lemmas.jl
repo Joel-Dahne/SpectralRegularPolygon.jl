@@ -150,10 +150,11 @@ function lemma_2_10_d_k_V_l(k::Int, l::Int; verbose = false)
         a,
         Arblib.ubound(Arb(π)),
         degree = -1,
-        atol = 1e-1,
+        rtol = 1e-3,
+        ubound_tol = Arblib.ubound(res1),
         depth_start = 4,
         abs_value = true,
-        maxevals = 4096,
+        maxevals = 1000,
         threaded = true;
         verbose,
     ) do θ
