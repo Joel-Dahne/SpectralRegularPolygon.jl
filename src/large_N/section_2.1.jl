@@ -165,12 +165,21 @@ d(k::Int, z, t) =
     end
 
 function integral_d_k_V_l(k::Int, l::Int, z::Acb)
-    a = 0.001Arblib.midpoint(Acb, z)
+    a = 1e-5Arblib.midpoint(Acb, z)
     b = Arblib.midpoint(Acb, z)
 
     # Integrate from 0 to a
     # TODO: Implement proper version of this
-    res1 = Arblib.union(zero(a), a) * d(k, z, a) * V(l, a) / a
+    if k == 3
+        res1_part1 = mean_value_theorem_bound(z) do z
+            d_3_part_1(z, z) * V(l, z) / z
+        end
+        res1_part2 = d_3_part_2(z, z) * V(l, z) / z
+
+        res1 = Arblib.union(zero(a), a) * (res1_part1 + res1_part2)
+    else
+        res1 = Arblib.union(zero(a), a) * d(k, z, a) * V(l, a) / a
+    end
 
     # Integrate from a to b
     # TODO: We need to verify analyticity for this to be correct,
@@ -201,7 +210,7 @@ function integral_d_k_V_l(k::Int, l::Int, z::Acb)
             a,
             b,
             atol = 1e-8,
-            opts = Arblib.calc_integrate_opt_struct(0, 2_000, 0, 1, 0),
+            opts = Arblib.calc_integrate_opt_struct(0, 4_000, 0, 1, 0),
         ) do t
             d(k, z, t) * V(l, t) / t
         end
@@ -227,11 +236,20 @@ function integral_d_k_V_l(k::Int, l::Int, z::Acb)
 end
 
 function integral_d_k_V_l_other_limit(k::Int, l::Int, z::Acb, b::Acb)
-    a = 0.001b
+    a = 1e-5b
 
     # Integrate from 0 to a
-    # TODO: Implement this
-    res1 = zero(z)
+    # TODO: Implement proper version of this
+    if k == 3
+        res1_part1 = mean_value_theorem_bound(z) do z
+            d_3_part_1(z, z) * V(l, z) / z
+        end
+        res1_part2 = d_3_part_2(z, z) * V(l, z) / z
+
+        res1 = Arblib.union(zero(a), a) * (res1_part1 + res1_part2)
+    else
+        res1 = Arblib.union(zero(a), a) * d(k, z, a) * V(l, a) / a
+    end
 
     # Integrate from a to b
     # TODO: We need to verify analyticity for this to be correct,
@@ -262,7 +280,7 @@ function integral_d_k_V_l_other_limit(k::Int, l::Int, z::Acb, b::Acb)
             a,
             b,
             atol = 1e-8,
-            opts = Arblib.calc_integrate_opt_struct(0, 2_000, 0, 0, 0),
+            opts = Arblib.calc_integrate_opt_struct(0, 4_000, 0, 0, 0),
         ) do t
             d(k, z, t) * V(l, t) / t
         end
