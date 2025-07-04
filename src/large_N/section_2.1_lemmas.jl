@@ -99,7 +99,7 @@ function lemma_2_7(; verbose = false)
 
     verbose && @info "Bound on [$b, Inf] is $res2"
 
-    return res1, res2
+    return max(res1, res2)
 end
 
 ###
@@ -108,6 +108,8 @@ end
 
 function lemma_2_10_d_k_V_l(k::Int, l::Int; verbose = false)
     a = Arf(1e-3)
+
+    verbose && @info "Splitting interval [0, a] and [a, π]" a
 
     # Compute maximum on [0, a]
     res1 = let
@@ -124,15 +126,14 @@ function lemma_2_10_d_k_V_l(k::Int, l::Int; verbose = false)
         abs(real(term1 + term2))
     end
 
-    verbose && @info "Maximum for θ in [0, a]" a res1
-    return res1
+    verbose && @info "Maximum for θ in [0, a]" res1
+
     # Compute maximum on [a, π]
-    # PROVE: That we only have to consider [0, π]
     res2 = ArbExtras.maximum_enclosure(
         a,
         Arblib.ubound(Arb(π)),
         degree = -1,
-        rtol = 1e-3,
+        atol = 1e-1,
         depth_start = 4,
         abs_value = true,
         maxevals = 4096,
@@ -142,6 +143,8 @@ function lemma_2_10_d_k_V_l(k::Int, l::Int; verbose = false)
         z = exp(Acb(0, θ))
         real(integral_d_k_V_l(k, l, z))
     end
+
+    verbose && @info "Maximum for θ in [a, π]" res2
 
     return max(res1, res2)
 end
