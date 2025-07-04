@@ -98,44 +98,59 @@ end
 
 function d_3(z, t)
     λ = λ_disc()
-    #z = Arblib.midpoint(Acb, z)
 
-    return λ^3 * log(t / z)^3 / 2304 +
-           (1 // 64) * λ^2 * log(t / z) * (log(t / z)^2 + 2S(2, t) - 2S(2, z)) +
-           (1 // 24) *
-           λ *
-           (
-               log(t / z)^3 +
-               6log(t / z) * S(2, t) +
-               6log(t / z) * S(2, conj(z)) +
-               6S(3, t) - 6S(3, z)
-           )
+    # NOTE: This is an alternative formulation that is SLIGHTLY better
+    # than the version in the paper.
+    return λ / 4 * (
+        log(t / z) * (
+            (λ^2 / 576 + (1 // 16) * λ + 1 // 6) * log(t / z)^2 +
+            ((1 // 8) * λ + 1) * S(2, t) - (1 // 8) * λ * S(2, z) + S(2, conj(z))
+        ) + S(3, t) - S(3, z)
+    )
+
+    # This is the version in the paper
+    #return λ^3 * log(t / z)^3 / 2304 +
+    #       (1 // 64) * λ^2 * log(t / z) * (log(t / z)^2 + 2S(2, t) - 2S(2, z)) +
+    #       (1 // 24) *
+    #       λ *
+    #       (
+    #           log(t / z)^3 + 6log(t / z) * S(2, t) + 6log(t / z) * S(2, conj(z)) + 6S(3, t) -
+    #           6S(3, z)
+    #       )
 end
 
+# Part of d_3 depending on both z and t
 function d_3_p1(z, t)
     λ = λ_disc()
-    return λ^3 * log(t / z)^3 / 2304 +
-           (1 // 64) * λ^2 * log(t / z) * (log(t / z)^2 + 2S(2, t) - 2S(2, z)) +
-           (1 // 24) *
-           λ *
-           (log(t / z)^3 + 6log(t / z) * S(2, t) + 6log(t / z) * S(2, conj(z)) + 6S(3, t))
+    return λ / 4 * (
+        log(t / z) * (
+            (λ^2 / 576 + (1 // 16) * λ + 1 // 6) * log(t / z)^2 +
+            ((1 // 8) * λ + 1) * S(2, t) - (1 // 8) * λ * S(2, z) + S(2, conj(z))
+        ) + S(3, t)
+    )
 end
 
+# Part of d_3 depending only on z
 function d_3_p2(z)
     λ = λ_disc()
-    return (1 // 24) * λ * (-6S(3, z))
+    return -λ / 4 * S(3, z)
 end
 
+# Part of d_3 analytic in z
 function d_3_part_1(z, t)
     λ = λ_disc()
-    return λ^3 * log(t / z)^3 / 2304 +
-           (1 // 64) * λ^2 * log(t / z) * (log(t / z)^2 + 2S(2, t) - 2S(2, z)) +
-           (1 // 24) * λ * (log(t / z)^3 + 6log(t / z) * S(2, t) + 6S(3, t) - 6S(3, z))
+    return λ / 4 * (
+        log(t / z) * (
+            (λ^2 / 576 + (1 // 16) * λ + 1 // 6) * log(t / z)^2 +
+            ((1 // 8) * λ + 1) * S(2, t) - (1 // 8) * λ * S(2, z)
+        ) + S(3, t) - S(3, z)
+    )
 end
 
+# Part of d_3 analytic in conj(z)
 function d_3_part_2(z, t)
     λ = λ_disc()
-    return (1 // 24) * λ * 6log(t / z) * S(2, conj(z))
+    return λ / 4 * log(t / z) * S(2, conj(z))
 end
 
 d(k::Int, z, t) =
