@@ -66,15 +66,32 @@ function lemma_2_6_c_5(; verbose = false)
 end
 
 function lemma_2_6_T_2(; verbose = false)
-    # TODO: Implement this
+    return indeterminate(Arb)
 end
 
 function lemma_2_6_T_4(; verbose = false)
-    # TODO: Implement this
+    return indeterminate(Arb)
 end
 
 function lemma_2_6_T_6(; verbose = false)
-    # TODO: Implement this
+    return indeterminate(Arb)
+end
+
+function lemma_2_6(; verbose = false)
+    c_2_bound = lemma_2_6_c_2(; verbose)
+    c_3_bound = lemma_2_6_c_3(; verbose)
+    c_4_bound = lemma_2_6_c_4(; verbose)
+    c_5_bound = indeterminate(Arb) # lemma_2_6_c_5(; verbose)
+
+    c_bounds = [c_2_bound, c_3_bound, c_4_bound, c_5_bound]
+
+    T_2_bound = lemma_2_6_T_2(; verbose)
+    T_4_bound = lemma_2_6_T_2(; verbose)
+    T_6_bound = lemma_2_6_T_2(; verbose)
+
+    T_bounds = [T_2_bound, T_4_bound, T_6_bound]
+
+    return c_bounds, T_bounds
 end
 
 ###
