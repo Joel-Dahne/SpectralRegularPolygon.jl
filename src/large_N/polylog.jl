@@ -141,6 +141,7 @@ function S(n::Int, z)
     end
 end
 
+# NOTE: This is note the same version as in the paper
 function polylog_1_3(z)
     return -polylog(4, 1 - z) + polylog(4, z) + polylog(4, inv(1 - 1 / z)) -
            polylog(3, z) * log(1 - z) + log(1 - z)^4 / factorial(4) -
@@ -192,19 +193,16 @@ function polylog_1_3_v2(z)
            2 * polylog(4, (-1 + z) / z) + 2 * polylog(4, z)
 end
 
+# NOTE: This is not quite the same version as in the paper, it is
+# slightly improved for better enclosures.
 function polylog_2_2(z)
-    return -Arb(π)^4 / 36 +
-           polylog(2, 1 - z)^2 +
-           (Arb(π)^2 / 6) * polylog(2, z) - 2 * log(z) * zeta(Arb(3)) - (
+    return -Arb(π)^4 / 36 + polylog(2, 1 - z)^2 + (Arb(π)^2 / 6) * polylog(2, z) -
+           2 * log(z) * zeta(Arb(3)) - (
         -(11 * Arb(π)^4 / 360) +
         (1 // 12) * (
             -3 * log(z)^4 - 4 * log(1 - z)^3 * (-3log(z)) -
-            2 *
-            log(1 - z) *
-            (-Arb(π)^2 * log(z) - 6 * log(z)^3) -
-            2 *
-            log(1 - z)^2 *
-            (Arb(π)^2 + 12 * log(z)^2 - 3 * log(z)^2)
+            2 * log(1 - z) * (-Arb(π)^2 * log(z) - 6 * log(z)^3) -
+            2 * log(1 - z)^2 * (Arb(π)^2 + 12 * log(z)^2 - 3 * log(z)^2)
         ) +
         1 // 2 * polylog(2, 1 - z)^2 - log(-1 + 1 / z)^2 * polylog(2, 1 - 1 / z) +
         (log(-1 + 1/z)^2 + log(1 - z) * log(z)) * polylog(2, z) +
@@ -241,9 +239,13 @@ function polylog_1_1_1_1(z)
 end
 
 function polylog_1_2(z)
-    # TODO: Allow evaluation around z = 1
-    return log(1 - z)^2 * log(z) / 2 + log(1 - z) * polylog(2, 1 - z) - polylog(3, 1 - z) +
-           zeta(Arb(3))
+    if z isa Arblib.AcbOrRef && Arblib.contains(z, Acb(1))
+        # TODO: Allow evaluation around z = 1
+        return indeterminate(z)
+    else
+        return log(1 - z)^2 * log(z) / 2 + log(1 - z) * polylog(2, 1 - z) -
+               polylog(3, 1 - z) + zeta(Arb(3))
+    end
 end
 
 function polylog_1_1_1_2(z)
