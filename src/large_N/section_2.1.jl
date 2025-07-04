@@ -49,11 +49,11 @@ function V_3(z)
     return (λ^2 / 16 - λ + 2) * polylog(3, z) +
            (3λ - 12) * (
                log(1 - z)^2 * log(z) / 2 + log(1 - z) * polylog(2, 1 - z) -
-               polylog(3, 1 - z) + zeta(oftype(λ, 3))
+               polylog(3, 1 - z) + zeta(Arb(3))
            ) +
            (λ - 4) * (
-               -log(1 - z) / 6 * (oftype(λ, π)^2 + 6polylog(2, 1 - z)) +
-               2polylog(3, 1 - z) - 2zeta(oftype(λ, 3))
+               -log(1 - z) / 6 * (Arb(π)^2 + 6polylog(2, 1 - z)) + 2polylog(3, 1 - z) -
+               2zeta(Arb(3))
            ) - 4log(1 - z)^3 / 3
 end
 
@@ -67,7 +67,7 @@ function V_4(z)
            (6λ - 24) * polylog_1_2_1(z) +
            (14λ - 56) * polylog_1_1_2(z) +
            2^4 * polylog_1_1_1_1(z) +
-           2λ * zeta(oftype(λ, 3)) * polylog(1, z)
+           2λ * zeta(Arb(3)) * polylog(1, z)
 end
 
 V(l::Int, z) =
@@ -154,8 +154,8 @@ function integral_d_k_V_l(k::Int, l::Int, z::Acb)
     b = Arblib.midpoint(Acb, z)
 
     # Integrate from 0 to a
-    # TODO: Implement this
-    res1 = zero(z)
+    # TODO: Implement proper version of this
+    res1 = Arblib.union(zero(a), a) * d(k, z, a) * V(l, a) / a
 
     # Integrate from a to b
     # TODO: We need to verify analyticity for this to be correct,
