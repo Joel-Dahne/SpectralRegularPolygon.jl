@@ -1,4 +1,22 @@
-polylog(s::Int, z::Union{Arblib.ArbOrRef,Arblib.AcbOrRef}) = Arblib.polylog!(zero(z), s, z)
+_polylog(s::Int, z::Union{Arblib.ArbOrRef,Arblib.AcbOrRef}) = Arblib.polylog!(zero(z), s, z)
+
+function _polylog(s::Int, z::Union{ArbSeries,AcbSeries})
+
+end
+
+function polylog(s::Int, z::Union{Arblib.ArbOrRef,Arblib.AcbOrRef})
+    if iswide(z) && !Arblib.contains_zero(z)
+        # Explicit use of mean value theorem
+        z_mid = Arblib.midpoint(Arblib._nonreftype(typeof(z)), z)
+
+        f_mid = _polylog(s, z_mid)
+        df = _polylog(s - 1, z) / z
+
+        return Arblib.add_error(f_mid, abs(df) * abs(z - z_mid))
+    else
+        return _polylog(s, z)
+    end
+end
 
 function polylog(s::Int, z::Union{ArbSeries,AcbSeries})
     z0 = z[0]
@@ -10,7 +28,11 @@ function polylog(s::Int, z::Union{ArbSeries,AcbSeries})
         res[1] = polylog(s - 1, z0) / z0
 
         if length(z) > 2
-            error("not implemented")
+            res[2] = (polylog(s - 2, z0) / z0 - res[1]) / 2z0
+
+            if length(z) > 3
+                error("not implemented")
+            end
         end
     end
 
@@ -83,7 +105,8 @@ function S(n::Int, p::Int, z::Union{Arblib.ArbOrRef,Arblib.AcbOrRef,ArbSeries,Ac
         # zeta(1 + p).
         # TODO: Handle z overlapping one
         # PROVE: The Proposition requires z != 1, but that doesn't seem required.
-        (-1)^p // factorial(p) * log(z) * log(1 - z)^p + zeta(Arb(1 + p)) - sum(0:(p-1)) do k
+        (-1)^p // factorial(p) * log(z) * log(1 - z)^p + zeta(Arb(1 + p)) -
+        sum(0:(p-1)) do k
             (-1)^k // factorial(k) * log(1 - z)^k * S(p - k, 1, 1 - z)
         end
     elseif p == 2
@@ -119,7 +142,7 @@ function S(n::Int, z)
 end
 
 function polylog_1_3(z)
-    return -polylog(4, 1 - z) + polylog(4, z) + polylog(4, z / (z - 1)) -
+    return -polylog(4, 1 - z) + polylog(4, z) + polylog(4, inv(1 - 1 / z)) -
            polylog(3, z) * log(1 - z) + log(1 - z)^4 / factorial(4) -
            log(z) * log(1 - z)^3 / factorial(3) +
            zeta(Arb(2)) * log(1 - z)^2 / factorial(2) +
@@ -172,23 +195,22 @@ end
 function polylog_2_2(z)
     return -Arb(π)^4 / 36 +
            polylog(2, 1 - z)^2 +
-           (Arb(π)^2 / 6) * polylog(2, z) +
-           2 * log(z) * polylog(3, 1 - z) - 2 * log(z) * zeta(Arb(3)) - (
+           (Arb(π)^2 / 6) * polylog(2, z) - 2 * log(z) * zeta(Arb(3)) - (
         -(11 * Arb(π)^4 / 360) +
         (1 // 12) * (
-            -3 * log(1/z)^4 - 4 * log(1 - z)^3 * (log(1/z) - 2 * log(z)) -
+            -3 * log(z)^4 - 4 * log(1 - z)^3 * (-3log(z)) -
             2 *
             log(1 - z) *
-            (2 * Arb(π)^2 * log(1/z) + 6 * log(1/z)^3 + Arb(π)^2 * log(z)) -
+            (-Arb(π)^2 * log(z) - 6 * log(z)^3) -
             2 *
             log(1 - z)^2 *
-            (Arb(π)^2 + 6 * log(1/z)^2 - 6 * log(1/z) * log(z) - 3 * log(z)^2)
+            (Arb(π)^2 + 12 * log(z)^2 - 3 * log(z)^2)
         ) +
-        1 // 2 * polylog(2, 1 - z)^2 - log(-1 + 1/z)^2 * polylog(2, (z - 1)/z) +
+        1 // 2 * polylog(2, 1 - z)^2 - log(-1 + 1 / z)^2 * polylog(2, 1 - 1 / z) +
         (log(-1 + 1/z)^2 + log(1 - z) * log(z)) * polylog(2, z) +
-        2 * (log(-1 + 1/z) + log(z)) * polylog(3, 1 - z) +
-        2 * log(-1 + 1/z) * polylog(3, (z - 1)/z) +
-        2 * log(1/z) * polylog(3, z) - 2 * polylog(4, 1 - z) - 2 * polylog(4, (z - 1) / z) +
+        2 * log(-1 + 1/z) * polylog(3, 1 - z) +
+        2 * log(-1 + 1/z) * polylog(3, 1 - 1 / z) +
+        -2 * log(z) * polylog(3, z) - 2 * polylog(4, 1 - z) - 2 * polylog(4, 1 - 1 / z) +
         2 * polylog(4, z)
     )
 end
@@ -219,6 +241,7 @@ function polylog_1_1_1_1(z)
 end
 
 function polylog_1_2(z)
+    # TODO: Allow evaluation around z = 1
     return log(1 - z)^2 * log(z) / 2 + log(1 - z) * polylog(2, 1 - z) - polylog(3, 1 - z) +
            zeta(Arb(3))
 end
