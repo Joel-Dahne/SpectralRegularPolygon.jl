@@ -4,6 +4,33 @@ function _polylog(s::Int, z::Union{ArbSeries,AcbSeries})
 
 end
 
+"""
+    _polylog_unitdisc(s::Int, z::Arblib.AcbOrRef)
+
+Compute `polylog(s, z)` assuming that `abs(z) <= 1`. It is intended to
+be used for `z` overlapping `1`, otherwise there are much more
+efficient methods.
+
+It uses the power series expansion at `z = 0` and bounds the tail by
+```
+sum(k -> 1 / k^s, N:Inf) = polygamma(1, N)
+```
+
+IMPROVE: The bound is very slowly converging. It might be sufficient
+for what we need though.
+"""
+function _polylog_unitdisc(s::Int, z::Arblib.AcbOrRef)
+    N = 10000
+
+    res = sum(1:(N-1)) do k
+        z^k / Arb(k)^s
+    end
+
+    tail = abs(Arblib.polygamma!(zero(z), one(z), Acb(N)))
+
+    return Arblib.add_error!(res, tail)
+end
+
 function polylog(s::Int, z::Union{Arblib.ArbOrRef,Arblib.AcbOrRef})
     if iswide(z) && !Arblib.contains_zero(z)
         # Explicit use of mean value theorem
@@ -40,50 +67,85 @@ function polylog(s::Int, z::Union{ArbSeries,AcbSeries})
 end
 
 """
-    polylog_disc(s::Int, z::Arblib.AcbOrRef)
+    polylog_unitdisc(s::Int, z::Arblib.AcbOrRef)
 
-Compute `polylog(s, z)` assuming that `abs(z) <= 1`. It is intended to
-be used for `z` overlapping `1`, otherwise there are much more
-efficient methods.
-
-It uses the power series expansion at `z = 0` and bounds the tail by
-```
-sum(k -> 1 / k^s, N:Inf) = polygamma(1, N)
-```
-
-IMPROVE: The bound is very slowly converging. It might be sufficient
-for what we need though.
+Compute `polylog(s, z)` assuming that `abs(z) <= 1`. If `z` overlaps
+`1` it uses the (slowly converging) series expansion at zero through
+`_polylog_unitdisc`, otherwise it falls back to `polylog`.
 """
-function polylog_disc(s::Int, z::Arblib.AcbOrRef)
-    N = 10000
-
-    res = sum(1:(N-1)) do k
-        z^k / Arb(k)^s
-    end
-
-    tail = abs(Arblib.polygamma!(zero(z), one(z), Acb(N)))
-
-    return Arblib.add_error!(res, tail)
-end
-
-function polylog_unsafe(s::Int, z::Union{Arblib.ArbOrRef,Arblib.AcbOrRef})
+function polylog_unitdisc(s::Int, z::Union{Arblib.ArbOrRef,Arblib.AcbOrRef})
     if Arblib.contains(z, one(z))
         # TODO: We here assume that this is only ever called with
         # z in the unit disc.
-        return polylog_disc(s, z)
+        return _polylog_unitdisc(s, z)
     else
         return polylog(s, z)
     end
 end
 
-polylog_unsafe(s::Int, z) = polylog(s, z)
+polylog_unitdisc(s::Int, z) = polylog(s, z)
 
 lerch_phi(z::Acb, s::Int, a::Int) = Arblib.dirichlet_lerch_phi!(zero(z), z, Acb(s), Acb(a))
 
 function S(n::Int, p::Int, z::Union{Arblib.ArbOrRef,Arblib.AcbOrRef,ArbSeries,AcbSeries})
     s = n + 1
     if p == 1
-        return polylog_unsafe(s, z)
+        return polylog(s, z)
+    elseif n == 1 && p == 2
+        return polylog_1_2(z)
+    elseif n == 1 && p == 3
+        return polylog_1_1_2(z)
+    elseif n == 1 && p == 4
+        return polylog_1_1_1_2(z)
+    elseif n == 2 && p == 2
+        return polylog_1_3(z)
+    elseif false #n == 2 && p == 3
+        return polylog_1_1_3(z) # TODO: Implement this
+    elseif false #n == 2 && p == 3
+        return polylog_1_4(z) # TODO: Implement this
+    elseif n == 1
+        # TODO: We currently use hard coded versions above. It might
+        # or might not be beneficial to use this recurrence.
+
+        # Use recurrence relation from Proposition 2 in
+        # https://arxiv.org/pdf/1908.04770. Using that S(1, p, 1) =
+        # zeta(1 + p).
+        # TODO: Handle z overlapping one
+        # PROVE: The Proposition requires z != 1, but that doesn't seem required.
+        (-1)^p // factorial(p) * log(z) * log(1 - z)^p + zeta(Arb(1 + p)) -
+        sum(0:(p-1)) do k
+            (-1)^k // factorial(k) * log(1 - z)^k * S(p - k, 1, 1 - z)
+        end
+    elseif p == 2
+        # FIXME: This is not rigorous and converges slowly for abs(z)
+        # = 1. Should prefer to rewrite in terms of polylog using
+        # recurrence.
+        sum(1:1000) do k₁
+            z^(k₁ + 1) / k₁ * lerch_phi(z, s, k₁ + 1)
+        end
+    elseif p == 3
+        # FIXME: Same as above
+        sum(1:50) do k₁
+            sum((k₁+1):51) do k₂
+                z^(k₂ + 1) / k₂ * lerch_phi(z, s, k₂ + 1)
+            end / k₁
+        end
+    elseif p == 4
+        # FIXME: Same as above
+        sum(1:20) do k₁
+            sum((k₁+1):21) do k₂
+                sum((k₂+1):22) do k₃
+                    z^(k₃ + 1) / k₃ * lerch_phi(z, s, k₃ + 1)
+                end / k₂
+            end / k₁
+        end
+    end
+end
+
+function S_unitdisc(n::Int, p::Int, z::Union{Arblib.ArbOrRef,Arblib.AcbOrRef})
+    s = n + 1
+    if p == 1
+        return polylog_unitdisc(s, z)
     elseif n == 1 && p == 2
         return polylog_1_2(z)
     elseif n == 1 && p == 3
@@ -138,6 +200,12 @@ end
 function S(n::Int, z)
     sum(1:(n-1)) do j
         (-1)^(j - 1) * 2^(n - j) * S(j, n - j, z)
+    end
+end
+
+function S_unitdisc(n::Int, z::Acb)
+    sum(1:(n-1)) do j
+        (-1)^(j - 1) * 2^(n - j) * S_unitdisc(j, n - j, z)
     end
 end
 

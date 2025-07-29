@@ -1,8 +1,124 @@
 λ_disc() = ArbExtras.refine_root(besselj0, Arb((sqrt(Arf(5.7)), sqrt(Arf(5.8)))))^2
+function λ_approx(inv_N::Arb)
+    λ = λ_disc()
+    return λ * (1 + 4zeta(Arb(3)) * inv_N^3 + (12 - 2λ) * zeta(Arb(5)) * inv_N^5)
+end
+λ_approx_div_λ(inv_N::Union{Arb,ArbSeries}) =
+    1 + 4zeta(Arb(3)) * inv_N^3 + (12 - 2λ_disc()) * zeta(Arb(5)) * inv_N^5
+
+# IMPROVE: We could cache this value
+# Enclosure of (sqrt(λ_approx / λ) - 1) * N^3 for N >= N₀.
+function sqrt_λ_approx_div_λ_remainder_N3(N₀::Int)
+    N_max = 100
+    λ = λ_disc()
+    # Compute enclosure for N from N₀ to N_max
+    values = map(N₀:(N_max-1)) do N
+        inv_N = Arb(1 // N)
+        (sqrt(λ_approx_div_λ(inv_N)) - 1) / inv_N^3
+    end
+    res1 = foldl(Arblib.union, values)
+
+    # Compute enclosure for N >= N_max
+    res2 = fx_div_x(Arb((0, 1 // N_max)), 3) do inv_N
+        sqrt(λ_approx_div_λ(inv_N)) - 1
+    end
+
+    return Arblib.union(res1, res2)
+end
+
+# IMPROVE: We could cache this value
+# Enclosure of (sqrt(λ_approx / λ) - ...) * N^6 for N >= N₀,
+# where ... denotes the first three terms in the expansion of
+# sqrt(λ_approx / λ) in inv(N).
+function sqrt_λ_approx_div_λ_remainder_N6(N₀::Int)
+    N_max = 1000
+    λ = λ_disc()
+    # Compute enclosure for N from N₀ to N_max
+    values = map(N₀:(N_max-1)) do N
+        inv_N = Arb(1 // N)
+        (
+            sqrt(λ_approx_div_λ(inv_N)) - 1 - 2zeta(Arb(3)) * inv_N^3 -
+            (6 - λ) * zeta(Arb(5)) * inv_N^5
+        ) / inv_N^6
+    end
+    res1 = foldl(Arblib.union, values)
+
+    # Compute enclosure for N >= N_max
+    res2 = fx_div_x(Arb((0, 1 // N_max)), 6, force = true) do inv_N
+        sqrt(λ_approx_div_λ(inv_N)) - 1 - 2zeta(Arb(3)) * inv_N^3 -
+        (6 - λ) * zeta(Arb(5)) * inv_N^5
+    end
+
+    return Arblib.union(res1, res2)
+end
+
+# c_N but computed using rgamma instead of gamma since that gives
+# better enclosures.
+_c_N(inv_N::Union{Arb,ArbSeries}) = sqrt(
+    (rgamma(1 + inv_N)^2 * rgamma(1 - 2inv_N)) / (rgamma(1 - inv_N)^2 * rgamma(1 + 2inv_N)),
+)
+
+# IMPROVE: We could cache this value
+# Enclosure of (c_N - 1) * N^3 for N >= N₀
+function c_N_remainder_mul_N3(N₀::Int)
+    N_max = 10000
+    # Compute enclosure for N from N₀ to N_max
+    values = map(N₀:(N_max-1)) do N
+        (_c_N(Arb(1 // N)) - 1) * N^3
+    end
+    res1 = foldl(Arblib.union, values)
+    # Compute enclosure for N >= N_max
+    res2 = fx_div_x(Arb((0, 1 // N_max)), 3, force = true) do inv_N
+        _c_N(inv_N) - 1
+    end
+
+    return Arblib.union(res1, res2)
+end
+
+# IMPROVE: We could cache this value
+# Enclosure of (c_N - ...) * N^6 for N >= N₀, where ... denotes the
+# first three terms in the expansion of c_N in inv(N).
+function c_N_remainder_mul_N6(N₀::Int)
+    N_max = 20000
+    # Compute enclosure for N from N₀ to N_max
+    values = map(N₀:(N_max-1)) do N
+        inv_N = Arb(1 // N)
+        (_c_N(inv_N) - 1 + 2zeta(Arb(3)) * inv_N^3 + 6zeta(Arb(5)) * inv_N^5) / inv_N^6
+    end
+    res1 = foldl(Arblib.union, values)
+
+    # Compute enclosure for N >= N_max
+    res2 = fx_div_x(Arb((0, 1 // N_max)), 6, force = true) do inv_N
+        _c_N(inv_N) - 1 + 2zeta(Arb(3)) * inv_N^3 + 6zeta(Arb(5)) * inv_N^5
+    end
+
+    return Arblib.union(res1, res2)
+end
+
+# Enclosure of C_N for N >= N₀
+c_N(N₀::Int) = 1 + c_N_remainder_mul_N3(N₀) * Arb((0, 1 // N₀))^3
+
+function F_N_sub_1_mul_N(inv_N::Arb, z::Acb)
+    a = Acb(1e-8) # FIXME
+
+    return Arblib.integrate(a, 1) do t
+        t^inv_N * ((1 - t * z)^-2inv_N - 1) / t
+    end
+end
+
+function F_N(inv_N::Arb, z::Acb)
+    return 1 + inv_N * F_N_sub_1_mul_N(inv_N, z)
+end
 
 # c_2(z) = S(2, z) + S(2, conj(z))) / 2
+# NOTE: This assumes that abs(z) == 1
 function c_2(z::Acb)
-    return real(mean_value_theorem_bound(z -> S(2, z), z))
+    if Arblib.contains(z, Acb(1, 0))
+        # Input overlaps branch cut
+        return real(S_unitdisc(2, z))
+    else
+        return real(mean_value_theorem_bound(z -> S(2, z), z))
+    end
 end
 
 # c_3(z) = (S(3, z) + S(3, conj(z))) / 2
@@ -33,6 +149,128 @@ end
 _c_5_real(z) = S(5, z) - λ_disc() * zeta(Arb(5))
 _c_5_imag(z) = imag(S(2, z)) * imag(S(3, z))
 
+function T_2_bound(N₀::Int)
+    # Compute all parts not depending on z
+    inv_N = Arb((0, 1 // N₀))
+
+    # (c_N - 1) * N^2
+    factor_part1 = c_N_remainder_mul_N3(N₀) * inv_N
+
+    # (4zeta(3) / N + (12 - 2λ) * zeta(5) / N^3) * c_N
+    # IMPROVE: We can move some of the N to c_N to get better
+    # enclosures.
+    factor_part2 =
+        (4zeta(Arb(3)) * inv_N + (12 - 2λ_disc()) * zeta(Arb(5)) * inv_N^3) * c_N(N₀)
+
+    factor = factor_part1 + factor_part2
+
+    return z -> let
+        # Bound of main term
+        part1 = let
+            a = Acb(1e-8) # FIXME
+
+            Arblib.integrate(
+                a,
+                1,
+                atol = 1e-4,
+                opts = Arblib.calc_integrate_opt_struct(0, 2_000, 0, 0, 0),
+            ) do t
+                fx_div_x(Acb(inv_N), extra_degree = 2) do inv_N
+                    t^inv_N * ((1 - t * z)^-2inv_N - 1)
+                end / t
+                #let inv_N = Arb(1 // 26)
+                #    t^inv_N * ((1 - t * z)^-2inv_N - 1) / t / inv_N
+                #end
+            end
+        end
+
+        # Enclosure of other term
+        part2 = factor * F_N(inv_N, z)
+
+        return abs(part1) + abs(part2)
+    end
+end
+
+# Simplified version of T_2. It is just (F_N(z) - 1) * N^2
+function T_2_simplified(inv_N::Arb, z::Acb)
+    #return F_N_sub_1_mul_N(inv_N, z) / inv_N
+
+    # FIXME
+    a = Acb(1e-8)
+
+    #res1 = 2Arblib.integrate(a, b) do t
+    #    -log(1 - t * z) / t
+    #end
+    res1 = 2polylog(2, z)
+
+    res2 = if Arblib.contains_zero(inv_N)
+        Arblib.integrate(
+            a,
+            1,
+            atol = 1e-2Arblib.ubound(abs(res1)),
+            opts = Arblib.calc_integrate_opt_struct(0, 2_000, 0, 0, 0),
+        ) do t
+            fx_div_x(Acb(inv_N), 2, extra_degree = 2, force = true) do inv_N
+                (t^inv_N * ((1 - t * z)^-2inv_N - 1) + 2log(1 - t * z) * inv_N)
+            end / t
+        end * inv_N
+    else
+        Arblib.integrate(a, 1) do t
+            (t^inv_N * ((1 - t * z)^-2inv_N - 1) + 2log(1 - t * z) * inv_N) / t
+        end / inv_N
+    end
+
+    return res1 + res2
+end
+
+function T_6_bound(N₀::Int)
+    # Compute all parts not depending on z
+    inv_N = Arb((0, 1 // N₀))
+
+    # Compute factors with removable singularities
+
+    # (sqrt(λ_approx / λ) - 1 - 2zeta(3) / N^3 - (6 - λ) * zeta(5) / N^5) * N^6
+    removable_1 = sqrt_λ_approx_div_λ_remainder_N6(N₀)
+
+    # (c_N - 1 + 2zeta(3) / N^3 + 6zeta(5) / N^5) * N^6
+    removable_2 = c_N_remainder_mul_N6(N₀)
+
+    # (sqrt(λ_approx / λ) - 1) * N^3
+    removable_3 = sqrt_λ_approx_div_λ_remainder_N3(N₀)
+
+    # Compute factors not depending on z
+
+    # Factor for abs(F_N(z) - 1) * N
+    factor_term2 = abs(λ_disc() * zeta(Arb(5)))
+
+    # Factor for abs(F_N(z))
+    factor_term3 = abs(
+        removable_1 +
+        sqrt(λ_approx_div_λ(inv_N)) * removable_2 +
+        (-2zeta(Arb(3)) + 6zeta(Arb(5)) * inv_N^2) * removable_3,
+    )
+
+    return z -> let
+        # Enclosure of
+        # (abs(F_N(z) - 1 - c_2(z) / N^2 - c_3(z) / N^3 - c_4(z) / N^4 - XXX)) * N^6
+        term1 = zero(Arb)#indeterminate(Arb)
+
+        # Enclosure of (F_N(z) - 1) * N
+        F_N_sub_1_mul_N_enclosure = F_N_sub_1_mul_N(inv_N, z)
+
+        # Bound of (abs(F_N(z)) - 1) * N
+        term2_part = abs(F_N_sub_1_mul_N(inv_N, z))
+
+        term2 = term2_part * factor_term2
+
+        # Enclosure of abs(F_N(z))
+        term3_part = abs(1 + inv_N * F_N_sub_1_mul_N_enclosure)
+
+        term3 = term3_part * factor_term3
+
+        return term1 + term2 + term3
+    end
+end
 
 function g_dw3(w)
     λ = λ_disc()

@@ -38,7 +38,6 @@ function lemma_2_6_c_4(; verbose = false)
         Arblib.ubound(Arb(π)),
         degree = -1,
         rtol = 1e-3,
-        maxevals = 40000,
         depth = 30,
         abs_value = true,
         threaded = true;
@@ -55,7 +54,7 @@ function lemma_2_6_c_5(; verbose = false)
         Arblib.ubound(Arb(π)),
         degree = -1,
         rtol = 1e-3,
-        maxevals = 40000,
+        #maxevals = 40000,
         depth = 30,
         abs_value = true,
         threaded = true;
@@ -65,19 +64,25 @@ function lemma_2_6_c_5(; verbose = false)
     end
 end
 
-function lemma_2_6_T_2(; verbose = false)
-    return indeterminate(Arb)
+function lemma_2_6_T_6(N₀::Int = 26; verbose = false)
+    f = T_6_bound(N₀)
+    # FIXME: Set left bound to 0
+    ArbExtras.maximum_enclosure(
+        Arf(0.01),
+        Arblib.ubound(Arb(π)),
+        degree = -1,
+        rtol = 5e-2,
+        #maxevals = 1000,
+        depth = 20,
+        abs_value = true,
+        threaded = true;
+        verbose,
+    ) do θ
+        f(exp(Acb(0, θ)))
+    end
 end
 
-function lemma_2_6_T_4(; verbose = false)
-    return indeterminate(Arb)
-end
-
-function lemma_2_6_T_6(; verbose = false)
-    return indeterminate(Arb)
-end
-
-function lemma_2_6(; verbose = false)
+function lemma_2_6(N₀::Int = 26; verbose = false)
     c_2_bound = lemma_2_6_c_2(; verbose)
     c_3_bound = lemma_2_6_c_3(; verbose)
     c_4_bound = lemma_2_6_c_4(; verbose)
@@ -85,9 +90,11 @@ function lemma_2_6(; verbose = false)
 
     c_bounds = [c_2_bound, c_3_bound, c_4_bound, c_5_bound]
 
-    T_2_bound = lemma_2_6_T_2(; verbose)
-    T_4_bound = lemma_2_6_T_2(; verbose)
-    T_6_bound = lemma_2_6_T_2(; verbose)
+    T_6_bound = indeterminate(Arb) # lemma_2_6_T_6(N₀; verbose)
+
+    T_2_bound =
+        c_2_bound + c_3_bound / N₀ + c_4_bound / N₀^2 + c_5_bound / N₀^3 + T_6_bound / N₀^4
+    T_4_bound = c_4_bound + c_5_bound / N₀ + T_6_bound / N₀^2
 
     T_bounds = [T_2_bound, T_4_bound, T_6_bound]
 
@@ -154,7 +161,7 @@ function lemma_2_10_d_k_V_l(k::Int, l::Int; verbose = false)
         ubound_tol = Arblib.ubound(res1),
         depth_start = 4,
         abs_value = true,
-        maxevals = 1000,
+        maxevals = 500,
         threaded = true;
         verbose,
     ) do θ
