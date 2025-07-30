@@ -110,6 +110,28 @@ function F_N(inv_N::Arb, z::Acb)
     return 1 + inv_N * F_N_sub_1_mul_N(inv_N, z)
 end
 
+function abs_F_N_remainder_N6(N₀::Int, z::Acb)
+    inv_N = Arb((0, 1 // N₀))
+
+    # Step 1: Compute a Taylor model of F_N(z) in N^-1 with remainder
+    # term of degree 6.
+
+    # Step 1.1: Compute bound on remainder term
+    F_N_bound = Arb(30) # FIXME: Implement this
+    F_N_remainder = Arblib.add_error(Acb(0), F_N_bound)
+
+    # Step 1.2: Compute Taylor series
+    F_N_model = TaylorModel(
+        AcbSeries([1, 0, S(2, z), S(3, z), S(4, z), S(5, z), F_N_remainder]),
+        inv_N,
+        Arb(0),
+    )
+    # Step 2: Compute a Taylor model of abs(F_N(z))
+    abs_F_N_model = abs(F_N_model)
+
+    return abs_F_N_model.p[end] # Return bound on remainder
+end
+
 # c_2(z) = S(2, z) + S(2, conj(z))) / 2
 # NOTE: This assumes that abs(z) == 1
 function c_2(z::Acb)
@@ -253,7 +275,7 @@ function T_6_bound(N₀::Int)
     return z -> let
         # Enclosure of
         # (abs(F_N(z) - 1 - c_2(z) / N^2 - c_3(z) / N^3 - c_4(z) / N^4 - XXX)) * N^6
-        term1 = zero(Arb)#indeterminate(Arb)
+        term1 = abs_F_N_remainder_N6(N₀, z)
 
         # Enclosure of (F_N(z) - 1) * N
         F_N_sub_1_mul_N_enclosure = F_N_sub_1_mul_N(inv_N, z)
