@@ -2,7 +2,7 @@
 # Lemma 2.6
 ###
 
-function lemma_2_6_c_2(; verbose = false)
+function lemma_2_6_b_2(; verbose = false)
     ArbExtras.maximum_enclosure(
         Arf(0),
         Arblib.ubound(Arb(π)),
@@ -12,14 +12,13 @@ function lemma_2_6_c_2(; verbose = false)
         threaded = true;
         verbose,
     ) do θ
-        c_2(exp(Acb(0, θ)))
+        b_2(exp(Acb(0, θ)))
     end
 end
 
-function lemma_2_6_c_3(; verbose = false)
-    # FIXME: Set left bound to 0
+function lemma_2_6_b_3(; verbose = false)
     ArbExtras.maximum_enclosure(
-        Arf(0.01),
+        Arf(0),
         Arblib.ubound(Arb(π)),
         degree = -1,
         rtol = 1e-3,
@@ -27,14 +26,13 @@ function lemma_2_6_c_3(; verbose = false)
         threaded = true;
         verbose,
     ) do θ
-        c_3(exp(Acb(0, θ)))
+        b_3(exp(Acb(0, θ)))
     end
 end
 
-function lemma_2_6_c_4(; verbose = false)
-    # FIXME: Set left bound to 0
+function lemma_2_6_b_4(; verbose = false)
     ArbExtras.maximum_enclosure(
-        Arf(0.01),
+        Arf(0),
         Arblib.ubound(Arb(π)),
         degree = -1,
         rtol = 1e-3,
@@ -43,36 +41,44 @@ function lemma_2_6_c_4(; verbose = false)
         threaded = true;
         verbose,
     ) do θ
-        abs(c_4(exp(Acb(0, θ))))
+        b_4(exp(Acb(0, θ)))
     end
 end
 
-function lemma_2_6_c_5(; verbose = false)
-    # FIXME: Set left bound to 0
+function lemma_2_6_b_5(; verbose = false)
     ArbExtras.maximum_enclosure(
-        Arf(0.01),
+        Arf(0),
         Arblib.ubound(Arb(π)),
         degree = -1,
         rtol = 1e-3,
-        #maxevals = 40000,
         depth = 30,
         abs_value = true,
         threaded = true;
         verbose,
     ) do θ
-        abs(c_5(exp(Acb(0, θ))))
+        b_5(exp(Acb(0, θ)))
     end
 end
 
 function lemma_2_6_T_6(N₀::Int = 26; verbose = false)
     f = T_6_bound(N₀)
-    # FIXME: Set left bound to 0
+
+    # In practice maximum is attained at z = 1.
+    maximum_estimate = abs(f(Acb(1)))
+    maximum_estimate_format =
+        ArbExtras.format_interval(Arblib.getinterval(maximum_estimate)...)
+    verbose && @info "Enclosure at z = 1: $(maximum_estimate_format)"
+
+    # We are happy if our enclosure is slightly larger than that.
+    ubound_tol = 1.01Arblib.ubound(maximum_estimate)
+    verbose && @info "Using upper tolerance: $ubound_tol"
+
     ArbExtras.maximum_enclosure(
-        Arf(0.01),
+        Arf(0),
         Arblib.ubound(Arb(π)),
         degree = -1,
-        rtol = 5e-2,
-        #maxevals = 1000,
+        ubound_tol = ubound_tol,
+        maxevals = 100,
         depth = 20,
         abs_value = true,
         threaded = true;
@@ -83,22 +89,22 @@ function lemma_2_6_T_6(N₀::Int = 26; verbose = false)
 end
 
 function lemma_2_6(N₀::Int = 26; verbose = false)
-    c_2_bound = lemma_2_6_c_2(; verbose)
-    c_3_bound = lemma_2_6_c_3(; verbose)
-    c_4_bound = lemma_2_6_c_4(; verbose)
-    c_5_bound = indeterminate(Arb) # lemma_2_6_c_5(; verbose)
+    b_2_bound = lemma_2_6_b_2(; verbose)
+    b_3_bound = lemma_2_6_b_3(; verbose)
+    b_4_bound = lemma_2_6_b_4(; verbose)
+    b_5_bound = lemma_2_6_b_5(; verbose)
 
-    c_bounds = [c_2_bound, c_3_bound, c_4_bound, c_5_bound]
+    b_bounds = [b_2_bound, b_3_bound, b_4_bound, b_5_bound]
 
-    T_6_bound = indeterminate(Arb) # lemma_2_6_T_6(N₀; verbose)
+    T_6_bound = lemma_2_6_T_6(N₀; verbose)
 
     T_2_bound =
-        c_2_bound + c_3_bound / N₀ + c_4_bound / N₀^2 + c_5_bound / N₀^3 + T_6_bound / N₀^4
-    T_4_bound = c_4_bound + c_5_bound / N₀ + T_6_bound / N₀^2
+        b_2_bound + b_3_bound / N₀ + b_4_bound / N₀^2 + b_5_bound / N₀^3 + T_6_bound / N₀^4
+    T_4_bound = b_4_bound + b_5_bound / N₀ + T_6_bound / N₀^2
 
     T_bounds = [T_2_bound, T_4_bound, T_6_bound]
 
-    return c_bounds, T_bounds
+    return b_bounds, T_bounds
 end
 
 ###

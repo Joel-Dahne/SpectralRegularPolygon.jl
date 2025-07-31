@@ -204,8 +204,7 @@ function compose(f, M::TaylorModel)
     if isfinite(J)
         # We compute a tighter enclosure with the help of ArbExtras.enclosure_series
         remainder_term = if isreal(J)
-            ArbExtras.enclosure_series(ArbExtras.derivative_function(f, degree + 1), real(J)) /
-            factorial(degree + 1)
+            ArbExtras.enclosure_series(ArbExtras.derivative_function(f, degree + 1), real(J)) / factorial(degree + 1)
         else
             ArbExtras.derivative_function(f, degree + 1)(J)
         end
@@ -295,7 +294,7 @@ function div_removable(M1::TaylorModel, M2::TaylorModel, order::Integer = 1; for
         # Optimize in case all things happen to be zero?
         M1 = TaylorModel(copy(M1.p), M1.I, M1.x0)
         M2 = TaylorModel(copy(M2.p), M2.I, M2.x0)
-        for i = 0:order-1
+        for i = 0:(order-1)
             @assert Arblib.contains_zero(Arblib.ref(M1.p, i))
             @assert Arblib.contains_zero(Arblib.ref(M2.p, i))
             M1.p[i] = 0
@@ -327,7 +326,8 @@ function Base.abs(x::TaylorModel)
     x_mul_x_conj = x * x_conj
     # All coefficients are real, so explicitly set the imaginary part
     # to zero.
-    for i in 0:Arblib.degree(x)
+    # PROVE: Verify that this makes sense also for the remainder term.
+    for i = 0:(Arblib.degree(x)+1)
         @assert Arblib.contains_zero(imag(x_mul_x_conj.p[i]))
         x_mul_x_conj.p[i] = real(x_mul_x_conj.p[i])
     end

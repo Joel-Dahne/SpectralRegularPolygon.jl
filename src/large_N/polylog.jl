@@ -203,6 +203,31 @@ function S(n::Int, z)
     end
 end
 
+function S_integral(n::Int, z::Acb)
+    a = Arb(1e-8)
+    b = Arblib.contains(z, Acb(1)) ? Arb(1) - 1e-8 : Arb(1)
+
+    # Integrate from a to b
+    res_main =
+        Arblib.integrate(a, b) do t
+            ArbExtras.derivative_function(n) do inv_N
+                inv_N * t^inv_N * ((1 - t * z)^-2inv_N - 1) / t
+            end(Arb(0))
+        end / factorial(n)
+
+    # Integrate from 0 to a
+    res_start = zero(res_main) # FIXME
+
+    # Integrate from b to 1
+    res_end = if isone(b)
+        zero(res_main) # Nothing to integrate
+    else
+        zero(res_main) # FIXME
+    end
+
+    return res_start + res_main + res_end
+end
+
 function S_unitdisc(n::Int, z::Acb)
     sum(1:(n-1)) do j
         (-1)^(j - 1) * 2^(n - j) * S_unitdisc(j, n - j, z)

@@ -99,11 +99,24 @@ end
 c_N(N₀::Int) = 1 + c_N_remainder_mul_N3(N₀) * Arb((0, 1 // N₀))^3
 
 function F_N_sub_1_mul_N(inv_N::Arb, z::Acb)
-    a = Acb(1e-8) # FIXME
+    a = Acb(1e-8)
+    b = Arblib.contains(z, Acb(1)) ? Arb(1) - 1e-8 : Arb(1)
 
-    return Arblib.integrate(a, 1) do t
+    res_main = Arblib.integrate(a, b) do t
         t^inv_N * ((1 - t * z)^-2inv_N - 1) / t
     end
+
+    # Integrate from 0 to a
+    res_start = zero(res_main) # FIXME
+
+    # Integrate from b to 1
+    res_end = if isone(b)
+        zero(res_main) # Nothing to integrate
+    else
+        zero(res_main) # FIXME
+    end
+
+    return res_start + res_main + res_end
 end
 
 function F_N(inv_N::Arb, z::Acb)
@@ -116,25 +129,59 @@ function abs_F_N_remainder_N6(N₀::Int, z::Acb)
     # Step 1: Compute a Taylor model of F_N(z) in N^-1 with remainder
     # term of degree 6.
 
-    # Step 1.1: Compute bound on remainder term
-    F_N_bound = Arb(30) # FIXME: Implement this
-    F_N_remainder = Arblib.add_error(Acb(0), F_N_bound)
+    # Step 1.1: Compute bound on remainder term. This is an enclosure
+    # of the sixth derivative of F_N(z) in N, divided by factorial(6).
+    # To compute the derivative we move the derivative inside the
+    # integral.
+    F_N_remainder = let
+        a = Arb(1e-8)
+        b = Arblib.contains(z, Acb(1)) ? Arb(1) - 1e-8 : Arb(1)
+
+        # Integrate from a to b
+        remainder_main = Arblib.integrate(a, b) do t
+            ArbExtras.derivative_function(6) do inv_N
+                inv_N * t^inv_N * ((1 - t * z)^-2inv_N - 1) / t
+            end(inv_N)
+        end
+
+        # Integrate from 0 to a
+        remainder_start = zero(remainder_main) # FIXME
+
+        # Integrate from b to 1
+        remainder_end = if isone(b)
+            zero(remainder_main) # Nothing to integrate
+        else
+            zero(remainder_main) # FIXME
+        end
+
+        (remainder_start + remainder_main + remainder_end) / factorial(6)
+    end
 
     # Step 1.2: Compute Taylor series
     F_N_model = TaylorModel(
-        AcbSeries([1, 0, S(2, z), S(3, z), S(4, z), S(5, z), F_N_remainder]),
+        AcbSeries([
+            1,
+            0,
+            S_integral(2, z),
+            S_integral(3, z),
+            S_integral(4, z),
+            S_integral(5, z),
+            F_N_remainder,
+        ]),
         inv_N,
         Arb(0),
     )
     # Step 2: Compute a Taylor model of abs(F_N(z))
     abs_F_N_model = abs(F_N_model)
 
-    return abs_F_N_model.p[end] # Return bound on remainder
+    return real(abs_F_N_model.p[end]) # Return bound on remainder
 end
 
-# c_2(z) = S(2, z) + S(2, conj(z))) / 2
+# b_2(z) = S(2, z) + S(2, conj(z))) / 2
 # NOTE: This assumes that abs(z) == 1
-function c_2(z::Acb)
+function b_2(z::Acb)
+    return real(S_integral(2, z))
+
     if Arblib.contains(z, Acb(1, 0))
         # Input overlaps branch cut
         return real(S_unitdisc(2, z))
@@ -143,107 +190,41 @@ function c_2(z::Acb)
     end
 end
 
-# c_3(z) = (S(3, z) + S(3, conj(z))) / 2
-function c_3(z::Acb)
+# b_3(z) = (S(3, z) + S(3, conj(z))) / 2
+function b_3(z::Acb)
+    return real(S_integral(3, z))
     return real(mean_value_theorem_bound(z -> S(3, z), z))
 end
 
-# c_4(z) = -(S(2, z) - S(2, conj(z)))^2 / 8 + (S(4, z) + S(4, conj(z))) / 2
-function c_4(z::Acb)
-    S2_imag = imag(mean_value_theorem_bound(z -> S(2, z), z))
-    S4_real = real(mean_value_theorem_bound(z -> S(4, z), z))
+# b_4(z) = -(S(2, z) - S(2, conj(z)))^2 / 8 + (S(4, z) + S(4, conj(z))) / 2
+function b_4(z::Acb)
+    S2_imag = imag(S_integral(2, z))
+    S4_real = real(S_integral(4, z))
+
+    #S2_imag = imag(mean_value_theorem_bound(z -> S(2, z), z))
+    #S4_real = real(mean_value_theorem_bound(z -> S(4, z), z))
 
     return S2_imag^2 / 2 + S4_real
 end
 
-#c_5(z) =
+#b_5(z) =
 #    (
 #        -(S(2, z) - S(2, conj(z))) * (S(3, z) - S(3, conj(z))) +
 #        2(S(5, z) + S(5, conj(z)) - 2λ_disc() * zeta(Arb(5)))
 #    ) / 4
-function c_5(z::Acb)
-    S2_imag = imag(mean_value_theorem_bound(z -> S(2, z), z))
-    S3_imag = imag(mean_value_theorem_bound(z -> S(3, z), z))
-    S5_real = real(mean_value_theorem_bound(z -> S(5, z), z))
+function b_5(z::Acb)
+    S2_imag = imag(S_integral(2, z))
+    S3_imag = imag(S_integral(3, z))
+    S5_real = real(S_integral(5, z))
+
+    #S2_imag = imag(mean_value_theorem_bound(z -> S(2, z), z))
+    #S3_imag = imag(mean_value_theorem_bound(z -> S(3, z), z))
+    #S5_real = real(mean_value_theorem_bound(z -> S(5, z), z))
 
     return S2_imag * S3_imag + S5_real - λ_disc() * zeta(Arb(5))
 end
-_c_5_real(z) = S(5, z) - λ_disc() * zeta(Arb(5))
-_c_5_imag(z) = imag(S(2, z)) * imag(S(3, z))
-
-function T_2_bound(N₀::Int)
-    # Compute all parts not depending on z
-    inv_N = Arb((0, 1 // N₀))
-
-    # (c_N - 1) * N^2
-    factor_part1 = c_N_remainder_mul_N3(N₀) * inv_N
-
-    # (4zeta(3) / N + (12 - 2λ) * zeta(5) / N^3) * c_N
-    # IMPROVE: We can move some of the N to c_N to get better
-    # enclosures.
-    factor_part2 =
-        (4zeta(Arb(3)) * inv_N + (12 - 2λ_disc()) * zeta(Arb(5)) * inv_N^3) * c_N(N₀)
-
-    factor = factor_part1 + factor_part2
-
-    return z -> let
-        # Bound of main term
-        part1 = let
-            a = Acb(1e-8) # FIXME
-
-            Arblib.integrate(
-                a,
-                1,
-                atol = 1e-4,
-                opts = Arblib.calc_integrate_opt_struct(0, 2_000, 0, 0, 0),
-            ) do t
-                fx_div_x(Acb(inv_N), extra_degree = 2) do inv_N
-                    t^inv_N * ((1 - t * z)^-2inv_N - 1)
-                end / t
-                #let inv_N = Arb(1 // 26)
-                #    t^inv_N * ((1 - t * z)^-2inv_N - 1) / t / inv_N
-                #end
-            end
-        end
-
-        # Enclosure of other term
-        part2 = factor * F_N(inv_N, z)
-
-        return abs(part1) + abs(part2)
-    end
-end
-
-# Simplified version of T_2. It is just (F_N(z) - 1) * N^2
-function T_2_simplified(inv_N::Arb, z::Acb)
-    #return F_N_sub_1_mul_N(inv_N, z) / inv_N
-
-    # FIXME
-    a = Acb(1e-8)
-
-    #res1 = 2Arblib.integrate(a, b) do t
-    #    -log(1 - t * z) / t
-    #end
-    res1 = 2polylog(2, z)
-
-    res2 = if Arblib.contains_zero(inv_N)
-        Arblib.integrate(
-            a,
-            1,
-            atol = 1e-2Arblib.ubound(abs(res1)),
-            opts = Arblib.calc_integrate_opt_struct(0, 2_000, 0, 0, 0),
-        ) do t
-            fx_div_x(Acb(inv_N), 2, extra_degree = 2, force = true) do inv_N
-                (t^inv_N * ((1 - t * z)^-2inv_N - 1) + 2log(1 - t * z) * inv_N)
-            end / t
-        end * inv_N
-    else
-        Arblib.integrate(a, 1) do t
-            (t^inv_N * ((1 - t * z)^-2inv_N - 1) + 2log(1 - t * z) * inv_N) / t
-        end / inv_N
-    end
-
-    return res1 + res2
-end
+_b_5_real(z) = S(5, z) - λ_disc() * zeta(Arb(5))
+_b_5_imag(z) = imag(S(2, z)) * imag(S(3, z))
 
 function T_6_bound(N₀::Int)
     # Compute all parts not depending on z
@@ -274,7 +255,7 @@ function T_6_bound(N₀::Int)
 
     return z -> let
         # Enclosure of
-        # (abs(F_N(z) - 1 - c_2(z) / N^2 - c_3(z) / N^3 - c_4(z) / N^4 - XXX)) * N^6
+        # (abs(F_N(z) - 1 - b_2(z) / N^2 - b_3(z) / N^3 - b_4(z) / N^4 - XXX)) * N^6
         term1 = abs_F_N_remainder_N6(N₀, z)
 
         # Enclosure of (F_N(z) - 1) * N
@@ -289,7 +270,7 @@ function T_6_bound(N₀::Int)
         term3_part = abs(1 + inv_N * F_N_sub_1_mul_N_enclosure)
 
         term3 = term3_part * factor_term3
-
+        #@show (term1, term2, term2)
         return term1 + term2 + term3
     end
 end
@@ -548,11 +529,3 @@ function integral_d_k_V_l_other_limit(k::Int, l::Int, z::Acb, b::Acb)
 
     return res1 + res2
 end
-
-c(N::Int) = sqrt(
-    gamma(1 - Arb(1 // N))^2 * gamma(1 + Arb(2 // N)) /
-    (gamma(1 + Arb(1 // N))^2 * gamma(1 - Arb(2 // N))),
-)
-
-c_inv_N(inv_N) =
-    sqrt(gamma(1 - inv_N)^2 * gamma(1 + 2inv_N) / (gamma(1 + inv_N)^2 * gamma(1 - 2inv_N)))
