@@ -185,11 +185,11 @@ function lemma_2_10(; verbose = false)
         (0, 1),
         (0, 2),
         (0, 3),
-        #(0, 4),
+        #(0, 4), # TODO
         (1, 1),
         (1, 2),
         (1, 3),
-        #(1, 4),
+        #(1, 4), # TODO
         (2, 1),
         (2, 2),
         (2, 3),
@@ -201,6 +201,8 @@ function lemma_2_10(; verbose = false)
         verbose && @info "Computing bounds for k = $k, l = $l"
         lemma_2_10_d_k_V_l(k, l; verbose)
     end
+
+    # TODO: Bound integral with K_4
 
     return kls, res
 end

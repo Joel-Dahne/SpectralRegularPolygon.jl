@@ -102,21 +102,24 @@ function F_N_sub_1_mul_N(inv_N::Arb, z::Acb)
     a = Acb(1e-8)
     b = Arblib.contains(z, Acb(1)) ? Arb(1) - 1e-8 : Arb(1)
 
-    res_main = Arblib.integrate(a, b) do t
+    # Integrate from a to b
+    res_a_b = Arblib.integrate(a, b) do t
         t^inv_N * ((1 - t * z)^-2inv_N - 1) / t
     end
 
     # Integrate from 0 to a
-    res_start = zero(res_main) # FIXME
-
-    # Integrate from b to 1
-    res_end = if isone(b)
-        zero(res_main) # Nothing to integrate
-    else
-        zero(res_main) # FIXME
+    res_0_a = a * Arb((0, 1)) * fx_div_x(Arblib.union(Acb(0), a)) do t
+        (1 - t * z)^-2inv_N - 1
     end
 
-    return res_start + res_main + res_end
+    # Integrate from b to 1
+    res_b_1 = if isone(b)
+        zero(res_a_b) # Nothing to integrate
+    else
+        zero(res_a_b) # FIXME
+    end
+
+    return res_0_a + res_a_b + res_b_1
 end
 
 function F_N(inv_N::Arb, z::Acb)
@@ -138,23 +141,68 @@ function abs_F_N_remainder_N6(N₀::Int, z::Acb)
         b = Arblib.contains(z, Acb(1)) ? Arb(1) - 1e-8 : Arb(1)
 
         # Integrate from a to b
-        remainder_main = Arblib.integrate(a, b) do t
+        remainder_a_b = Arblib.integrate(a, b) do t
             ArbExtras.derivative_function(6) do inv_N
                 inv_N * t^inv_N * ((1 - t * z)^-2inv_N - 1) / t
             end(inv_N)
         end
 
         # Integrate from 0 to a
-        remainder_start = zero(remainder_main) # FIXME
+        remainder_0_a = let t = Arb((0, a))
+            # Enclosure of log(1 - t * z) / t
+            log_1_m_tz_div_t = fx_div_x(Acb(t)) do t
+                log(1 - t * z)
+            end
+            # Enclosure of ((1 - t * z)^(-2inv_N) - 1) / t
+            pow_m_1_div_t = fx_div_x(Acb(t)) do t
+                (1 - t * z)^(-2inv_N) - 1
+            end
 
-        # Integrate from b to 1
-        remainder_end = if isone(b)
-            zero(remainder_main) # Nothing to integrate
-        else
-            zero(remainder_main) # FIXME
+            # TODO: Write documentation for this. It is based on
+            # explicitly computing the 6th derivative and then
+            # factoring out all bounded terms from the integral. This
+            # leaves only integrals of power of logarithms, which are
+            # computed explicitly using log_integral.
+            Arb((0, 1)) * (
+                log_integral(6, a) * inv_N * pow_m_1_div_t +
+                log_integral(5, a) * (
+                    6pow_m_1_div_t - 12inv_N * (1 - t * z)^(-2inv_N) * log_1_m_tz_div_t
+                ) +
+                log_integral(4, a) *
+                60(1 - t * z)^(-2inv_N) *
+                log_1_m_tz_div_t *
+                (-1 + inv_N * log(1 - t * z)) +
+                log_integral(3, a) *
+                80(1 - t * z)^(-2inv_N) *
+                log_1_m_tz_div_t *
+                log(1 - t * z) *
+                (3 - 2inv_N * log(1 - t * z)) +
+                log_integral(2, a) *
+                240(1 - t * z)^(-2inv_N) *
+                log_1_m_tz_div_t *
+                log(1 - t * z)^2 *
+                (-2 + inv_N * log(1 - t * z)) +
+                log_integral(1, a) *
+                96(1 - t * z)^(-2inv_N) *
+                log_1_m_tz_div_t *
+                log(1 - t * z)^3 *
+                (5 - 2inv_N * log(1 - t * z)) +
+                log_integral(0, a) *
+                64(1 - t * z)^(-2inv_N) *
+                log_1_m_tz_div_t *
+                log(1 - t * z)^4 *
+                (-3 + inv_N * log(1 - t * z))
+            )
         end
 
-        (remainder_start + remainder_main + remainder_end) / factorial(6)
+        # Integrate from b to 1
+        remainder_b_1 = if isone(b)
+            zero(remainder_a_b) # Nothing to integrate
+        else
+            zero(remainder_a_b) # FIXME
+        end
+
+        (remainder_0_a + remainder_a_b + remainder_b_1) / factorial(6)
     end
 
     # Step 1.2: Compute Taylor series

@@ -1,3 +1,29 @@
+# Enclose the integral of log(t)^m from 0 to a
+function log_integral(m::Int, a::Arb)
+    @assert 0 < a < 1
+    loga = log(a)
+    if m == 0
+        return a
+    elseif m == 1
+        return a * (-1 + loga)
+    elseif m == 2
+        return a * (2 + loga * (-2 + loga))
+    elseif m == 3
+        return a * (-6 + loga * (6 + loga * (-3 + loga)))
+    elseif m == 4
+        return a * (24 + loga * (-24 + loga * (12 + loga * (-4 + loga))))
+    elseif m == 5
+        return a * (-120 + loga * (120 + loga * (-60 + loga * (20 + loga * (-5 + loga)))))
+    elseif m == 6
+        return a * (
+            720 +
+            loga * (-720 + loga * (360 + loga * (-120 + loga * (30 + loga * (-6 + loga)))))
+        )
+    else
+        throw(ArgumentError("not implemented for m > 3"))
+    end
+end
+
 _polylog(s::Int, z::Union{Arblib.ArbOrRef,Arblib.AcbOrRef}) = Arblib.polylog!(zero(z), s, z)
 
 function _polylog(s::Int, z::Union{ArbSeries,AcbSeries})
@@ -204,28 +230,68 @@ function S(n::Int, z)
 end
 
 function S_integral(n::Int, z::Acb)
-    a = Arb(1e-8)
     b = Arblib.contains(z, Acb(1)) ? Arb(1) - 1e-8 : Arb(1)
 
-    # Integrate from a to b
-    res_main =
-        Arblib.integrate(a, b) do t
-            ArbExtras.derivative_function(n) do inv_N
-                inv_N * t^inv_N * ((1 - t * z)^-2inv_N - 1) / t
-            end(Arb(0))
-        end / factorial(n)
-
-    # Integrate from 0 to a
-    res_start = zero(res_main) # FIXME
-
-    # Integrate from b to 1
-    res_end = if isone(b)
-        zero(res_main) # Nothing to integrate
+    # Integrate from 0 to b
+    res_0_b = if n == 2
+        # In this case the integrand is bounded at t = 0, so we can
+        # integrate from 0 to b directly.
+        Arblib.integrate(0, b) do t
+            if Arblib.contains_zero(t)
+                fx_div_x(Acb(t)) do t
+                    -2log(1 - t * z)
+                end
+            else
+                -2log(1 - t * z) / t
+            end
+        end
     else
-        zero(res_main) # FIXME
+        a = Arb(1e-8)
+
+        # Integrate from a to b
+        res_a_b =
+            Arblib.integrate(a, b) do t
+                ArbExtras.derivative_function(n) do inv_N
+                    inv_N * t^inv_N * ((1 - t * z)^-2inv_N - 1) / t
+                end(Arb(0))
+            end / factorial(n)
+
+        # Integrate from 0 to a
+        res_0_a = let t = Arb((0, a))
+            # Enclosure of log(1 - t * z) / t for t in [0, a]
+            log_removable = fx_div_x(Acb(t)) do t
+                log(1 - t * z)
+            end
+
+            if n == 3
+                -2(log_integral(1, a) - log_integral(0, a) * log(1 - t * z)) * log_removable
+            elseif n == 4
+                (
+                    -3log_integral(2, a) + 6log_integral(1, a) * log(1 - t * z) -
+                    4log_integral(0, a) * log(1 - t * z)^2
+                ) * log_removable / 3
+            elseif n == 5
+                (
+                    -log_integral(3, a) + 3log_integral(2, a) * log(1 - t * z) -
+                    4log_integral(1, a) * log(1 - t * z)^2 +
+                    2log_integral(0, a) * log(1 - t * z)^3
+                ) * log_removable / 3
+            else
+                throw(ArgumentError("error bound not implemented for n > 5"))
+            end
+        end
+
+        res_0_a + res_a_b
     end
 
-    return res_start + res_main + res_end
+    # Integrate from b to 1
+    res_b_1 = if isone(b)
+        zero(res_0_b) # Nothing to integrate
+    else
+        zero(res_0_b) # FIXME
+    end
+
+    return res_0_b + res_b_1
 end
 
 function S_unitdisc(n::Int, z::Acb)
