@@ -40,5 +40,6 @@ include("large_N/TaylorModel.jl")
 include("large_N/polylog.jl")
 include("large_N/section_2.1.jl")
 include("large_N/section_2.1_lemmas.jl")
+include("large_N/section_2.2_lemmas.jl")
 
 end # module SpectralRegularPolygons
