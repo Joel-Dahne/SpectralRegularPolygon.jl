@@ -1,34 +1,4 @@
-# Enclose the integral of log(t)^m from 0 to a
-function log_integral(m::Int, a::Arb)
-    @assert 0 < a < 1
-    loga = log(a)
-    if m == 0
-        return a
-    elseif m == 1
-        return a * (-1 + loga)
-    elseif m == 2
-        return a * (2 + loga * (-2 + loga))
-    elseif m == 3
-        return a * (-6 + loga * (6 + loga * (-3 + loga)))
-    elseif m == 4
-        return a * (24 + loga * (-24 + loga * (12 + loga * (-4 + loga))))
-    elseif m == 5
-        return a * (-120 + loga * (120 + loga * (-60 + loga * (20 + loga * (-5 + loga)))))
-    elseif m == 6
-        return a * (
-            720 +
-            loga * (-720 + loga * (360 + loga * (-120 + loga * (30 + loga * (-6 + loga)))))
-        )
-    else
-        throw(ArgumentError("not implemented for m > 3"))
-    end
-end
-
 _polylog(s::Int, z::Union{Arblib.ArbOrRef,Arblib.AcbOrRef}) = Arblib.polylog!(zero(z), s, z)
-
-function _polylog(s::Int, z::Union{ArbSeries,AcbSeries})
-
-end
 
 """
     _polylog_unitdisc(s::Int, z::Arblib.AcbOrRef)
@@ -264,17 +234,17 @@ function S_integral(n::Int, z::Acb)
             end
 
             if n == 3
-                -2(log_integral(1, a) - log_integral(0, a) * log(1 - t * z)) * log_removable
+                -2(integral_log(1, a) - integral_log(0, a) * log(1 - t * z)) * log_removable
             elseif n == 4
                 (
-                    -3log_integral(2, a) + 6log_integral(1, a) * log(1 - t * z) -
-                    4log_integral(0, a) * log(1 - t * z)^2
+                    -3integral_log(2, a) + 6integral_log(1, a) * log(1 - t * z) -
+                    4integral_log(0, a) * log(1 - t * z)^2
                 ) * log_removable / 3
             elseif n == 5
                 (
-                    -log_integral(3, a) + 3log_integral(2, a) * log(1 - t * z) -
-                    4log_integral(1, a) * log(1 - t * z)^2 +
-                    2log_integral(0, a) * log(1 - t * z)^3
+                    -integral_log(3, a) + 3integral_log(2, a) * log(1 - t * z) -
+                    4integral_log(1, a) * log(1 - t * z)^2 +
+                    2integral_log(0, a) * log(1 - t * z)^3
                 ) * log_removable / 3
             else
                 throw(ArgumentError("error bound not implemented for n > 5"))
@@ -288,7 +258,26 @@ function S_integral(n::Int, z::Acb)
     res_b_1 = if isone(b)
         zero(res_0_b) # Nothing to integrate
     else
-        zero(res_0_b) # FIXME
+        let t = Arblib.union(b, Arb(1))
+            if n == 2
+                -2 / t * integral_log_1mtz(z, 1, b)
+            elseif n == 3
+                -2 / t * (log(t) * integral_log_1mtz(z, 1, b) - integral_log_1mtz(z, 2, b))
+            elseif n == 4
+                1 / 3t * (
+                    -3log(t)^2 * integral_log_1mtz(z, 1, b) +
+                    6log(t) * integral_log_1mtz(z, 2, b) - 4integral_log_1mtz(z, 3, b)
+                )
+            elseif n == 5
+                1 / 3t * (
+                    -log(t)^3 * integral_log_1mtz(z, 1, b) +
+                    3log(t)^2 * integral_log_1mtz(z, 2, b) -
+                    4log(t) * integral_log_1mtz(z, 3, b) + 2integral_log_1mtz(z, 4, b)
+                )
+            else
+                throw(ArgumentError("error bound not implemented for n > 5"))
+            end
+        end
     end
 
     return res_0_b + res_b_1

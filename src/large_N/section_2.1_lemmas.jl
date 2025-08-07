@@ -78,8 +78,7 @@ function lemma_2_6_T_6(N₀::Int = 26; verbose = false)
         Arblib.ubound(Arb(π)),
         degree = -1,
         ubound_tol = ubound_tol,
-        maxevals = 100,
-        depth = 20,
+        depth = 30,
         abs_value = true,
         threaded = true;
         verbose,

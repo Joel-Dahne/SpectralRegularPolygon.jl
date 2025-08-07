@@ -99,7 +99,7 @@ end
 c_N(N₀::Int) = 1 + c_N_remainder_mul_N3(N₀) * Arb((0, 1 // N₀))^3
 
 function F_N_sub_1_mul_N(inv_N::Arb, z::Acb)
-    a = Acb(1e-8)
+    a = Arb(1e-8)
     b = Arblib.contains(z, Acb(1)) ? Arb(1) - 1e-8 : Arb(1)
 
     # Integrate from a to b
@@ -108,7 +108,7 @@ function F_N_sub_1_mul_N(inv_N::Arb, z::Acb)
     end
 
     # Integrate from 0 to a
-    res_0_a = a * Arb((0, 1)) * fx_div_x(Arblib.union(Acb(0), a)) do t
+    res_0_a = a * Arb((0, 1)) * fx_div_x(Acb(Arblib.union(Arb(0), a))) do t
         (1 - t * z)^-2inv_N - 1
     end
 
@@ -116,7 +116,11 @@ function F_N_sub_1_mul_N(inv_N::Arb, z::Acb)
     res_b_1 = if isone(b)
         zero(res_a_b) # Nothing to integrate
     else
-        zero(res_a_b) # FIXME
+        let t = Arblib.union(b, Arb(1))
+            t^inv_N / t * (
+                ((1 - b * z)^(1 - 2inv_N) - pow(1 - z, 1 - 2inv_N)) / (z * (1 - 2inv_N)) - (1 - b)
+            )
+        end
     end
 
     return res_0_a + res_a_b + res_b_1
@@ -150,46 +154,45 @@ function abs_F_N_remainder_N6(N₀::Int, z::Acb)
         # Integrate from 0 to a
         remainder_0_a = let t = Arb((0, a))
             # Enclosure of log(1 - t * z) / t
-            log_1_m_tz_div_t = fx_div_x(Acb(t)) do t
+            log_1mtz_div_t = fx_div_x(Acb(t)) do t
                 log(1 - t * z)
             end
             # Enclosure of ((1 - t * z)^(-2inv_N) - 1) / t
-            pow_m_1_div_t = fx_div_x(Acb(t)) do t
+            powm1_div_t = fx_div_x(Acb(t)) do t
                 (1 - t * z)^(-2inv_N) - 1
             end
 
-            # TODO: Write documentation for this. It is based on
+            # PROVE: Write documentation for this. It is based on
             # explicitly computing the 6th derivative and then
             # factoring out all bounded terms from the integral. This
             # leaves only integrals of power of logarithms, which are
-            # computed explicitly using log_integral.
+            # computed explicitly using integral_logm.
             Arb((0, 1)) * (
-                log_integral(6, a) * inv_N * pow_m_1_div_t +
-                log_integral(5, a) * (
-                    6pow_m_1_div_t - 12inv_N * (1 - t * z)^(-2inv_N) * log_1_m_tz_div_t
-                ) +
-                log_integral(4, a) *
+                integral_log(6, a) * inv_N * powm1_div_t +
+                integral_log(5, a) *
+                (6powm1_div_t - 12inv_N * (1 - t * z)^(-2inv_N) * log_1mtz_div_t) +
+                integral_log(4, a) *
                 60(1 - t * z)^(-2inv_N) *
-                log_1_m_tz_div_t *
+                log_1mtz_div_t *
                 (-1 + inv_N * log(1 - t * z)) +
-                log_integral(3, a) *
+                integral_log(3, a) *
                 80(1 - t * z)^(-2inv_N) *
-                log_1_m_tz_div_t *
+                log_1mtz_div_t *
                 log(1 - t * z) *
                 (3 - 2inv_N * log(1 - t * z)) +
-                log_integral(2, a) *
+                integral_log(2, a) *
                 240(1 - t * z)^(-2inv_N) *
-                log_1_m_tz_div_t *
+                log_1mtz_div_t *
                 log(1 - t * z)^2 *
                 (-2 + inv_N * log(1 - t * z)) +
-                log_integral(1, a) *
+                integral_log(1, a) *
                 96(1 - t * z)^(-2inv_N) *
-                log_1_m_tz_div_t *
+                log_1mtz_div_t *
                 log(1 - t * z)^3 *
                 (5 - 2inv_N * log(1 - t * z)) +
-                log_integral(0, a) *
+                integral_log(0, a) *
                 64(1 - t * z)^(-2inv_N) *
-                log_1_m_tz_div_t *
+                log_1mtz_div_t *
                 log(1 - t * z)^4 *
                 (-3 + inv_N * log(1 - t * z))
             )
@@ -199,7 +202,33 @@ function abs_F_N_remainder_N6(N₀::Int, z::Acb)
         remainder_b_1 = if isone(b)
             zero(remainder_a_b) # Nothing to integrate
         else
-            zero(remainder_a_b) # FIXME
+            let t = Arb((b, 1))
+                # PROVE: Write documentation for this. It is based on
+                # explicitly computing the 6th derivative and then
+                # factoring out all bounded terms from the integral.
+                # This leaves only integrals of the form log(1 - t *
+                # z)^m * (1 - t * z)^(-2inv_N), which are explicitly
+                # computed using integral_logpow_1mtz.
+                t^(-1 + inv_N) * (
+                    log(t)^5 *
+                    (6 + inv_N * log(t)) *
+                    (integral_logpow_1mtz(z, 0, -2inv_N, b) - (1 - b)) -
+                    12log(t)^4 *
+                    (5 + inv_N * log(t)) *
+                    integral_logpow_1mtz(z, 1, -2inv_N, b) +
+                    60log(t)^3 *
+                    (4 + inv_N * log(t)) *
+                    integral_logpow_1mtz(z, 2, -2inv_N, b) -
+                    160log(t)^2 *
+                    (3 + inv_N * log(t)) *
+                    integral_logpow_1mtz(z, 3, -2inv_N, b) +
+                    240log(t) *
+                    (2 + inv_N * log(t)) *
+                    integral_logpow_1mtz(z, 4, -2inv_N, b) -
+                    192(1 + inv_N * log(t)) * integral_logpow_1mtz(z, 5, -2inv_N, b) +
+                    64inv_N * integral_logpow_1mtz(z, 6, -2inv_N, b)
+                )
+            end
         end
 
         (remainder_0_a + remainder_a_b + remainder_b_1) / factorial(6)
