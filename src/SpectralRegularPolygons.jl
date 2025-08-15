@@ -39,8 +39,9 @@ include("large_N/basic_integrals.jl")
 include("large_N/tools.jl")
 include("large_N/TaylorModel.jl")
 include("large_N/polylog.jl")
-include("large_N/section_2.1.jl")
-include("large_N/section_2.1_lemmas.jl")
-include("large_N/section_2.2_lemmas.jl")
+include("large_N/section_2.jl")
+include("large_N/section_2_1_lemmas.jl")
+include("large_N/section_2_2_lemmas.jl")
+include("large_N/section_2_3_lemmas.jl")
 
 end # module SpectralRegularPolygons
