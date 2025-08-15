@@ -1,4 +1,11 @@
+# PROVE: We need to verify that these are indeed the first zeros. For
+# the first one we could do this with ArbExtras.isolate_roots. For the
+# second one we have to explicitly handle the neighbourhood of zero,
+# but that is fine. For the computational cost it would however be
+# nice to not have to do this every time.
 λ_disc() = ArbExtras.refine_root(besselj0, Arb((sqrt(Arf(5.7)), sqrt(Arf(5.8)))))^2
+λ₂_disc() = ArbExtras.refine_root(besselj1, Arb((Arf(3.75), Arf(3.875))))^2
+
 function λ_approx(inv_N::Union{Arb,ArbSeries})
     λ = λ_disc()
     return λ * (1 + 4zeta(Arb(3)) * inv_N^3 + (12 - 2λ) * zeta(Arb(5)) * inv_N^5)
@@ -365,14 +372,8 @@ V_2(z) = (λ_disc() / 2 - 2) * polylog(2, z) + 2log(1 - z)^2
 function V_3(z)
     λ = λ_disc()
     return (λ^2 / 16 - λ + 2) * polylog(3, z) +
-           (3λ - 12) * (
-               log(1 - z)^2 * log(z) / 2 + log(1 - z) * polylog(2, 1 - z) -
-               polylog(3, 1 - z) + zeta(Arb(3))
-           ) +
-           (λ - 4) * (
-               -log(1 - z) / 6 * (Arb(π)^2 + 6polylog(2, 1 - z)) + 2polylog(3, 1 - z) -
-               2zeta(Arb(3))
-           ) - 4log(1 - z)^3 / 3
+           (3λ - 12) * polylog_1_2(z) +
+           (λ - 4) * polylog_2_1(z) - 4log(1 - z)^3 / 3
 end
 
 function V_4(z)
@@ -691,14 +692,18 @@ function ϵ_prime(inv_N)
     sqrt(Arb(π)) * ϵ / sqrt(k_inv_N(inv_N))
 end
 
-function lemma_2_20_first_function_1(inv_N)
+function λ_sup_m_λ_inf(inv_N::Union{Arb,ArbSeries})
+    # inv(N + 1)
+    inv_Np1 = inv_N / (1 + inv_N)
+
     λ_disc() * (
         λ_approx_div_λ(inv_N) / (1 + ϵ_prime(inv_N)) -
-        λ_approx_div_λ(inv_N / (1 + inv_N)) / (1 - ϵ_prime(inv_N / (1 + inv_N)))
+        λ_approx_div_λ(inv_Np1) / (1 - ϵ_prime(inv_Np1))
     )
 end
 
-function lemma_2_20_first_function_2(inv_N)
+function q_sup_m_q_inf(inv_N::Union{Arb,ArbSeries})
+    # inv(N + 1) and inv(N + 2)
     inv_Np1 = inv_N / (1 + inv_N)
     inv_Np2 = inv_Np1 / (1 + inv_Np1)
 

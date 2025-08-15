@@ -28,7 +28,14 @@ function _polylog_unitdisc(s::Int, z::Arblib.AcbOrRef)
 end
 
 function polylog(s::Int, z::Union{Arblib.ArbOrRef,Arblib.AcbOrRef})
-    if iswide(z) && !Arblib.contains_zero(z)
+    if Arblib.contains_zero(z) && 0.25 < abs_ubound(Arb, z) < 1
+        # The Flint implementation fails when abs_ubound(Arb, z) is
+        # too large. For that reason we use the direct bound when it
+        # is a bit larger.
+        zᵤ = abs_ubound(Arb, z)
+        C = 1 / (1 - zᵤ)
+        return add_error(zero(z), C^2 * zᵤ)
+    elseif iswide(z) && !Arblib.contains_zero(z)
         # Explicit use of mean value theorem
         z_mid = Arblib.midpoint(Arblib._nonreftype(typeof(z)), z)
 
@@ -368,6 +375,19 @@ function polylog_1_3_v2(z::Acb)
            2 * log(-1 + 1 / z) * polylog(3, (-1 + z) / z) +
            2 * log(1 / z) * polylog(3, z) - 2 * polylog(4, 1 - z) -
            2 * polylog(4, (-1 + z) / z) + 2 * polylog(4, z)
+end
+
+function polylog_2_1(z::Acb)
+    if Arblib.contains_zero(z) && abs(z) < 1
+        zᵤ = abs_ubound(Arb, z)
+        C = 1 / (1 - zᵤ)
+        return add_error(zero(z), C^2 * zᵤ)
+    elseif Arblib.contains(z, Acb(1))
+        return indeterminate(z) # TODO: Implement this
+    else
+        return -log(1 - z) / 6 * (Arb(π)^2 + 6polylog(2, 1 - z)) + 2polylog(3, 1 - z) -
+               2zeta(Arb(3))
+    end
 end
 
 # NOTE: This is not quite the same version as in the paper, it is
