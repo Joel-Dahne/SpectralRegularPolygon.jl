@@ -1,5 +1,5 @@
 λ_disc() = ArbExtras.refine_root(besselj0, Arb((sqrt(Arf(5.7)), sqrt(Arf(5.8)))))^2
-function λ_approx(inv_N::Arb)
+function λ_approx(inv_N::Union{Arb,ArbSeries})
     λ = λ_disc()
     return λ * (1 + 4zeta(Arb(3)) * inv_N^3 + (12 - 2λ) * zeta(Arb(5)) * inv_N^5)
 end
@@ -399,19 +399,23 @@ V(l::Int, z) =
         V_4(z)
     end
 
+# Return C s.t. abs(V_2(z)) <= C * abs(z)
+function V_2_bound(z::Acb)
+    (λ_disc() / 2 - 2) * polylog(2, z) + 2log(1 - z)^2
+end
+
 function d_0(z, t)
     return 1
 end
 
 function d_1(z, t)
-    λ = λ_disc()
-    return λ * log(t / z) / 4
+    return λ_disc() * log(t / z) / 4
 end
 
 function d_2(z, t)
     λ = λ_disc()
     return (1 // 64) * λ^2 * log(t / z)^2 +
-           (1 // 8) * λ * (log(t / z)^2 + 4 * polylog(2, t) - 4polylog_unsafe(2, z))
+           (1 // 8) * λ * (log(t / z)^2 + 2S_integral(2, t) - 2S_integral(2, z))
 end
 
 function d_3(z, t)
@@ -422,8 +426,9 @@ function d_3(z, t)
     return λ / 4 * (
         log(t / z) * (
             (λ^2 / 576 + (1 // 16) * λ + 1 // 6) * log(t / z)^2 +
-            ((1 // 8) * λ + 1) * S(2, t) - (1 // 8) * λ * S(2, z) + S(2, conj(z))
-        ) + S(3, t) - S(3, z)
+            ((1 // 8) * λ + 1) * S_integral(2, t) - (1 // 8) * λ * S_integral(2, z) +
+            S_integral(2, conj(z))
+        ) + S_integral(3, t) - S_integral(3, z)
     )
 
     # This is the version in the paper
@@ -438,37 +443,38 @@ function d_3(z, t)
 end
 
 # Part of d_3 depending on both z and t
-function d_3_p1(z, t)
+function d_3_zt_part(z, t)
     λ = λ_disc()
     return λ / 4 * (
         log(t / z) * (
             (λ^2 / 576 + (1 // 16) * λ + 1 // 6) * log(t / z)^2 +
-            ((1 // 8) * λ + 1) * S(2, t) - (1 // 8) * λ * S(2, z) + S(2, conj(z))
-        ) + S(3, t)
+            ((1 // 8) * λ + 1) * S_integral(2, t) - (1 // 8) * λ * S_integral(2, z) +
+            S_integral(2, conj(z))
+        ) + S_integral(3, t)
     )
 end
 
 # Part of d_3 depending only on z
-function d_3_p2(z)
+function d_3_z_part(z)
     λ = λ_disc()
-    return -λ / 4 * S(3, z)
+    return -λ / 4 * S_integral(3, z)
 end
 
 # Part of d_3 analytic in z
-function d_3_part_1(z, t)
+function d_3_analytic_z(z, t)
     λ = λ_disc()
     return λ / 4 * (
         log(t / z) * (
             (λ^2 / 576 + (1 // 16) * λ + 1 // 6) * log(t / z)^2 +
-            ((1 // 8) * λ + 1) * S(2, t) - (1 // 8) * λ * S(2, z)
-        ) + S(3, t) - S(3, z)
+            ((1 // 8) * λ + 1) * S_integral(2, t) - (1 // 8) * λ * S_integral(2, z)
+        ) + S_integral(3, t) - S_integral(3, z)
     )
 end
 
 # Part of d_3 analytic in conj(z)
-function d_3_part_2(z, t)
+function d_3_analytic_conj_z(z, t)
     λ = λ_disc()
-    return λ / 4 * log(t / z) * S(2, conj(z))
+    return λ / 4 * log(t / z) * S_integral(2, conj(z))
 end
 
 d(k::Int, z, t) =
@@ -482,27 +488,84 @@ d(k::Int, z, t) =
         d_3(z, t)
     end
 
+"""
+    integral_d_0_V_1(z::Acb)
+
+Integrating
+```
+1 / t * d(0, z, t) * V(1, t) = -2log(1 - t) / t
+```
+Gives us
+```
+2polylog(2, t)
+```
+Which from `0` to `z` gives us
+```
+2polylog(2, z)
+```
+"""
+function integral_d_0_V_1(z::Acb)
+    return 2polylog2(z)
+end
+
+"""
+    integral_d_1_V_1(z::Acb)
+
+Integrating
+```
+1 / t * d(1, z, t) * V(1, t) = -λ / 2 * log(t / z) * log(1 - t) / t
+```
+Gives us
+```
+λ / 2 * (log(t / z) * polylog(2, t) + polylog(3, t))
+```
+Which from `0` to `z` gives us
+```
+λ / 2 * polylog(3, z)
+```
+"""
+function integral_d_1_V_1(z::Acb)
+    return λ_disc() / 2 * polylog(3, z)
+end
+
+
 function integral_d_k_V_l(k::Int, l::Int, z::Acb)
+    if k == 0 && l == 1
+        return integral_d_0_V_1(z)
+    elseif k == 1 && l == 1
+        return integral_d_1_V_1(z)
+    end
+
     a = 1e-5Arblib.midpoint(Acb, z)
     b = Arblib.midpoint(Acb, z)
 
     # Integrate from 0 to a
-    # TODO: Implement proper version of this
-    if k == 3
+    res_0_a = if k == 0
+        let t = Arblib.union(zero(a), a)
+            a * fx_div_x(t) do t
+                d(k, z, t) * V(l, t)
+            end
+        end
+    elseif k == 1
+        # FIXME
+        Arblib.union(zero(a), a) * d(k, z, a) * V(l, a) / a
+    elseif k == 2
+        # FIXME
+        Arblib.union(zero(a), a) * d(k, z, a) * V(l, a) / a
+    elseif k == 3
+        # FIXME
         res1_part1 = mean_value_theorem_bound(z) do z
             d_3_part_1(z, z) * V(l, z) / z
         end
         res1_part2 = d_3_part_2(z, z) * V(l, z) / z
 
-        res1 = Arblib.union(zero(a), a) * (res1_part1 + res1_part2)
-    else
-        res1 = Arblib.union(zero(a), a) * d(k, z, a) * V(l, a) / a
+        Arblib.union(zero(a), a) * (res1_part1 + res1_part2)
     end
 
     # Integrate from a to b
     # TODO: We need to verify analyticity for this to be correct,
     # which we might not have.
-    if k == 3
+    res_a_b = if k == 3
         res2_part1 = Arblib.integrate(
             a,
             b,
@@ -522,9 +585,9 @@ function integral_d_k_V_l(k::Int, l::Int, z::Acb)
                 V(l, t) / t
             end
 
-        res2 = res2_part1 + res2_part2
+        res2_part1 + res2_part2
     else
-        res2 = Arblib.integrate(
+        Arblib.integrate(
             a,
             b,
             atol = 1e-8,
@@ -537,20 +600,20 @@ function integral_d_k_V_l(k::Int, l::Int, z::Acb)
     # Integrate from b to z by enclosing integrand on z and
     # multiplying by radius.
     # TODO: Verify that this is correct
-    if k == 3
+    res_b_z = if k == 3
         res3_part1 = abs(z - b) * mean_value_theorem_bound(z) do z
             d_3_part_1(z, z) * V(l, z) / z
         end
         res3_part2 = d_3_part_2(z, z) * V(l, z) / z
 
-        res3 = res3_part1 + res3_part2
+        res3_part1 + res3_part2
     else
-        res3 = abs(z - b) * mean_value_theorem_bound(z) do z
+        abs(z - b) * mean_value_theorem_bound(z) do z
             d(k, z, z) * V(l, z) / z
         end
     end
 
-    return res1 + res2 + res3
+    return res_0_a + res_a_b + res_b_z
 end
 
 function integral_d_k_V_l_other_limit(k::Int, l::Int, z::Acb, b::Acb)
@@ -605,4 +668,41 @@ function integral_d_k_V_l_other_limit(k::Int, l::Int, z::Acb, b::Acb)
     end
 
     return res1 + res2
+end
+
+function k_inv_N(inv_N)
+    R = Arb("0.99")
+    E_I = 5 // 2 * inv_N + 9 // 2 * inv_N^2 + 5inv_N^3 + 60inv_N^4
+    λ = λ_disc()
+
+    a₀ = _c_N(inv_N) / (sqrt(λ) * besselj1(sqrt(λ)))
+
+    return (
+        2Arb(π) * a₀^2 * R^2 / 2 *
+        (besselj0(R * sqrt(λ_approx(inv_N)))^2 + besselj1(R * sqrt(λ_approx(inv_N)))^2) -
+        4Arb(π) * a₀ * E_I * R^2 / 2 *
+        hypgeom0f1_regularized(Arb(2), -Arb(1 // 4) * R^2 * λ_approx(inv_N)) - R^2 * E_I^2
+    )
+end
+
+function ϵ_prime(inv_N)
+    ϵ = 232inv_N^6 + 61inv_N^7 + 182inv_N^8
+
+    sqrt(Arb(π)) * ϵ / sqrt(k_inv_N(inv_N))
+end
+
+function lemma_2_20_first_function_1(inv_N)
+    λ_disc() * (
+        λ_approx_div_λ(inv_N) / (1 + ϵ_prime(inv_N)) -
+        λ_approx_div_λ(inv_N / (1 + inv_N)) / (1 - ϵ_prime(inv_N / (1 + inv_N)))
+    )
+end
+
+function lemma_2_20_first_function_2(inv_N)
+    inv_Np1 = inv_N / (1 + inv_N)
+    inv_Np2 = inv_Np1 / (1 + inv_Np1)
+
+    λ_approx(inv_N) * (1 - ϵ_prime(inv_Np1)) / ((1 + ϵ_prime(inv_N)) * λ_approx(inv_Np1)) -
+    λ_approx(inv_Np1) * (1 + ϵ_prime(inv_Np2)) /
+    ((1 - ϵ_prime(inv_Np1)) * λ_approx(inv_Np2))
 end

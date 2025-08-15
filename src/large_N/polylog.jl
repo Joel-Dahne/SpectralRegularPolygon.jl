@@ -283,23 +283,52 @@ function S_integral(n::Int, z::Acb)
     return res_0_b + res_b_1
 end
 
+# polylog(2, z) that allows evaluation around z = 1
+polylog2(z::Acb) =
+    if Arblib.contains(z, one(z))
+        S_integral(2, z) / 2
+    else
+        polylog(2, z)
+    end
+
 function S_unitdisc(n::Int, z::Acb)
     sum(1:(n-1)) do j
         (-1)^(j - 1) * 2^(n - j) * S_unitdisc(j, n - j, z)
     end
 end
 
-# NOTE: This is note the same version as in the paper
-function polylog_1_3(z)
-    return -polylog(4, 1 - z) + polylog(4, z) + polylog(4, inv(1 - 1 / z)) -
-           polylog(3, z) * log(1 - z) + log(1 - z)^4 / factorial(4) -
-           log(z) * log(1 - z)^3 / factorial(3) +
-           zeta(Arb(2)) * log(1 - z)^2 / factorial(2) +
-           zeta(Arb(3)) * log(1 - z) +
-           zeta(Arb(4))
+function polylog_1_2(z::Acb)
+    if Arblib.contains_zero(z) && abs(z) < 1
+        zᵤ = abs_ubound(Arb, z)
+        C = 1 / (1 - zᵤ)
+        return add_error(zero(z), C^2 * zᵤ)
+    elseif Arblib.contains(z, Acb(1))
+        return indeterminate(z) # TODO: Implement this
+    else
+        return log(1 - z)^2 * log(z) / 2 + log(1 - z) * polylog(2, 1 - z) -
+               polylog(3, 1 - z) + zeta(Arb(3))
+    end
 end
 
-function polylog_1_3_v2(z)
+# NOTE: This is not the same version as in the paper
+function polylog_1_3(z::Acb)
+    if Arblib.contains_zero(z) && abs(z) < 1
+        zᵤ = abs_ubound(Arb, z)
+        C = 1 / (1 - zᵤ)
+        return add_error(zero(z), C^2 * zᵤ)
+    elseif Arblib.contains(z, Acb(1))
+        return indeterminate(z) # TODO: Implement this
+    else
+        return -polylog(4, 1 - z) + polylog(4, z) + polylog(4, inv(1 - 1 / z)) -
+               polylog(3, z) * log(1 - z) + log(1 - z)^4 / factorial(4) -
+               log(z) * log(1 - z)^3 / factorial(3) +
+               zeta(Arb(2)) * log(1 - z)^2 / factorial(2) +
+               zeta(Arb(3)) * log(1 - z) +
+               zeta(Arb(4))
+    end
+end
+
+function polylog_1_3_v2(z::Acb)
     return (1 // 360) * (
                Arb(π)^4 +
                15 * (
@@ -343,63 +372,94 @@ end
 
 # NOTE: This is not quite the same version as in the paper, it is
 # slightly improved for better enclosures.
-function polylog_2_2(z)
-    return -Arb(π)^4 / 36 + polylog(2, 1 - z)^2 + (Arb(π)^2 / 6) * polylog(2, z) -
-           2 * log(z) * zeta(Arb(3)) - (
-        -(11 * Arb(π)^4 / 360) +
-        (1 // 12) * (
-            -3 * log(z)^4 - 4 * log(1 - z)^3 * (-3log(z)) -
-            2 * log(1 - z) * (-Arb(π)^2 * log(z) - 6 * log(z)^3) -
-            2 * log(1 - z)^2 * (Arb(π)^2 + 12 * log(z)^2 - 3 * log(z)^2)
-        ) +
-        1 // 2 * polylog(2, 1 - z)^2 - log(-1 + 1 / z)^2 * polylog(2, 1 - 1 / z) +
-        (log(-1 + 1/z)^2 + log(1 - z) * log(z)) * polylog(2, z) +
-        2 * log(-1 + 1/z) * polylog(3, 1 - z) +
-        2 * log(-1 + 1/z) * polylog(3, 1 - 1 / z) +
-        -2 * log(z) * polylog(3, z) - 2 * polylog(4, 1 - z) - 2 * polylog(4, 1 - 1 / z) +
-        2 * polylog(4, z)
-    )
-end
-
-function polylog_3_1(z)
-    return -polylog(2, z)^2 / 2 - log(1 - z) * polylog(3, z)
-end
-
-function polylog_2_1_1(z)
-    return Arb(π)^4 / 30 + Arb(π)^2 / 12 * log(1 - z)^2 + log(1 - z) * polylog(3, 1 - z) -
-           3 * polylog(4, 1 - z) + 2 * (-Acb(0, π) + log(z - 1)) * zeta(Arb(3))
-end
-
-function polylog_1_2_1(z)
-    return -Arb(π)^4 / 30 +
-           1 // 2 * log(1 - z)^2 * polylog(2, 1 - z) +
-           3 * polylog(4, 1 - z) - log(1 - z) * (2 * polylog(3, 1 - z) + zeta(Arb(3)))
-end
-
-function polylog_1_1_2(z)
-    return Arb(π)^4 / 90 - (1 // 6) * log(1 - z)^3 * log(z) -
-           1 // 2 * log(1 - z)^2 * polylog(2, 1 - z) + log(1 - z) * polylog(3, 1 - z) -
-           polylog(4, 1 - z)
-end
-
-function polylog_1_1_1_1(z)
-    return (1 // 24) * log(1 - z)^4
-end
-
-function polylog_1_2(z)
-    if z isa Arblib.AcbOrRef && Arblib.contains(z, Acb(1))
-        # TODO: Allow evaluation around z = 1
-        return indeterminate(z)
+function polylog_2_2(z::Acb)
+    if Arblib.contains_zero(z) && abs(z) < 1
+        zᵤ = abs_ubound(Arb, z)
+        C = 1 / (1 - zᵤ)
+        return add_error(zero(z), C^2 * zᵤ)
+    elseif Arblib.contains(z, Acb(1))
+        return indeterminate(z) # TODO: Implement this
     else
-        return log(1 - z)^2 * log(z) / 2 + log(1 - z) * polylog(2, 1 - z) -
-               polylog(3, 1 - z) + zeta(Arb(3))
+        return -Arb(π)^4 / 36 + polylog(2, 1 - z)^2 + (Arb(π)^2 / 6) * polylog(2, z) -
+               2 * log(z) * zeta(Arb(3)) - (
+            -(11 * Arb(π)^4 / 360) +
+            (1 // 12) * (
+                -3 * log(z)^4 - 4 * log(1 - z)^3 * (-3log(z)) -
+                2 * log(1 - z) * (-Arb(π)^2 * log(z) - 6 * log(z)^3) -
+                2 * log(1 - z)^2 * (Arb(π)^2 + 12 * log(z)^2 - 3 * log(z)^2)
+            ) +
+            1 // 2 * polylog(2, 1 - z)^2 - log(-1 + 1 / z)^2 * polylog(2, 1 - 1 / z) +
+            (log(-1 + 1/z)^2 + log(1 - z) * log(z)) * polylog(2, z) +
+            2 * log(-1 + 1/z) * polylog(3, 1 - z) +
+            2 * log(-1 + 1/z) * polylog(3, 1 - 1 / z) +
+            -2 * log(z) * polylog(3, z) - 2 * polylog(4, 1 - z) -
+            2 * polylog(4, 1 - 1 / z) + 2 * polylog(4, z)
+        )
     end
 end
 
-function polylog_1_1_1_2(z)
-    return 1 // 24 * (
-        log(1 - z)^4 * log(z) + 4log(1 - z)^3 * polylog(2, 1 - z) -
-        12log(1 - z)^2 * polylog(3, 1 - z) + 24log(1 - z) * polylog(4, 1 - z) -
-        24polylog(5, 1 - z)
-    )
+# NOTE: Not finite for z = 1
+function polylog_3_1(z::Acb)
+    return -polylog(2, z)^2 / 2 - log(1 - z) * polylog(3, z)
+end
+
+function polylog_1_1_2(z::Acb)
+    if Arblib.contains_zero(z) && abs(z) < 1
+        zᵤ = abs_ubound(Arb, z)
+        C = 1 / (1 - zᵤ)
+        return add_error(zero(z), C^3 * zᵤ)
+    elseif Arblib.contains(z, Acb(1))
+        return indeterminate(z) # TODO: Implement this
+    else
+        return Arb(π)^4 / 90 - (1 // 6) * log(1 - z)^3 * log(z) -
+               1 // 2 * log(1 - z)^2 * polylog(2, 1 - z) + log(1 - z) * polylog(3, 1 - z) -
+               polylog(4, 1 - z)
+    end
+end
+
+function polylog_1_2_1(z::Acb)
+    if Arblib.contains_zero(z) && abs(z) < 1
+        zᵤ = abs_ubound(Arb, z)
+        C = 1 / (1 - zᵤ)
+        return add_error(zero(z), C^3 * zᵤ)
+    else
+        return -Arb(π)^4 / 30 +
+               1 // 2 * log(1 - z)^2 * polylog(2, 1 - z) +
+               3 * polylog(4, 1 - z) - log(1 - z) * (2 * polylog(3, 1 - z) + zeta(Arb(3)))
+    end
+end
+
+# NOTE: Not finite for z = 1
+function polylog_2_1_1(z::Acb)
+    if Arblib.contains_zero(z) && abs(z) < 1
+        zᵤ = abs_ubound(Arb, z)
+        C = 1 / (1 - zᵤ)
+        return add_error(zero(z), C^3 * zᵤ)
+    else
+        return Arb(π)^4 / 30 +
+               Arb(π)^2 / 12 * log(1 - z)^2 +
+               log(1 - z) * polylog(3, 1 - z) - 3 * polylog(4, 1 - z) +
+               2 * (-Acb(0, π) + log(z - 1)) * zeta(Arb(3))
+    end
+end
+
+# NOTE: Not finite for z = 1
+function polylog_1_1_1_1(z::Acb)
+    return (1 // 24) * log(1 - z)^4
+end
+
+function polylog_1_1_1_2(z::Acb)
+    if Arblib.contains_zero(z) && abs(z) < 1
+        zᵤ = abs_ubound(Arb, z)
+        C = 1 / (1 - zᵤ)
+        return add_error(zero(z), C^4 * zᵤ)
+    elseif Arblib.contains(z, Acb(1))
+        return indeterminate(z) # TODO: Implement this
+    else
+        return 1 // 24 * (
+            log(1 - z)^4 * log(z) + 4log(1 - z)^3 * polylog(2, 1 - z) -
+            12log(1 - z)^2 * polylog(3, 1 - z) + 24log(1 - z) * polylog(4, 1 - z) -
+            24polylog(5, 1 - z)
+        )
+    end
 end

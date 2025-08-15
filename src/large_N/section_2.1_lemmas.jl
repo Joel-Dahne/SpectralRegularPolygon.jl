@@ -141,7 +141,7 @@ function lemma_2_10_d_k_V_l(k::Int, l::Int; verbose = false)
     verbose && @info "Splitting interval [0, a] and [a, π]" a
 
     # Compute maximum on [0, a]
-    res1 = let
+    res_0_a = let
         z = exp(Acb(0, Arb((0, a))))
         b = exp(Acb(0, a))
 
@@ -155,15 +155,15 @@ function lemma_2_10_d_k_V_l(k::Int, l::Int; verbose = false)
         abs(real(term1 + term2))
     end
 
-    verbose && @info "Maximum for θ in [0, a]" res1
+    verbose && @info "Maximum for θ in [0, a]" res_0_a
 
     # Compute maximum on [a, π]
-    res2 = ArbExtras.maximum_enclosure(
+    res_a_π = ArbExtras.maximum_enclosure(
         a,
         Arblib.ubound(Arb(π)),
         degree = -1,
         rtol = 1e-3,
-        ubound_tol = Arblib.ubound(res1),
+        ubound_tol = Arblib.ubound(res_0_a),
         depth_start = 4,
         abs_value = true,
         maxevals = 500,
@@ -174,9 +174,9 @@ function lemma_2_10_d_k_V_l(k::Int, l::Int; verbose = false)
         real(integral_d_k_V_l(k, l, z))
     end
 
-    verbose && @info "Maximum for θ in [a, π]" res2
+    verbose && @info "Maximum for θ in [a, π]" res_a_π
 
-    return max(res1, res2)
+    return max(res_0_a, res_a_π)
 end
 
 function lemma_2_10(; verbose = false)
