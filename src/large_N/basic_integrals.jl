@@ -40,7 +40,7 @@ Which we can also write as
 ```
 and use [`logpow`](@ref) to evaluate `log(1 - t * z)^n * (1 - t * z)`.
 """
-function integral_log_1mtz(z::Acb, m::Integer, b::Arb)
+function integral_log_1mtz(z::Arblib.AcbOrRef, m::Integer, b::Arb)
     0 < b < 1 || throw(ArgumentError("only supports 0 < b < 1"))
     m >= 0 || throw(ArgumentError("only supports m > 0"))
 

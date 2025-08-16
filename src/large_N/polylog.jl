@@ -206,14 +206,19 @@ function S(n::Int, z)
     end
 end
 
-function S_integral(n::Int, z::Acb)
+function S_integral(n::Int, z::Arblib.AcbOrRef)
     b = Arblib.contains(z, Acb(1)) ? Arb(1) - 1e-8 : Arb(1)
 
     # Integrate from 0 to b
     res_0_b = if n == 2
         # In this case the integrand is bounded at t = 0, so we can
         # integrate from 0 to b directly.
-        Arblib.integrate(0, b) do t
+        Arblib.integrate(
+            0,
+            b,
+            warn_on_no_convergence = false,
+            opts = Arblib.calc_integrate_opt_struct(0, 1_000, 0, 0, 0),
+        ) do t
             if Arblib.contains_zero(t)
                 fx_div_x(Acb(t)) do t
                     -2log(1 - t * z)
@@ -227,7 +232,12 @@ function S_integral(n::Int, z::Acb)
 
         # Integrate from a to b
         res_a_b =
-            Arblib.integrate(a, b) do t
+            Arblib.integrate(
+                a,
+                b,
+                warn_on_no_convergence = false,
+                opts = Arblib.calc_integrate_opt_struct(0, 1_000, 0, 0, 0),
+            ) do t
                 ArbExtras.derivative_function(n) do inv_N
                     inv_N * t^inv_N * ((1 - t * z)^-2inv_N - 1) / t
                 end(Arb(0))
@@ -304,7 +314,7 @@ function S_unitdisc(n::Int, z::Acb)
     end
 end
 
-function polylog_1_2(z::Acb)
+function polylog_1_2(z::Arblib.AcbOrRef)
     if Arblib.contains_zero(z) && abs(z) < 1
         zᵤ = abs_ubound(Arb, z)
         C = 1 / (1 - zᵤ)
@@ -318,7 +328,7 @@ function polylog_1_2(z::Acb)
 end
 
 # NOTE: This is not the same version as in the paper
-function polylog_1_3(z::Acb)
+function polylog_1_3(z::Arblib.AcbOrRef)
     if Arblib.contains_zero(z) && abs(z) < 1
         zᵤ = abs_ubound(Arb, z)
         C = 1 / (1 - zᵤ)
@@ -335,7 +345,7 @@ function polylog_1_3(z::Acb)
     end
 end
 
-function polylog_1_3_v2(z::Acb)
+function polylog_1_3_v2(z::Arblib.AcbOrRef)
     return (1 // 360) * (
                Arb(π)^4 +
                15 * (
@@ -377,7 +387,7 @@ function polylog_1_3_v2(z::Acb)
            2 * polylog(4, (-1 + z) / z) + 2 * polylog(4, z)
 end
 
-function polylog_2_1(z::Acb)
+function polylog_2_1(z::Arblib.AcbOrRef)
     if Arblib.contains_zero(z) && abs(z) < 1
         zᵤ = abs_ubound(Arb, z)
         C = 1 / (1 - zᵤ)
@@ -392,7 +402,7 @@ end
 
 # NOTE: This is not quite the same version as in the paper, it is
 # slightly improved for better enclosures.
-function polylog_2_2(z::Acb)
+function polylog_2_2(z::Arblib.AcbOrRef)
     if Arblib.contains_zero(z) && abs(z) < 1
         zᵤ = abs_ubound(Arb, z)
         C = 1 / (1 - zᵤ)
@@ -419,11 +429,11 @@ function polylog_2_2(z::Acb)
 end
 
 # NOTE: Not finite for z = 1
-function polylog_3_1(z::Acb)
+function polylog_3_1(z::Arblib.AcbOrRef)
     return -polylog(2, z)^2 / 2 - log(1 - z) * polylog(3, z)
 end
 
-function polylog_1_1_2(z::Acb)
+function polylog_1_1_2(z::Arblib.AcbOrRef)
     if Arblib.contains_zero(z) && abs(z) < 1
         zᵤ = abs_ubound(Arb, z)
         C = 1 / (1 - zᵤ)
@@ -437,7 +447,7 @@ function polylog_1_1_2(z::Acb)
     end
 end
 
-function polylog_1_2_1(z::Acb)
+function polylog_1_2_1(z::Arblib.AcbOrRef)
     if Arblib.contains_zero(z) && abs(z) < 1
         zᵤ = abs_ubound(Arb, z)
         C = 1 / (1 - zᵤ)
@@ -450,7 +460,7 @@ function polylog_1_2_1(z::Acb)
 end
 
 # NOTE: Not finite for z = 1
-function polylog_2_1_1(z::Acb)
+function polylog_2_1_1(z::Arblib.AcbOrRef)
     if Arblib.contains_zero(z) && abs(z) < 1
         zᵤ = abs_ubound(Arb, z)
         C = 1 / (1 - zᵤ)
@@ -464,11 +474,11 @@ function polylog_2_1_1(z::Acb)
 end
 
 # NOTE: Not finite for z = 1
-function polylog_1_1_1_1(z::Acb)
+function polylog_1_1_1_1(z::Arblib.AcbOrRef)
     return (1 // 24) * log(1 - z)^4
 end
 
-function polylog_1_1_1_2(z::Acb)
+function polylog_1_1_1_2(z::Arblib.AcbOrRef)
     if Arblib.contains_zero(z) && abs(z) < 1
         zᵤ = abs_ubound(Arb, z)
         C = 1 / (1 - zᵤ)

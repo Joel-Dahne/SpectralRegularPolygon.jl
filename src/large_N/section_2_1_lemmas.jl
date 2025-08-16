@@ -2,7 +2,7 @@
 # Lemma 2.6
 ###
 
-function lemma_2_6_b_2(; verbose = false)
+function lemma_2_6_b_2(; verbose = true)
     ArbExtras.maximum_enclosure(
         Arf(0),
         Arblib.ubound(Arb(π)),
@@ -16,7 +16,7 @@ function lemma_2_6_b_2(; verbose = false)
     end
 end
 
-function lemma_2_6_b_3(; verbose = false)
+function lemma_2_6_b_3(; verbose = true)
     ArbExtras.maximum_enclosure(
         Arf(0),
         Arblib.ubound(Arb(π)),
@@ -30,7 +30,7 @@ function lemma_2_6_b_3(; verbose = false)
     end
 end
 
-function lemma_2_6_b_4(; verbose = false)
+function lemma_2_6_b_4(; verbose = true)
     ArbExtras.maximum_enclosure(
         Arf(0),
         Arblib.ubound(Arb(π)),
@@ -45,7 +45,7 @@ function lemma_2_6_b_4(; verbose = false)
     end
 end
 
-function lemma_2_6_b_5(; verbose = false)
+function lemma_2_6_b_5(; verbose = true)
     ArbExtras.maximum_enclosure(
         Arf(0),
         Arblib.ubound(Arb(π)),
@@ -60,7 +60,7 @@ function lemma_2_6_b_5(; verbose = false)
     end
 end
 
-function lemma_2_6_T_6(N₀::Int = 26; verbose = false)
+function lemma_2_6_T_6(N₀::Int = 26; verbose = true)
     f = T_6_bound(N₀)
 
     # In practice maximum is attained at z = 1.
@@ -87,7 +87,7 @@ function lemma_2_6_T_6(N₀::Int = 26; verbose = false)
     end
 end
 
-function lemma_2_6(N₀::Int = 26; verbose = false)
+function lemma_2_6(N₀::Int = 26; verbose = true)
     b_2_bound = lemma_2_6_b_2(; verbose)
     b_3_bound = lemma_2_6_b_3(; verbose)
     b_4_bound = lemma_2_6_b_4(; verbose)
@@ -110,7 +110,7 @@ end
 # Lemma 2.7
 ###
 
-function lemma_2_7(; verbose = false)
+function lemma_2_7(; verbose = true)
     b = Arf(5)
 
     res1 = ArbExtras.maximum_enclosure(
@@ -135,7 +135,7 @@ end
 # Lemma 2.10
 ###
 
-function lemma_2_10_d_k_V_l(k::Int, l::Int; verbose = false)
+function lemma_2_10_d_k_V_l(k::Int, l::Int; verbose = true)
     a = Arf(1e-3)
 
     verbose && @info "Splitting interval [0, a] and [a, π]" a
@@ -146,13 +146,13 @@ function lemma_2_10_d_k_V_l(k::Int, l::Int; verbose = false)
         b = exp(Acb(0, a))
 
         # Integrate from 0 to b
-        term1 = integral_d_k_V_l_other_limit(k, l, z, b)
+        term_0_b = integral_d_k_V_l_other_limit(k, l, z, b)
 
         # Integrate from b to z
         # TODO: Implement this
-        term2 = zero(term1)
+        term_b_z = zero(term_0_b)
 
-        abs(real(term1 + term2))
+        abs(real(term_0_b + term_b_z))
     end
 
     verbose && @info "Maximum for θ in [0, a]" res_0_a
@@ -166,7 +166,7 @@ function lemma_2_10_d_k_V_l(k::Int, l::Int; verbose = false)
         ubound_tol = Arblib.ubound(res_0_a),
         depth_start = 4,
         abs_value = true,
-        maxevals = 500,
+        maxevals = 15,
         threaded = true;
         verbose,
     ) do θ
@@ -179,21 +179,21 @@ function lemma_2_10_d_k_V_l(k::Int, l::Int; verbose = false)
     return max(res_0_a, res_a_π)
 end
 
-function lemma_2_10(; verbose = false)
+function lemma_2_10(; verbose = true)
     kls = [
-        (0, 1),
-        (0, 2),
-        (0, 3),
-        #(0, 4), # TODO
-        (1, 1),
-        (1, 2),
-        (1, 3),
-        #(1, 4), # TODO
-        (2, 1),
-        (2, 2),
-        (2, 3),
-        (3, 1),
-        (3, 2),
+        #(0, 1),
+        #(0, 2),
+        #(0, 3),
+        #(0, 4),
+        #(1, 1),
+        #(1, 2),
+        #(1, 3),
+        (1, 4), # TODO
+        #(2, 1),
+        #(2, 2),
+        (2, 3), # TODO
+        #(3, 1),
+        (3, 2), # TODO
     ]
 
     res = map(kls) do (k, l)
@@ -210,7 +210,7 @@ end
 # Lemma 2.13
 ###
 
-function lemma_2_13(; verbose = false)
+function lemma_2_13(; verbose = true)
     λ = λ_disc()
 
     return Arb(1 / (sqrt(λ) * besselj1(sqrt(λ))), prec = 53)

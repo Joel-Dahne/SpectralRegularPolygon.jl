@@ -555,44 +555,46 @@ function integral_d_k_V_l(k::Int, l::Int, z::Acb)
         Arblib.union(zero(a), a) * d(k, z, a) * V(l, a) / a
     elseif k == 3
         # FIXME
-        res1_part1 = mean_value_theorem_bound(z) do z
-            d_3_part_1(z, z) * V(l, z) / z
-        end
-        res1_part2 = d_3_part_2(z, z) * V(l, z) / z
+        # IMPROVE: Use mean value theorem to get improved bounds
+        res_0_a_part1 = d_3_analytic_z(z, z) * V(l, z) / z
+        res_0_a_part2 = d_3_analytic_conj_z(z, z) * V(l, z) / z
 
-        Arblib.union(zero(a), a) * (res1_part1 + res1_part2)
+        Arblib.union(zero(a), a) * (res_0_a_part1 + res_0_a_part2)
     end
 
     # Integrate from a to b
     # TODO: We need to verify analyticity for this to be correct,
     # which we might not have.
     res_a_b = if k == 3
-        res2_part1 = Arblib.integrate(
+        res_a_b_part1 = Arblib.integrate(
             a,
             b,
             atol = 1e-8,
             opts = Arblib.calc_integrate_opt_struct(0, 2_000, 0, 0, 0),
+            warn_on_no_convergence = false,
         ) do t
-            d_3_p1(z, t) * V(l, t) / t
+            d_3_zt_part(z, t) * V(l, t) / t
         end
 
-        res2_part2 =
-            mean_value_theorem_bound(d_3_p2, z) * Arblib.integrate(
+        res_a_b_part2 =
+            d_3_z_part(z) * Arblib.integrate(
                 a,
                 b,
                 atol = 1e-8,
                 opts = Arblib.calc_integrate_opt_struct(0, 2_000, 0, 0, 0),
+                warn_on_no_convergence = false,
             ) do t
                 V(l, t) / t
             end
 
-        res2_part1 + res2_part2
+        res_a_b_part1 + res_a_b_part2
     else
         Arblib.integrate(
             a,
             b,
             atol = 1e-8,
             opts = Arblib.calc_integrate_opt_struct(0, 4_000, 0, 1, 0),
+            warn_on_no_convergence = false,
         ) do t
             d(k, z, t) * V(l, t) / t
         end
@@ -602,16 +604,16 @@ function integral_d_k_V_l(k::Int, l::Int, z::Acb)
     # multiplying by radius.
     # TODO: Verify that this is correct
     res_b_z = if k == 3
-        res3_part1 = abs(z - b) * mean_value_theorem_bound(z) do z
-            d_3_part_1(z, z) * V(l, z) / z
-        end
-        res3_part2 = d_3_part_2(z, z) * V(l, z) / z
+        # IMPROVE: Get better enclosures of this using mean value
+        # theorem.
+        res_b_z_part1 = abs(z - b) * d_3_analytic_z(z, z) * V(l, z) / z
+        res_b_z_part2 = abs(z - b) * d_3_analytic_conj_z(z, z) * V(l, z) / z
 
-        res3_part1 + res3_part2
+        res_b_z_part1 + res_b_z_part2
     else
-        abs(z - b) * mean_value_theorem_bound(z) do z
-            d(k, z, z) * V(l, z) / z
-        end
+        # IMPROVE: Get better enclosures of this using mean value
+        # theorem.
+        abs(z - b) * d(k, z, z) * V(l, z) / z
     end
 
     return res_0_a + res_a_b + res_b_z
@@ -623,52 +625,55 @@ function integral_d_k_V_l_other_limit(k::Int, l::Int, z::Acb, b::Acb)
     # Integrate from 0 to a
     # TODO: Implement proper version of this
     if k == 3
-        res1_part1 = mean_value_theorem_bound(z) do z
-            d_3_part_1(z, z) * V(l, z) / z
-        end
-        res1_part2 = d_3_part_2(z, z) * V(l, z) / z
+        # TODO: Improve this enclosure using mean value theorem. That
+        # requires evaluation with AcbSeries though.
+        res_0_a_part1 = d_3_analytic_z(z, z) * V(l, z) / z
+        res_0_a_part2 = d_3_analytic_conj_z(z, z) * V(l, z) / z
 
-        res1 = Arblib.union(zero(a), a) * (res1_part1 + res1_part2)
+        res_0_a = Arblib.union(zero(a), a) * (res_0_a_part1 + res_0_a_part2)
     else
-        res1 = Arblib.union(zero(a), a) * d(k, z, a) * V(l, a) / a
+        res_0_a = Arblib.union(zero(a), a) * d(k, z, a) * V(l, a) / a
     end
 
     # Integrate from a to b
     # TODO: We need to verify analyticity for this to be correct,
     # which we might not have.
-    if k == 3
-        res2_part1 = Arblib.integrate(
+    res_a_b = if k == 3
+        res_a_b_part1 = Arblib.integrate(
             a,
             b,
             atol = 1e-8,
             opts = Arblib.calc_integrate_opt_struct(0, 2_000, 0, 0, 0),
+            warn_on_no_convergence = false,
         ) do t
-            d_3_p1(z, t) * V(l, t) / t
+            d_3_zt_part(z, t) * V(l, t) / t
         end
 
-        res2_part2 =
-            mean_value_theorem_bound(d_3_p2, z) * Arblib.integrate(
+        res_a_b_part2 =
+            d_3_z_part(z) * Arblib.integrate(
                 a,
                 b,
                 atol = 1e-8,
                 opts = Arblib.calc_integrate_opt_struct(0, 2_000, 0, 0, 0),
+                warn_on_no_convergence = false,
             ) do t
                 V(l, t) / t
             end
 
-        res2 = res2_part1 + res2_part2
+        res_a_b_part1 + res_a_b_part2
     else
-        res2 = Arblib.integrate(
+        Arblib.integrate(
             a,
             b,
             atol = 1e-8,
             opts = Arblib.calc_integrate_opt_struct(0, 4_000, 0, 0, 0),
+            warn_on_no_convergence = false,
         ) do t
             d(k, z, t) * V(l, t) / t
         end
     end
 
-    return res1 + res2
+    return res_0_a + res_a_b
 end
 
 function k_inv_N(inv_N)
