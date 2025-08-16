@@ -32,7 +32,7 @@ function lemma_2_16_V_l(l::Int, N₀::Int; verbose = true)
 
     f_prime = c_N(N₀) / (1 - z_pow_N)^2inv_N
 
-    V(l, z_pow_N) / f_prime
+    abs(V(l, z_pow_N) / f_prime)
 end
 
 function lemma_2_16(N₀::Int; verbose = true)
