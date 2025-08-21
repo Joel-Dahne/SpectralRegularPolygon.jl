@@ -10,3 +10,5 @@ function hypgeom0f1_regularized(a::Arb, z::ArbSeries)
 
     return ArbExtras.compose_zero!(res, res, z)
 end
+
+hypgeom2f1(a::Acb, b::Acb, c::Acb, z::Acb) = Arblib.hypgeom_2f1!(zero(z), a, b, c, z, flags = 0)

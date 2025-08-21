@@ -364,16 +364,38 @@ function g_dw3(w)
     return λ^(3 // 2) * (3besselj1(w * sqrt(λ) - besselj(oftype(λ, 3), w * sqrt(λ)))) / 4
 end
 
+V_1(z) = 2polylog(1, z)
 
-V_1(z) = -2log(1 - z)
+function V_1_div_z_bound(zᵤ::Arb)
+    0 < zᵤ < 1 || return indeterminate(zᵤ)
+    return 2polylog_r_div_z_bound(1, zᵤ)
+end
 
-V_2(z) = (λ_disc() / 2 - 2) * polylog(2, z) + 2log(1 - z)^2
+function V_2(z)
+    λ = λ_disc()
+    return (λ / 2 - 2) * polylog(2, z) + 4polylog_1_1(z)
+end
+
+function V_2_div_z_bound(zᵤ::Arb)
+    0 < zᵤ < 1 || return indeterminate(zᵤ)
+    λ = λ_disc()
+    return abs(λ / 2 - 2) * polylog_r_div_z_bound(1, zᵤ) + 4polylog_r_div_z_bound(2, zᵤ)
+end
 
 function V_3(z)
     λ = λ_disc()
     return (λ^2 / 16 - λ + 2) * polylog(3, z) +
            (3λ - 12) * polylog_1_2(z) +
-           (λ - 4) * polylog_2_1(z) - 4log(1 - z)^3 / 3
+           (λ - 4) * polylog_2_1(z) - 8polylog_1_1_1(z)
+end
+
+function V_3_div_z_bound(zᵤ::Arb)
+    0 < zᵤ < 1 || return indeterminate(zᵤ)
+    λ = λ_disc()
+    return abs(λ^2 / 16 - λ + 2) * polylog_r_div_z_bound(1, zᵤ) +
+           abs(3λ - 12) * polylog_r_div_z_bound(2, zᵤ) +
+           abs(λ - 4) * polylog_r_div_z_bound(2, zᵤ) +
+           8polylog_r_div_z_bound(3, zᵤ)
 end
 
 function V_4(z)
@@ -385,8 +407,22 @@ function V_4(z)
            (2λ - 8) * polylog_2_1_1(z) +
            (6λ - 24) * polylog_1_2_1(z) +
            (14λ - 56) * polylog_1_1_2(z) +
-           2^4 * polylog_1_1_1_1(z) +
+           16polylog_1_1_1_1(z) +
            2λ * zeta(Arb(3)) * polylog(1, z)
+end
+
+function V_4_div_z_bound(zᵤ::Arb)
+    0 < zᵤ < 1 || return indeterminate(zᵤ)
+    λ = λ_disc()
+    return abs(λ^3 / 192 - λ^2 / 8 - λ / 2 - 2) * polylog_r_div_z_bound(1, zᵤ) +
+           abs(λ^2 / 8 - 2λ + 4) * polylog_r_div_z_bound(2, zᵤ) +
+           abs(λ^2 / 4 - 4λ + 12) * polylog_r_div_z_bound(2, zᵤ) +
+           abs(5λ^2 / 8 - 8λ + 28) * polylog_r_div_z_bound(2, zᵤ) +
+           abs(2λ - 8) * polylog_r_div_z_bound(3, zᵤ) +
+           abs(6λ - 24) * polylog_r_div_z_bound(3, zᵤ) +
+           abs(14λ - 56) * polylog_r_div_z_bound(3, zᵤ) +
+           16polylog_r_div_z_bound(4, zᵤ) +
+           abs(2λ * zeta(Arb(3))) * polylog_r_div_z_bound(1, zᵤ)
 end
 
 V(l::Int, z) =
@@ -400,65 +436,76 @@ V(l::Int, z) =
         V_4(z)
     end
 
+V_div_z_bound(l::Int, zᵤ::Arb) =
+    if l == 1
+        V_1_div_z_bound(zᵤ)
+    elseif l == 2
+        V_2_div_z_bound(zᵤ)
+    elseif l == 3
+        V_3_div_z_bound(zᵤ)
+    elseif l == 4
+        V_4_div_z_bound(zᵤ)
+    end
+
 # Return C s.t. abs(V_2(z)) <= C * abs(z)
 function V_2_bound(z::Acb)
     (λ_disc() / 2 - 2) * polylog(2, z) + 2log(1 - z)^2
 end
 
-function d_0(z, t)
-    return 1
-end
+d_0(z, t) = one(z)
+d_0_z_part(z) = one(z)
+d_0_zt_part(z, t) = zero(z)
 
-function d_1(z, t)
-    return λ_disc() * log(t / z) / 4
-end
+d_1(z, t) = λ_disc() / 4 * log(t / z)
+d_1_z_part(z) = zero(z)
+d_1_zt_part(z, t) = λ_disc() / 4 * log(t / z)
 
 function d_2(z, t)
     λ = λ_disc()
-    return (1 // 64) * λ^2 * log(t / z)^2 +
-           (1 // 8) * λ * (log(t / z)^2 + 2S_integral(2, t) - 2S_integral(2, z))
+    return λ^2 / 64 * log(t / z)^2 +
+           λ / 8 * (log(t / z)^2 + 2S_integral(2, t) - 2S_integral(2, z))
+end
+function d_2_z_part(z)
+    λ = λ_disc()
+    return -λ / 4 * S_integral(2, z)
+end
+function d_2_zt_part(z, t)
+    λ = λ_disc()
+    return λ^2 / 64 * log(t / z)^2 + λ / 8 * (log(t / z)^2 + 2S_integral(2, t))
 end
 
 function d_3(z, t)
     λ = λ_disc()
-
     # NOTE: This is an alternative formulation that is SLIGHTLY better
     # than the version in the paper.
     return λ / 4 * (
         log(t / z) * (
-            (λ^2 / 576 + (1 // 16) * λ + 1 // 6) * log(t / z)^2 +
-            ((1 // 8) * λ + 1) * S_integral(2, t) - (1 // 8) * λ * S_integral(2, z) +
-            S_integral(2, conj(z))
+            (λ^2 / 576 + λ / 16 + 1 // 6) * log(t / z)^2 + (λ / 8 + 1) * S_integral(2, t) -
+            λ / 8 * S_integral(2, z) + S_integral(2, conj(z))
         ) + S_integral(3, t) - S_integral(3, z)
     )
-
     # This is the version in the paper
-    #return λ^3 * log(t / z)^3 / 2304 +
-    #       (1 // 64) * λ^2 * log(t / z) * (log(t / z)^2 + 2S(2, t) - 2S(2, z)) +
-    #       (1 // 24) *
-    #       λ *
-    #       (
-    #           log(t / z)^3 + 6log(t / z) * S(2, t) + 6log(t / z) * S(2, conj(z)) + 6S(3, t) -
-    #           6S(3, z)
+    #return λ^3 / 2304 * log(t / z)^3 +
+    #       λ^2 / 64 * log(t / z) * (log(t / z)^2 + 2S_integral(2, t) - 2S_integral(2, z)) +
+    #       λ / 24 * (
+    #           log(t / z)^3 +
+    #           6log(t / z) * S_integral(2, t) +
+    #           6log(t / z) * S_integral(2, conj(z)) +
+    #           6S_integral(3, t) - 6S_integral(3, z)
     #       )
 end
-
-# Part of d_3 depending on both z and t
+function d_3_z_part(z)
+    λ = λ_disc()
+    return -λ / 4 * S_integral(3, z)
+end
 function d_3_zt_part(z, t)
     λ = λ_disc()
     return λ / 4 * (
         log(t / z) * (
-            (λ^2 / 576 + (1 // 16) * λ + 1 // 6) * log(t / z)^2 +
-            ((1 // 8) * λ + 1) * S_integral(2, t) - (1 // 8) * λ * S_integral(2, z) +
-            S_integral(2, conj(z))
+            (λ^2 / 576 + λ / 16 + 1 // 6) * log(t / z)^2 + (λ / 8 + 1) * S_integral(2, t) -
+            λ / 8 * S_integral(2, z) + S_integral(2, conj(z))
         ) + S_integral(3, t)
     )
-end
-
-# Part of d_3 depending only on z
-function d_3_z_part(z)
-    λ = λ_disc()
-    return -λ / 4 * S_integral(3, z)
 end
 
 # Part of d_3 analytic in z
@@ -478,6 +525,59 @@ function d_3_analytic_conj_z(z, t)
     return λ / 4 * log(t / z) * S_integral(2, conj(z))
 end
 
+function integral_d_0(z::Acb, a::Arb)
+    return a * z
+end
+
+function integral_d_1(z::Acb, a::Arb)
+    λ = λ_disc()
+    return λ / 4 * integral_log_z(1, z, a)
+end
+
+"""
+    integral_d_2(z::Acb, a::Arb)
+
+We write `d_2` as
+```
+(λ^2 / 64 + λ / 8) * log(t / z)^2 +
+    λ / 4 * (S(2, t) - S(2, z))
+```
+The `S` factors with `t` we enclose on the entire interval.
+We then integrate the log-terms with [`integral_log_z`](@ref).
+"""
+function integral_d_2(z::Acb, a::Arb)
+    λ = λ_disc()
+    t = Arblib.union(zero(z), a * z)
+    return (λ^2 / 64 + λ / 8) * integral_log_z(2, z, a) +
+           λ / 4 * (S_integral(2, t) - S_integral(2, z)) * a * z
+end
+
+"""
+    integral_d_3(z::Acb, a::Arb)
+
+We write `d_3` as
+```
+(λ^3 / 2304 + λ^2 / 64 + λ / 24) * log(t / z)^3 +
+    (
+        (λ^2 / 32 + λ / 4) * S(2, t) -
+        (λ^2 / 32 * S(2, z) - λ / 4 * S(2, conj(z)))
+    ) * log(t / z)
+    λ / 4 * (S(3, t) - S(3, z))
+```
+The `S` factors with `t` we enclose on the entire interval.
+We then integrate the log-terms with [`integral_log_z`](@ref).
+"""
+function integral_d_3(z::Acb, a::Arb)
+    λ = λ_disc()
+    t = Arblib.union(zero(z), a * z)
+    return (λ^3 / 2304 + λ^2 / 64 + λ / 24) * integral_log_z(3, z, a) +
+           (
+               (λ^2 / 32 + λ / 4) * S_integral(2, t) -
+               (λ^2 / 32 * S_integral(2, z) - λ / 4 * S_integral(2, conj(z)))
+           ) * integral_log_z(1, z, a) +
+           λ / 4 * (S_integral(3, t) - S_integral(3, z)) * a * z
+end
+
 d(k::Int, z, t) =
     if k == 0
         d_0(z, t)
@@ -487,6 +587,46 @@ d(k::Int, z, t) =
         d_2(z, t)
     elseif k == 3
         d_3(z, t)
+    end
+
+# Part of d only depending on z
+d_z_part(k::Int, z) =
+    if k == 0
+        d_0_z_part(z)
+    elseif k == 1
+        d_1_z_part(z)
+    elseif k == 2
+        d_2_z_part(z)
+    elseif k == 3
+        d_3_z_part(z)
+    end
+
+# Part of d only depending on z and t
+d_zt_part(k::Int, z, t) =
+    if k == 0
+        d_0_zt_part(z, t)
+    elseif k == 1
+        d_1_zt_part(z, t)
+    elseif k == 2
+        d_2_zt_part(z, t)
+    elseif k == 3
+        d_3_zt_part(z, t)
+    end
+
+"""
+    integral_d(k::Int, z::Acb, a::Arb)
+
+Compute the integral of `d(l, z, t)` from `0` to `a * z`.
+"""
+integral_d(k::Int, z::Acb, a::Arb) =
+    if k == 0
+        integral_d_0(z, a)
+    elseif k == 1
+        integral_d_1(z, a)
+    elseif k == 2
+        integral_d_2(z, a)
+    elseif k == 3
+        integral_d_3(z, a)
     end
 
 """
@@ -529,7 +669,6 @@ function integral_d_1_V_1(z::Acb)
     return λ_disc() / 2 * polylog(3, z)
 end
 
-
 function integral_d_k_V_l(k::Int, l::Int, z::Acb)
     if k == 0 && l == 1
         return integral_d_0_V_1(z)
@@ -537,86 +676,79 @@ function integral_d_k_V_l(k::Int, l::Int, z::Acb)
         return integral_d_1_V_1(z)
     end
 
-    a = 1e-5Arblib.midpoint(Acb, z)
-    b = Arblib.midpoint(Acb, z)
+    # NEXT: Check the enclosures don't convert for (k, l) = (3, 2)
 
-    # Integrate from 0 to a
-    res_0_a = if k == 0
-        let t = Arblib.union(zero(a), a)
-            a * fx_div_x(t) do t
-                d(k, z, t) * V(l, t)
-            end
-        end
-    elseif k == 1
-        # FIXME
-        Arblib.union(zero(a), a) * d(k, z, a) * V(l, a) / a
-    elseif k == 2
-        # FIXME
-        Arblib.union(zero(a), a) * d(k, z, a) * V(l, a) / a
-    elseif k == 3
-        # FIXME
-        # IMPROVE: Use mean value theorem to get improved bounds
-        res_0_a_part1 = d_3_analytic_z(z, z) * V(l, z) / z
-        res_0_a_part2 = d_3_analytic_conj_z(z, z) * V(l, z) / z
+    a = Arb(1e-4)
+    az = a * z
 
-        Arblib.union(zero(a), a) * (res_0_a_part1 + res_0_a_part2)
+    # Integrate from 0 to a * z
+    res_0_az = let
+        # Factor out enclosure of V(l, t) / t and integrate d(k, z, t)
+
+        # Compute enclosure of V(l, t) / t for t in [0, a * z]
+        # IMPROVE: Improving this enclosure would allow us to take a
+        # larger a, which should make the integration much faster.
+        azᵤ = abs_ubound(Arb, az)
+        V_div_t = add_error(Acb(0), V_div_z_bound(l, azᵤ))
+
+        (V_div_t) * (integral_d(k, z, a))
     end
 
-    # Integrate from a to b
+    # Integrate from a * z to z
     # TODO: We need to verify analyticity for this to be correct,
     # which we might not have.
-    res_a_b = if k == 3
-        res_a_b_part1 = Arblib.integrate(
-            a,
-            b,
-            atol = 1e-8,
-            opts = Arblib.calc_integrate_opt_struct(0, 2_000, 0, 0, 0),
-            warn_on_no_convergence = false,
-        ) do t
-            d_3_zt_part(z, t) * V(l, t) / t
+    res_az_z = let
+        # Arblib.integrate doesn't handle wide integration limits very
+        # well. For that reason we integrate from the midpoint of the
+        # endpoints if z is wide, and add the remaining part later.
+        az_thin, z_thin = if iswide(z)
+            midpoint(Acb, az), midpoint(Acb, z)
+        else
+            az, z
         end
 
-        res_a_b_part2 =
-            d_3_z_part(z) * Arblib.integrate(
-                a,
-                b,
-                atol = 1e-8,
-                opts = Arblib.calc_integrate_opt_struct(0, 2_000, 0, 0, 0),
+        # Part of d(k, z, t) only depending on z, so we can factor it
+        # out.
+
+        res_az_thin_z_thin_part_1 =
+            d_z_part(k, z) * Arblib.integrate(
+                az_thin,
+                z_thin,
+                atol = 1e-6,
+                opts = Arblib.calc_integrate_opt_struct(0, 4_000, 0, 1, 0),
                 warn_on_no_convergence = false,
             ) do t
                 V(l, t) / t
             end
 
-        res_a_b_part1 + res_a_b_part2
-    else
-        Arblib.integrate(
-            a,
-            b,
-            atol = 1e-8,
-            opts = Arblib.calc_integrate_opt_struct(0, 4_000, 0, 1, 0),
-            warn_on_no_convergence = false,
-        ) do t
-            d(k, z, t) * V(l, t) / t
+        # Part of d(k, z, t) depending on both z and t.
+        res_az_thin_z_thin_part_2 =
+            Arblib.integrate(
+                az_thin,
+                z_thin,
+                atol = 1e-6,
+                opts = Arblib.calc_integrate_opt_struct(0, 4_000, 0, 1, 0),
+                warn_on_no_convergence = false,
+            ) do t
+                d_zt_part(k, z, t) * V(l, t) / t
+            end
+
+        res_az_thin_z_thin = res_az_thin_z_thin_part_1 + res_az_thin_z_thin_part_2
+
+        if iswide(z)
+            # Add enclosures of integral from az to az_thin and from
+            # z_thin to z.
+            # IMPROVE: Get better enclosures of this using mean value
+            # theorem?
+            (res_az_thin_z_thin) +
+            ((az_thin - az) * d(k, z, az) * V(l, az) / az) +
+            ((z - z_thin) * d(k, z, z) * V(l, z) / z)
+        else
+            res_az_thin_z_thin # We integrated everything
         end
     end
 
-    # Integrate from b to z by enclosing integrand on z and
-    # multiplying by radius.
-    # TODO: Verify that this is correct
-    res_b_z = if k == 3
-        # IMPROVE: Get better enclosures of this using mean value
-        # theorem.
-        res_b_z_part1 = abs(z - b) * d_3_analytic_z(z, z) * V(l, z) / z
-        res_b_z_part2 = abs(z - b) * d_3_analytic_conj_z(z, z) * V(l, z) / z
-
-        res_b_z_part1 + res_b_z_part2
-    else
-        # IMPROVE: Get better enclosures of this using mean value
-        # theorem.
-        abs(z - b) * d(k, z, z) * V(l, z) / z
-    end
-
-    return res_0_a + res_a_b + res_b_z
+    return res_0_az + res_az_z
 end
 
 function integral_d_k_V_l_other_limit(k::Int, l::Int, z::Acb, b::Acb)
@@ -677,7 +809,7 @@ function integral_d_k_V_l_other_limit(k::Int, l::Int, z::Acb, b::Acb)
 end
 
 function k_inv_N(inv_N)
-    R = Arb("0.99")
+    R = Arb("0.95")
     E_I = 5 // 2 * inv_N + 9 // 2 * inv_N^2 + 5inv_N^3 + 60inv_N^4
     λ = λ_disc()
 

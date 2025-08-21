@@ -13,7 +13,17 @@ import Optim
 import Random
 
 import Arblib:
-    Arf, Arb, Acb, ArbSeries, AcbSeries, ArbPoly, AcbPoly, ubound, abs_ubound, add_error
+    Arf,
+    Arb,
+    Acb,
+    ArbSeries,
+    AcbSeries,
+    ArbPoly,
+    AcbPoly,
+    midpoint,
+    ubound,
+    abs_ubound,
+    add_error
 import GeometryBasics: Point, Point2
 import SpecialFunctions: besselj, besselj0, besselj1, bessely0, bessely1, zeta, gamma
 

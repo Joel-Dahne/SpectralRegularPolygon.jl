@@ -27,14 +27,14 @@ function _polylog_unitdisc(s::Int, z::Arblib.AcbOrRef)
     return Arblib.add_error!(res, tail)
 end
 
+# IMPROVE: Consider special-casing polylog(1, z)
 function polylog(s::Int, z::Union{Arblib.ArbOrRef,Arblib.AcbOrRef})
     if Arblib.contains_zero(z) && 0.25 < abs_ubound(Arb, z) < 1
         # The Flint implementation fails when abs_ubound(Arb, z) is
         # too large. For that reason we use the direct bound when it
         # is a bit larger.
         zᵤ = abs_ubound(Arb, z)
-        C = 1 / (1 - zᵤ)
-        return add_error(zero(z), C^2 * zᵤ)
+        return add_error(zero(z), polylog_r_div_z_bound(1, zᵤ) * zᵤ)
     elseif iswide(z) && !Arblib.contains_zero(z)
         # Explicit use of mean value theorem
         z_mid = Arblib.midpoint(Arblib._nonreftype(typeof(z)), z)
@@ -236,7 +236,7 @@ function S_integral(n::Int, z::Arblib.AcbOrRef)
                 a,
                 b,
                 warn_on_no_convergence = false,
-                opts = Arblib.calc_integrate_opt_struct(0, 1_000, 0, 0, 0),
+                opts = Arblib.calc_integrate_opt_struct(0, 2_000, 0, 0, 0),
             ) do t
                 ArbExtras.derivative_function(n) do inv_N
                     inv_N * t^inv_N * ((1 - t * z)^-2inv_N - 1) / t
@@ -314,11 +314,15 @@ function S_unitdisc(n::Int, z::Acb)
     end
 end
 
+# NOTE: Not finite for z = 1
+function polylog_1_1(z::Arblib.AcbOrRef)
+    return log(1 - z)^2 / 2
+end
+
 function polylog_1_2(z::Arblib.AcbOrRef)
     if Arblib.contains_zero(z) && abs(z) < 1
         zᵤ = abs_ubound(Arb, z)
-        C = 1 / (1 - zᵤ)
-        return add_error(zero(z), C^2 * zᵤ)
+        return add_error(zero(z), polylog_r_div_z_bound(2, zᵤ) * zᵤ)
     elseif Arblib.contains(z, Acb(1))
         return indeterminate(z) # TODO: Implement this
     else
@@ -331,8 +335,7 @@ end
 function polylog_1_3(z::Arblib.AcbOrRef)
     if Arblib.contains_zero(z) && abs(z) < 1
         zᵤ = abs_ubound(Arb, z)
-        C = 1 / (1 - zᵤ)
-        return add_error(zero(z), C^2 * zᵤ)
+        return add_error(zero(z), polylog_r_div_z_bound(2, zᵤ) * zᵤ)
     elseif Arblib.contains(z, Acb(1))
         return indeterminate(z) # TODO: Implement this
     else
@@ -390,8 +393,7 @@ end
 function polylog_2_1(z::Arblib.AcbOrRef)
     if Arblib.contains_zero(z) && abs(z) < 1
         zᵤ = abs_ubound(Arb, z)
-        C = 1 / (1 - zᵤ)
-        return add_error(zero(z), C^2 * zᵤ)
+        return add_error(zero(z), polylog_r_div_z_bound(2, zᵤ) * zᵤ)
     elseif Arblib.contains(z, Acb(1))
         return indeterminate(z) # TODO: Implement this
     else
@@ -405,8 +407,7 @@ end
 function polylog_2_2(z::Arblib.AcbOrRef)
     if Arblib.contains_zero(z) && abs(z) < 1
         zᵤ = abs_ubound(Arb, z)
-        C = 1 / (1 - zᵤ)
-        return add_error(zero(z), C^2 * zᵤ)
+        return add_error(zero(z), polylog_r_div_z_bound(2, zᵤ) * zᵤ)
     elseif Arblib.contains(z, Acb(1))
         return indeterminate(z) # TODO: Implement this
     else
@@ -433,11 +434,15 @@ function polylog_3_1(z::Arblib.AcbOrRef)
     return -polylog(2, z)^2 / 2 - log(1 - z) * polylog(3, z)
 end
 
+# NOTE: Not finite for z = 1
+function polylog_1_1_1(z::Arblib.AcbOrRef)
+    return log(1 - z)^3 / 6
+end
+
 function polylog_1_1_2(z::Arblib.AcbOrRef)
     if Arblib.contains_zero(z) && abs(z) < 1
         zᵤ = abs_ubound(Arb, z)
-        C = 1 / (1 - zᵤ)
-        return add_error(zero(z), C^3 * zᵤ)
+        return add_error(zero(z), polylog_r_div_z_bound(3, zᵤ) * zᵤ)
     elseif Arblib.contains(z, Acb(1))
         return indeterminate(z) # TODO: Implement this
     else
@@ -450,8 +455,7 @@ end
 function polylog_1_2_1(z::Arblib.AcbOrRef)
     if Arblib.contains_zero(z) && abs(z) < 1
         zᵤ = abs_ubound(Arb, z)
-        C = 1 / (1 - zᵤ)
-        return add_error(zero(z), C^3 * zᵤ)
+        return add_error(zero(z), polylog_r_div_z_bound(3, zᵤ) * zᵤ)
     else
         return -Arb(π)^4 / 30 +
                1 // 2 * log(1 - z)^2 * polylog(2, 1 - z) +
@@ -463,8 +467,7 @@ end
 function polylog_2_1_1(z::Arblib.AcbOrRef)
     if Arblib.contains_zero(z) && abs(z) < 1
         zᵤ = abs_ubound(Arb, z)
-        C = 1 / (1 - zᵤ)
-        return add_error(zero(z), C^3 * zᵤ)
+        return add_error(zero(z), polylog_r_div_z_bound(3, zᵤ) * zᵤ)
     else
         return Arb(π)^4 / 30 +
                Arb(π)^2 / 12 * log(1 - z)^2 +
@@ -475,14 +478,13 @@ end
 
 # NOTE: Not finite for z = 1
 function polylog_1_1_1_1(z::Arblib.AcbOrRef)
-    return (1 // 24) * log(1 - z)^4
+    return log(1 - z)^4 / 24
 end
 
 function polylog_1_1_1_2(z::Arblib.AcbOrRef)
     if Arblib.contains_zero(z) && abs(z) < 1
         zᵤ = abs_ubound(Arb, z)
-        C = 1 / (1 - zᵤ)
-        return add_error(zero(z), C^4 * zᵤ)
+        return add_error(zero(z), polylog_r_div_z_bound(4, zᵤ) * zᵤ)
     elseif Arblib.contains(z, Acb(1))
         return indeterminate(z) # TODO: Implement this
     else
@@ -492,4 +494,21 @@ function polylog_1_1_1_2(z::Arblib.AcbOrRef)
             24polylog(5, 1 - z)
         )
     end
+end
+
+"""
+    polylog_r_div_z_bound(r::Int, zᵤ::Arb)
+
+For `0 < zᵤ < 1` return `C` such that for any multiple polylogarithm
+with `r` parameters (with are required to be positive integers) and
+complex `z` with `abs(z) <= zᵤ`, the absolute value is bounded by `C *
+zᵤ`.
+
+IMPROVE: We can get better bounds for specific values of the
+parameters, in particular when all values are 1. Might be worth it to
+implement those specific bounds.
+"""
+function polylog_r_div_z_bound(r::Int, zᵤ::Arb)
+    0 < zᵤ < 1 || return indeterminate(zᵤ)
+    return 1 / (1 - zᵤ)^r
 end

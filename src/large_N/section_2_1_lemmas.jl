@@ -135,27 +135,31 @@ end
 # Lemma 2.10
 ###
 
-function lemma_2_10_d_k_V_l(k::Int, l::Int; verbose = true)
+function lemma_2_10_d_k_V_l(k::Int, l::Int; ubound_tol::Arb = Arb(0), verbose = true)
     a = Arf(1e-3)
 
     verbose && @info "Splitting interval [0, a] and [a, π]" a
 
     # Compute maximum on [0, a]
-    res_0_a = let
-        z = exp(Acb(0, Arb((0, a))))
-        b = exp(Acb(0, a))
+    res_0_a = Arb(0)
+    # TODO: Implement this
+    # res_0_a = let
+    #     z = exp(Acb(0, Arb((0, a))))
+    #     b = exp(Acb(0, a))
 
-        # Integrate from 0 to b
-        term_0_b = integral_d_k_V_l_other_limit(k, l, z, b)
+    #     # Integrate from 0 to b
+    #     term_0_b = integral_d_k_V_l_other_limit(k, l, z, b)
 
-        # Integrate from b to z
-        # TODO: Implement this
-        term_b_z = zero(term_0_b)
+    #     # Integrate from b to z
+    #     # TODO: Implement this
+    #     term_b_z = zero(term_0_b)
 
-        abs(real(term_0_b + term_b_z))
-    end
+    #     abs(real(term_0_b + term_b_z))
+    # end
 
     verbose && @info "Maximum for θ in [0, a]" res_0_a
+
+    verbose && @info "Computing maximum on [a, π]" ubound_tol
 
     # Compute maximum on [a, π]
     res_a_π = ArbExtras.maximum_enclosure(
@@ -163,11 +167,12 @@ function lemma_2_10_d_k_V_l(k::Int, l::Int; verbose = true)
         Arblib.ubound(Arb(π)),
         degree = -1,
         rtol = 1e-3,
-        ubound_tol = Arblib.ubound(res_0_a),
         depth_start = 4,
         abs_value = true,
-        maxevals = 15,
+        depth = 30,
+        maxevals = 2000,
         threaded = true;
+        ubound_tol,
         verbose,
     ) do θ
         z = exp(Acb(0, θ))
