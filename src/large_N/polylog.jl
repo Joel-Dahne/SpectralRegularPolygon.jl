@@ -27,9 +27,10 @@ function _polylog_unitdisc(s::Int, z::Arblib.AcbOrRef)
     return Arblib.add_error!(res, tail)
 end
 
-# IMPROVE: Consider special-casing polylog(1, z)
 function polylog(s::Int, z::Union{Arblib.ArbOrRef,Arblib.AcbOrRef})
-    if Arblib.contains_zero(z) && 0.25 < abs_ubound(Arb, z) < 1
+    if s == 1
+        return -log(1 - z)
+    elseif Arblib.contains_zero(z) && 0.25 < abs_ubound(Arb, z) < 1
         # The Flint implementation fails when abs_ubound(Arb, z) is
         # too large. For that reason we use the direct bound when it
         # is a bit larger.

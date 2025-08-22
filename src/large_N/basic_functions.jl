@@ -1,3 +1,6 @@
+exppii(z::Arblib.AcbOrRef) = Arblib.exp_pi_i!(zero(z), z)
+exppii(z::Arblib.ArbOrRef) = exppii(Acb(z))
+
 """
     abspow!(res, x, y)
 

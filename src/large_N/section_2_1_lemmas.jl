@@ -136,52 +136,27 @@ end
 ###
 
 function lemma_2_10_d_k_V_l(k::Int, l::Int; ubound_tol::Arb = Arb(0), verbose = true)
-    a = Arf(1e-3)
+    verbose && @info "Computing maximum on [0, π]" ubound_tol
 
-    verbose && @info "Splitting interval [0, a] and [a, π]" a
-
-    # Compute maximum on [0, a]
-    res_0_a = Arb(0)
-    # TODO: Implement this
-    # res_0_a = let
-    #     z = exp(Acb(0, Arb((0, a))))
-    #     b = exp(Acb(0, a))
-
-    #     # Integrate from 0 to b
-    #     term_0_b = integral_d_k_V_l_other_limit(k, l, z, b)
-
-    #     # Integrate from b to z
-    #     # TODO: Implement this
-    #     term_b_z = zero(term_0_b)
-
-    #     abs(real(term_0_b + term_b_z))
-    # end
-
-    verbose && @info "Maximum for θ in [0, a]" res_0_a
-
-    verbose && @info "Computing maximum on [a, π]" ubound_tol
-
-    # Compute maximum on [a, π]
-    res_a_π = ArbExtras.maximum_enclosure(
-        a,
-        Arblib.ubound(Arb(π)),
+    res = ArbExtras.maximum_enclosure(
+        Arf(0),
+        Arf(1),
         degree = -1,
         rtol = 1e-3,
         depth_start = 4,
         abs_value = true,
         depth = 30,
-        maxevals = 2000,
+        maxevals = 1000,
         threaded = true;
         ubound_tol,
         verbose,
-    ) do θ
-        z = exp(Acb(0, θ))
-        real(integral_d_k_V_l(k, l, z))
+    ) do θ_div_π
+        real(integral_d_k_V_l(k, l, exppii(θ_div_π)))
     end
 
-    verbose && @info "Maximum for θ in [a, π]" res_a_π
+    verbose && @info "Maximum in [0, π]" res
 
-    return max(res_0_a, res_a_π)
+    return res
 end
 
 function lemma_2_10(; verbose = true)
@@ -193,17 +168,33 @@ function lemma_2_10(; verbose = true)
         #(1, 1),
         #(1, 2),
         #(1, 3),
-        (1, 4), # TODO
+        (1, 4),
         #(2, 1),
         #(2, 2),
-        (2, 3), # TODO
+        (2, 3),
         #(3, 1),
-        (3, 2), # TODO
+        (3, 2),
     ]
 
-    res = map(kls) do (k, l)
+    ubounds = Arb[
+        #3.5,
+        #6,
+        #10,
+        #40,
+        #4,
+        #4,
+        #4,
+        15,
+        #8,
+        #6,
+        10,
+        #35,
+        35,
+    ]
+
+    res = map(kls, ubounds) do (k, l), ubound_tol
         verbose && @info "Computing bounds for k = $k, l = $l"
-        lemma_2_10_d_k_V_l(k, l; verbose)
+        lemma_2_10_d_k_V_l(k, l; ubound_tol, verbose)
     end
 
     # TODO: Bound integral with K_4

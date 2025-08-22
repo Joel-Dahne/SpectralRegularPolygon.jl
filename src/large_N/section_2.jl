@@ -371,6 +371,8 @@ function V_1_div_z_bound(zᵤ::Arb)
     return 2polylog_r_div_z_bound(1, zᵤ)
 end
 
+V_1_log_bound_coefficients() = Arb[2]
+
 function V_2(z)
     λ = λ_disc()
     return (λ / 2 - 2) * polylog(2, z) + 4polylog_1_1(z)
@@ -380,6 +382,11 @@ function V_2_div_z_bound(zᵤ::Arb)
     0 < zᵤ < 1 || return indeterminate(zᵤ)
     λ = λ_disc()
     return abs(λ / 2 - 2) * polylog_r_div_z_bound(1, zᵤ) + 4polylog_r_div_z_bound(2, zᵤ)
+end
+
+function V_2_log_bound_coefficients()
+    λ = λ_disc()
+    return Arb[abs(λ / 2 - 2), 4]
 end
 
 function V_3(z)
@@ -396,6 +403,11 @@ function V_3_div_z_bound(zᵤ::Arb)
            abs(3λ - 12) * polylog_r_div_z_bound(2, zᵤ) +
            abs(λ - 4) * polylog_r_div_z_bound(2, zᵤ) +
            8polylog_r_div_z_bound(3, zᵤ)
+end
+
+function V_3_log_bound_coefficients()
+    λ = λ_disc()
+    return Arb[abs(λ^2 / 16 - λ + 2), abs(3λ-12)+(λ-4), 8]
 end
 
 function V_4(z)
@@ -425,6 +437,16 @@ function V_4_div_z_bound(zᵤ::Arb)
            abs(2λ * zeta(Arb(3))) * polylog_r_div_z_bound(1, zᵤ)
 end
 
+function V_4_log_bound_coefficients()
+    λ = λ_disc()
+    return Arb[
+        abs(λ^3/192-λ^2/8-λ/2-2)+abs(2λ*zeta(Arb(3))),
+        abs(λ^2/8-2λ+4)+abs(λ^2/4-4λ+12)+abs(5λ^2/8-8λ+28),
+        abs(2λ-8)+abs(6λ-24)+abs(14λ-56),
+        16,
+    ]
+end
+
 V(l::Int, z) =
     if l == 1
         V_1(z)
@@ -447,19 +469,28 @@ V_div_z_bound(l::Int, zᵤ::Arb) =
         V_4_div_z_bound(zᵤ)
     end
 
-# Return C s.t. abs(V_2(z)) <= C * abs(z)
-function V_2_bound(z::Acb)
-    (λ_disc() / 2 - 2) * polylog(2, z) + 2log(1 - z)^2
-end
+"""
+    V_log_bound_coefficients(l::Int)
+
+Return coefficients `Cs` such that
+```
+abs(V(l, t)) <= sum(j -> C[j] * abs(log(1 - t))^j / factorial(j), 1:l)
+```
+"""
+V_log_bound_coefficients(l::Int) =
+    if l == 1
+        V_1_log_bound_coefficients()
+    elseif l == 2
+        V_2_log_bound_coefficients()
+    elseif l == 3
+        V_3_log_bound_coefficients()
+    elseif l == 4
+        V_4_log_bound_coefficients()
+    end
 
 d_0(z, t) = one(z)
-d_0_z_part(z) = one(z)
-d_0_zt_part(z, t) = zero(z)
 
 d_1(z, t) = λ_disc() / 4 * log(t / z)
-d_1_z_part(z) = zero(z)
-d_1_zt_part(z, t) = λ_disc() / 4 * log(t / z)
-
 function d_2(z, t)
     λ = λ_disc()
     return λ^2 / 64 * log(t / z)^2 +
@@ -591,11 +622,7 @@ d(k::Int, z, t) =
 
 # Part of d only depending on z
 d_z_part(k::Int, z) =
-    if k == 0
-        d_0_z_part(z)
-    elseif k == 1
-        d_1_z_part(z)
-    elseif k == 2
+    if k == 2
         d_2_z_part(z)
     elseif k == 3
         d_3_z_part(z)
@@ -603,11 +630,7 @@ d_z_part(k::Int, z) =
 
 # Part of d only depending on z and t
 d_zt_part(k::Int, z, t) =
-    if k == 0
-        d_0_zt_part(z, t)
-    elseif k == 1
-        d_1_zt_part(z, t)
-    elseif k == 2
+    if k == 2
         d_2_zt_part(z, t)
     elseif k == 3
         d_3_zt_part(z, t)
@@ -694,38 +717,52 @@ function integral_d_k_V_l(k::Int, l::Int, z::Acb)
         (V_div_t) * (integral_d(k, z, a))
     end
 
-    # Integrate from a * z to z
-    # TODO: We need to verify analyticity for this to be correct,
-    # which we might not have.
-    res_az_z = let
+    b = Arblib.contains(z, Acb(1)) ? Arb(0.999) : Arb(1)
+    bz = b * z
+
+    # Integrate from a * z to b * z
+    res_az_bz = let
         # Arblib.integrate doesn't handle wide integration limits very
         # well. For that reason we integrate from the midpoint of the
         # endpoints if z is wide, and add the remaining part later.
-        az_thin, z_thin = if iswide(z)
-            midpoint(Acb, az), midpoint(Acb, z)
+        az_thin, bz_thin = if iswide(z)
+            midpoint(Acb, az), midpoint(Acb, bz)
         else
-            az, z
+            az, bz
         end
 
-        # Part of d(k, z, t) only depending on z, so we can factor it
-        # out.
-
-        res_az_thin_z_thin_part_1 =
-            d_z_part(k, z) * Arblib.integrate(
+        # TODO: Verify analyticity
+        res_az_thin_bz_thin = if k == 0 || k == 1
+            Arblib.integrate(
                 az_thin,
-                z_thin,
+                bz_thin,
                 atol = 1e-6,
                 opts = Arblib.calc_integrate_opt_struct(0, 4_000, 0, 1, 0),
                 warn_on_no_convergence = false,
             ) do t
-                V(l, t) / t
+                d(k, z, t) * V(l, t) / t
             end
+        else
+            # Split d into two terms, one depending only on z and one
+            # depending on both z and t.
 
-        # Part of d(k, z, t) depending on both z and t.
-        res_az_thin_z_thin_part_2 =
-            Arblib.integrate(
+            # Part of d(k, z, t) only depending on z, so we can factor it
+            # out.
+            res_az_thin_bz_thin_part_1 =
+                d_z_part(k, z) * Arblib.integrate(
+                    az_thin,
+                    bz_thin,
+                    atol = 1e-6,
+                    opts = Arblib.calc_integrate_opt_struct(0, 4_000, 0, 1, 0),
+                    warn_on_no_convergence = false,
+                ) do t
+                    V(l, t) / t
+                end
+
+            # Part of d(k, z, t) depending on both z and t.
+            res_az_thin_bz_thin_part_2 = Arblib.integrate(
                 az_thin,
-                z_thin,
+                bz_thin,
                 atol = 1e-6,
                 opts = Arblib.calc_integrate_opt_struct(0, 4_000, 0, 1, 0),
                 warn_on_no_convergence = false,
@@ -733,79 +770,39 @@ function integral_d_k_V_l(k::Int, l::Int, z::Acb)
                 d_zt_part(k, z, t) * V(l, t) / t
             end
 
-        res_az_thin_z_thin = res_az_thin_z_thin_part_1 + res_az_thin_z_thin_part_2
+            res_az_thin_bz_thin_part_1 + res_az_thin_bz_thin_part_2
+        end
 
         if iswide(z)
             # Add enclosures of integral from az to az_thin and from
             # z_thin to z.
             # IMPROVE: Get better enclosures of this using mean value
             # theorem?
-            (res_az_thin_z_thin) +
-            ((az_thin - az) * d(k, z, az) * V(l, az) / az) +
-            ((z - z_thin) * d(k, z, z) * V(l, z) / z)
+            (res_az_thin_bz_thin) +
+            (az_thin - az) * d(k, z, az) * V(l, az) / az +
+            (bz - bz_thin) * d(k, z, bz) * V(l, bz) / bz
         else
-            res_az_thin_z_thin # We integrated everything
+            res_az_thin_bz_thin # We integrated everything
         end
     end
 
-    return res_0_az + res_az_z
-end
-
-function integral_d_k_V_l_other_limit(k::Int, l::Int, z::Acb, b::Acb)
-    a = 1e-5b
-
-    # Integrate from 0 to a
-    # TODO: Implement proper version of this
-    if k == 3
-        # TODO: Improve this enclosure using mean value theorem. That
-        # requires evaluation with AcbSeries though.
-        res_0_a_part1 = d_3_analytic_z(z, z) * V(l, z) / z
-        res_0_a_part2 = d_3_analytic_conj_z(z, z) * V(l, z) / z
-
-        res_0_a = Arblib.union(zero(a), a) * (res_0_a_part1 + res_0_a_part2)
+    res_bz_z = if isone(b)
+        zero(res_az_bz) # We integrated everything
     else
-        res_0_a = Arblib.union(zero(a), a) * d(k, z, a) * V(l, a) / a
-    end
-
-    # Integrate from a to b
-    # TODO: We need to verify analyticity for this to be correct,
-    # which we might not have.
-    res_a_b = if k == 3
-        res_a_b_part1 = Arblib.integrate(
-            a,
-            b,
-            atol = 1e-8,
-            opts = Arblib.calc_integrate_opt_struct(0, 2_000, 0, 0, 0),
-            warn_on_no_convergence = false,
-        ) do t
-            d_3_zt_part(z, t) * V(l, t) / t
-        end
-
-        res_a_b_part2 =
-            d_3_z_part(z) * Arblib.integrate(
-                a,
-                b,
-                atol = 1e-8,
-                opts = Arblib.calc_integrate_opt_struct(0, 2_000, 0, 0, 0),
-                warn_on_no_convergence = false,
-            ) do t
-                V(l, t) / t
+        let t = Arblib.union(bz, z)
+            # Factor out d(k, z, t) / t from the integral. That leaves
+            # ∫ V(l, t) dt from t = b * z to z.
+            # The change of variables s = t / z gives
+            # ∫ V(l, s * z) ds from s = b to 1.
+            #
+            Cs = V_log_bound_coefficients(l)
+            d(k, z, t) / t * sum(1:l) do j
+                Cs[j] / factorial(j) * integral_log_1mtz(Acb(1), j, b)
             end
-
-        res_a_b_part1 + res_a_b_part2
-    else
-        Arblib.integrate(
-            a,
-            b,
-            atol = 1e-8,
-            opts = Arblib.calc_integrate_opt_struct(0, 4_000, 0, 0, 0),
-            warn_on_no_convergence = false,
-        ) do t
-            d(k, z, t) * V(l, t) / t
         end
     end
 
-    return res_0_a + res_a_b
+    return res_0_az + res_az_bz + res_bz_z
 end
 
 function k_inv_N(inv_N)
