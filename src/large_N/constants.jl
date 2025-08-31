@@ -1,5 +1,11 @@
 const N₀ = 64
 
+# Lemma 2.10
+const C_I_1_4 = "15"
+const C_I_2_3 = "10"
+const C_I_3_2 = "35"
+const C_I_4_1 = "40"
+
 # Lemma 2.13
 const C_a_0 = "0.805"
 
@@ -17,3 +23,9 @@ const C_V_1 = "2.5"
 const C_V_2 = "4.5"
 const C_V_3 = "5"
 const C_V_4 = "60"
+
+# Before Lemma 2.17
+const C_E_I_1 = "2.5" # FIXME: Update this
+const C_E_I_2 = "4.5" # FIXME: Update this
+const C_E_I_3 = "5" # FIXME: Update this
+const C_E_I_4 = "60" # FIXME: Update this

@@ -96,8 +96,6 @@ checkcompatible(::Type{Bool}, M1::TaylorModel, M2::TaylorModel) =
 
 Throw an error if `M1` and `M2` are not compatible according to
 `checkcompatible(Bool, M1, M2)`.
-
-**IMPROVE:** Add info about what failed.
 """
 checkcompatible(M1::TaylorModel, M2::TaylorModel) =
     if !checkcompatible(Bool, M1, M2)

@@ -1,24 +1,54 @@
-# PROVE: We need to verify that these are indeed the first zeros. For
-# the first one we could do this with ArbExtras.isolate_roots. For the
-# second one we have to explicitly handle the neighbourhood of zero,
-# but that is fine. For the computational cost it would however be
-# nice to not have to do this every time.
-λ_disc() = ArbExtras.refine_root(besselj0, Arb((sqrt(Arf(5.7)), sqrt(Arf(5.8)))))^2
-λ₂_disc() = ArbExtras.refine_root(besselj1, Arb((Arf(3.75), Arf(3.875))))^2
+"""
+    λ_disc()
 
+Compute an enclosure of the first eigenvalue of the disc.
+
+**PROVE:** We need to verify that this indeed is the first zero. We
+could do this with ArbExtras.isolate_roots, but it requires more
+computations if we do this every time.
+"""
+λ_disc() = ArbExtras.refine_root(besselj0, Arb((sqrt(Arf(5.7)), sqrt(Arf(5.8)))))^2
+
+"""
+    λ_approx(inv_N::Union{Arb,ArbSeries})
+
+Compute an enclosure of
+```
+λ * (1 + 4zeta(3) / N^3 + (12 - 2λ) * zeta(5) / N^5)
+```
+Note that this takes as input `inv(N)` and not `N`.
+"""
 function λ_approx(inv_N::Union{Arb,ArbSeries})
     λ = λ_disc()
     return λ * (1 + 4zeta(Arb(3)) * inv_N^3 + (12 - 2λ) * zeta(Arb(5)) * inv_N^5)
 end
+
+"""
+    λ_approx_div_λ(inv_N::Union{Arb,ArbSeries})
+
+Compute an enclosure of [`λ_approx`](@ref) divided by `λ`, i.e.
+```
+1 + 4zeta(3) / N^3 + (12 - 2λ) * zeta(5) / N^5
+```
+Note that this takes as input `inv(N)` and not `N`.
+"""
 λ_approx_div_λ(inv_N::Union{Arb,ArbSeries}) =
     1 + 4zeta(Arb(3)) * inv_N^3 + (12 - 2λ_disc()) * zeta(Arb(5)) * inv_N^5
 
-# IMPROVE: We could cache this value
-# Enclosure of (sqrt(λ_approx / λ) - 1) * N^3 for N >= N₀.
+"""
+    sqrt_λ_approx_div_λ_remainder_N3(N₀::Int)
+
+Compute an enclosure of
+```
+(sqrt(λ_approx / λ) - 1) * N^3
+```
+that is valid for all `N >= N₀`.
+"""
 function sqrt_λ_approx_div_λ_remainder_N3(N₀::Int)
     N_max = 100
+
+    # Compute enclosure for N₀ <= N <= N_max - 1
     λ = λ_disc()
-    # Compute enclosure for N from N₀ to N_max
     values = map(N₀:(N_max-1)) do N
         inv_N = Arb(1 // N)
         (sqrt(λ_approx_div_λ(inv_N)) - 1) / inv_N^3
@@ -33,14 +63,20 @@ function sqrt_λ_approx_div_λ_remainder_N3(N₀::Int)
     return Arblib.union(res1, res2)
 end
 
-# IMPROVE: We could cache this value
-# Enclosure of (sqrt(λ_approx / λ) - ...) * N^6 for N >= N₀,
-# where ... denotes the first three terms in the expansion of
-# sqrt(λ_approx / λ) in inv(N).
+"""
+    sqrt_λ_approx_div_λ_remainder_N6(N₀::Int)
+
+Compute an enclosure of
+```
+(sqrt(λ_approx / λ) - 1 - 2zeta(3) / N^3 - (6 - λ) * zeta(5) / N^5) * N^6
+```
+that is valid for all `N >= N₀`.
+"""
 function sqrt_λ_approx_div_λ_remainder_N6(N₀::Int)
     N_max = 1000
+
+    # Compute enclosure for N₀ <= N <= N_max - 1
     λ = λ_disc()
-    # Compute enclosure for N from N₀ to N_max
     values = map(N₀:(N_max-1)) do N
         inv_N = Arb(1 // N)
         (
@@ -59,21 +95,50 @@ function sqrt_λ_approx_div_λ_remainder_N6(N₀::Int)
     return Arblib.union(res1, res2)
 end
 
-# c_N but computed using rgamma instead of gamma since that gives
-# better enclosures.
-_c_N(inv_N::Union{Arb,ArbSeries}) = sqrt(
-    (rgamma(1 + inv_N)^2 * rgamma(1 - 2inv_N)) / (rgamma(1 - inv_N)^2 * rgamma(1 + 2inv_N)),
-)
+"""
+    _c_N(inv_N::Union{Arb,ArbSeries})
 
-# IMPROVE: We could cache this value
-# Enclosure of (c_N - 1) * N^3 for N >= N₀
+Compute an enclosure of `c_N`, given by
+```
+sqrt((gamma(1 - 1 / N)^2 * gamma(1 + 2 / N)) / (gamma(1 + 1 / N)^2 * gamma(1 - 2 / N)))
+```
+Note that this takes as input `inv(N)` and not `N`.
+
+The computation is done using the formulation
+```
+rgamma(1 + 1 / N) / rgamma(1 - 1 / N) * sqrt(rgamma(1 - 2 / N) / rgamma(1 + 2 / N))
+```
+which is slightly more efficient. Here `rgamma(z) = 1 / gamma(z)` is
+the reciprocal gamma function.
+"""
+_c_N(inv_N::Union{Arb,ArbSeries}) =
+    rgamma(1 + inv_N) / rgamma(1 - inv_N) * sqrt(rgamma(1 - 2inv_N) / rgamma(1 + 2inv_N))
+
+"""
+    c_N(N₀::Int)
+
+Compute an enclosure of `c_N` that is valid for all `N >= N₀`.
+"""
+c_N(N₀::Int) = 1 + c_N_remainder_mul_N3(N₀) * Arb((0, 1 // N₀))^3
+
+"""
+    c_N_remainder_mul_N3(N₀::Int)
+
+Compute an enclosure of
+```
+(c_N - 1) * N^3
+```
+that is valid for all `N >= N₀`.
+"""
 function c_N_remainder_mul_N3(N₀::Int)
     N_max = 10000
-    # Compute enclosure for N from N₀ to N_max
+
+    # Compute enclosure for N₀ <= N <= N_max - 1
     values = map(N₀:(N_max-1)) do N
         (_c_N(Arb(1 // N)) - 1) * N^3
     end
     res1 = foldl(Arblib.union, values)
+
     # Compute enclosure for N >= N_max
     res2 = fx_div_x(Arb((0, 1 // N_max)), 3, force = true) do inv_N
         _c_N(inv_N) - 1
@@ -82,12 +147,19 @@ function c_N_remainder_mul_N3(N₀::Int)
     return Arblib.union(res1, res2)
 end
 
-# IMPROVE: We could cache this value
-# Enclosure of (c_N - ...) * N^6 for N >= N₀, where ... denotes the
-# first three terms in the expansion of c_N in inv(N).
+"""
+    c_N_remainder_mul_N6(N₀::Int)
+
+Compute an enclosure of
+```
+(c_N - 1 + 2zeta(3) / N^3 + 6zeta(5) / N^5) * N^6
+```
+that is valid for all `N >= N₀`.
+"""
 function c_N_remainder_mul_N6(N₀::Int)
     N_max = 20000
-    # Compute enclosure for N from N₀ to N_max
+
+    # Compute enclosure for N₀ <= N <= N_max - 1
     values = map(N₀:(N_max-1)) do N
         inv_N = Arb(1 // N)
         (_c_N(inv_N) - 1 + 2zeta(Arb(3)) * inv_N^3 + 6zeta(Arb(5)) * inv_N^5) / inv_N^6
@@ -102,8 +174,10 @@ function c_N_remainder_mul_N6(N₀::Int)
     return Arblib.union(res1, res2)
 end
 
-# Enclosure of C_N for N >= N₀
-c_N(N₀::Int) = 1 + c_N_remainder_mul_N3(N₀) * Arb((0, 1 // N₀))^3
+
+function F_N(inv_N::Arb, z::Acb)
+    return 1 + inv_N * F_N_sub_1_mul_N(inv_N, z)
+end
 
 function F_N_sub_1_mul_N(inv_N::Arb, z::Acb)
     a = Arb(1e-8)
@@ -131,10 +205,6 @@ function F_N_sub_1_mul_N(inv_N::Arb, z::Acb)
     end
 
     return res_0_a + res_a_b + res_b_1
-end
-
-function F_N(inv_N::Arb, z::Acb)
-    return 1 + inv_N * F_N_sub_1_mul_N(inv_N, z)
 end
 
 function abs_F_N_remainder_N6(N₀::Int, z::Acb)
@@ -354,14 +424,9 @@ function T_6_bound(N₀::Int)
         term3_part = abs(1 + inv_N * F_N_sub_1_mul_N_enclosure)
 
         term3 = term3_part * factor_term3
-        #@show (term1, term2, term2)
+
         return term1 + term2 + term3
     end
-end
-
-function g_dw3(w)
-    λ = λ_disc()
-    return λ^(3 // 2) * (3besselj1(w * sqrt(λ) - besselj(oftype(λ, 3), w * sqrt(λ)))) / 4
 end
 
 V_1(z) = 2polylog(1, z)
@@ -821,11 +886,20 @@ function integral_d_k_V_l(k::Int, l::Int, z::Acb)
     return res_0_az + res_az_bz + res_bz_z
 end
 
-function k_inv_N(inv_N)
-    R = Arb("0.95")
-    E_I = 5 // 2 * inv_N + 9 // 2 * inv_N^2 + 5inv_N^3 + 60inv_N^4
-    λ = λ_disc()
+function integral_K_4_V_1(z::Acb)
+    # TODO: Implement this
 
+    return zero(z)
+end
+
+function k_inv_N(inv_N::Union{Arb,ArbSeries})
+    R = Arb(R_inner)
+    E_I =
+        Arb(C_E_I_1) * inv_N +
+        Arb(C_E_I_2) * inv_N^2 +
+        Arb(C_E_I_3) * inv_N^3 +
+        Arb(C_E_I_4) * inv_N^4
+    λ = λ_disc()
     a₀ = _c_N(inv_N) / (sqrt(λ) * besselj1(sqrt(λ)))
 
     return (
@@ -836,15 +910,15 @@ function k_inv_N(inv_N)
     )
 end
 
-function ϵ_prime(inv_N)
-    ϵ = 232inv_N^6 + 61inv_N^7 + 182inv_N^8
+function ϵ_prime(inv_N::Union{Arb,ArbSeries})
+    ϵ = Arb(C_ε_6) * inv_N^6 + Arb(C_ε_7) * inv_N^7 + Arb(C_ε_8) * inv_N^8
 
     sqrt(Arb(π)) * ϵ / sqrt(k_inv_N(inv_N))
 end
 
 function λ_sup_m_λ_inf(inv_N::Union{Arb,ArbSeries})
     # inv(N + 1)
-    inv_Np1 = inv_N / (1 + inv_N)
+    inv_Np1 = inv_N / (1 + inv_N) # TODO: Write nicer
 
     λ_disc() * (
         λ_approx_div_λ(inv_N) / (1 + ϵ_prime(inv_N)) -
@@ -854,10 +928,11 @@ end
 
 function q_sup_m_q_inf(inv_N::Union{Arb,ArbSeries})
     # inv(N + 1) and inv(N + 2)
-    inv_Np1 = inv_N / (1 + inv_N)
-    inv_Np2 = inv_Np1 / (1 + inv_Np1)
+    inv_Np1 = inv_N / (1 + inv_N) # TODO: Write nicer
+    inv_Np2 = inv_Np1 / (1 + inv_Np1) # TODO: Write nicer
 
-    λ_approx_div_λ(inv_N) * (1 - ϵ_prime(inv_Np1)) / ((1 + ϵ_prime(inv_N)) * λ_approx_div_λ(inv_Np1)) -
+    λ_approx_div_λ(inv_N) * (1 - ϵ_prime(inv_Np1)) /
+    ((1 + ϵ_prime(inv_N)) * λ_approx_div_λ(inv_Np1)) -
     λ_approx_div_λ(inv_Np1) * (1 + ϵ_prime(inv_Np2)) /
     ((1 - ϵ_prime(inv_Np1)) * λ_approx_div_λ(inv_Np2))
 end
