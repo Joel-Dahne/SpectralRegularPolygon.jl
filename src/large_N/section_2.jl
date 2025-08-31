@@ -636,6 +636,22 @@ d_zt_part(k::Int, z, t) =
         d_3_zt_part(z, t)
     end
 
+function K(inv_N::Arb, z::Acb, t::Acb)
+    sqrt_ρ = _c_N(inv_N) * sqrt(λ_approx(inv_N))
+    return besselj0(
+        sqrt_ρ *
+        abs(z)^inv_N *
+        sqrt(F_N(inv_N, conj(z)) * (F_N(inv_N, z) - (t / z)^inv_N * F_N(inv_N, t))),
+    )
+end
+
+function K_4(inv_N::Arb, z::Acb, t::Acb)
+    return (
+        K(inv_N, z, t) - d(0, z, t) - inv_N * d(1, z, t) - inv_N^2 * d(2, z, t) -
+        inv_N^3 * d(3, z, t)
+    ) / inv_N^4
+end
+
 """
     integral_d(k::Int, z::Acb, a::Arb)
 
@@ -841,7 +857,7 @@ function q_sup_m_q_inf(inv_N::Union{Arb,ArbSeries})
     inv_Np1 = inv_N / (1 + inv_N)
     inv_Np2 = inv_Np1 / (1 + inv_Np1)
 
-    λ_approx(inv_N) * (1 - ϵ_prime(inv_Np1)) / ((1 + ϵ_prime(inv_N)) * λ_approx(inv_Np1)) -
-    λ_approx(inv_Np1) * (1 + ϵ_prime(inv_Np2)) /
-    ((1 - ϵ_prime(inv_Np1)) * λ_approx(inv_Np2))
+    λ_approx_div_λ(inv_N) * (1 - ϵ_prime(inv_Np1)) / ((1 + ϵ_prime(inv_N)) * λ_approx_div_λ(inv_Np1)) -
+    λ_approx_div_λ(inv_Np1) * (1 + ϵ_prime(inv_Np2)) /
+    ((1 - ϵ_prime(inv_Np1)) * λ_approx_div_λ(inv_Np2))
 end

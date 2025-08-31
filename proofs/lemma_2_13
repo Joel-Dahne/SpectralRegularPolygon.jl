@@ -1,0 +1,81 @@
+### A Pluto.jl notebook ###
+# v0.20.13
+
+using Markdown
+using InteractiveUtils
+
+# ╔═╡ bf4a305a-85a5-11f0-3568-3939d89b09b9
+begin
+    using Pkg
+    Pkg.activate("..", io = devnull)
+    using SpectralRegularPolygons
+    using CairoMakie
+    using Arblib
+    using ArbExtras
+    using OhMyThreads
+    using PlutoUI
+    using SpecialFunctions
+
+    import SpectralRegularPolygons as SRP
+    import ProgressLogging: @withprogress, @logprogress
+
+    setprecision(Arb, 128)
+end
+
+# ╔═╡ ec091e68-4e03-4985-829e-fc1941f10e0c
+md"""
+# Proof of Lemma 2.13
+This notebook contains the computer-assisted part of the proof of Lemma 2.13.
+"""
+
+# ╔═╡ 862a900f-4179-41d7-b4fc-95517effcf76
+md"""
+## Goal
+We want to prove that
+
+$$|a_0| \leq C_{a_0},$$
+
+where
+
+$$a_0 = \frac{c_N}{\lambda^{1/2}J_1(\lambda^{1/2})}$$
+
+and $C_{a_0}$ is given by:
+"""
+
+# ╔═╡ ec700cd2-d9a1-4c70-ad14-786fa42b33dd
+C_a_0 = SRP.C_a_0
+
+# ╔═╡ 311e1925-2f21-4bf2-82d8-3fb55875d968
+md"""
+## Proof
+From the same lemma in the paper we have that $|c_N| \leq 1$, hence
+
+$$|a_0| \leq \frac{1}{\lambda^{1/2}J_1(\lambda^{1/2})},$$
+
+where we can enclose the left hand side directly:
+"""
+
+# ╔═╡ de88b6f6-1e1d-40ec-aefa-65c4a6fa43ed
+λ = SRP.λ_disc()
+
+# ╔═╡ abc2f9f9-a622-4d50-85d9-2ffb5fc379b8
+a_0_bound = 1 / (sqrt(λ) * besselj1(sqrt(λ)))
+
+# ╔═╡ d008caab-a6e9-4d57-902b-1d305bb4d030
+md"""
+Finally, we verify that the required bound holds:
+"""
+
+# ╔═╡ 876cbdd3-b42f-4962-bb1d-137cbd2d0f0e
+a_0_bound <= Arb(C_a_0)
+
+# ╔═╡ Cell order:
+# ╟─ec091e68-4e03-4985-829e-fc1941f10e0c
+# ╠═bf4a305a-85a5-11f0-3568-3939d89b09b9
+# ╟─862a900f-4179-41d7-b4fc-95517effcf76
+# ╠═ec700cd2-d9a1-4c70-ad14-786fa42b33dd
+# ╟─311e1925-2f21-4bf2-82d8-3fb55875d968
+# ╠═de88b6f6-1e1d-40ec-aefa-65c4a6fa43ed
+# ╠═abc2f9f9-a622-4d50-85d9-2ffb5fc379b8
+# ╟─d008caab-a6e9-4d57-902b-1d305bb4d030
+# ╠═876cbdd3-b42f-4962-bb1d-137cbd2d0f0e

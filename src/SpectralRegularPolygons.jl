@@ -44,6 +44,7 @@ include("MPS/enclosing/eigenvalue.jl")
 
 include("precomputed_eigenvalues.jl")
 
+include("large_N/constants.jl")
 include("large_N/special_functions.jl")
 include("large_N/basic_functions.jl")
 include("large_N/basic_integrals.jl")
