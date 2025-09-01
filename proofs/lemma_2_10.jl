@@ -73,58 +73,49 @@ md"""
 
 # ╔═╡ cf4e04c7-26f2-400b-a885-c3e495e42f78
 I_d_1_V_4 = tmap(θs_div_πs) do θ_div_π
-	SRP.integral_d_k_V_l(1, 4, SRP.exppii(θ_div_π))
+    SRP.integral_d_k_V_l(1, 4, SRP.exppii(θ_div_π))
 end
 
 # ╔═╡ 67e1ad91-7da5-4985-b8c3-ca1cc84a47fb
 I_d_2_V_3 = tmap(θs_div_πs) do θ_div_π
-	SRP.integral_d_k_V_l(2, 3, SRP.exppii(θ_div_π))
+    SRP.integral_d_k_V_l(2, 3, SRP.exppii(θ_div_π))
 end
 
 # ╔═╡ a820d24b-9387-4ef5-a959-a4baaf93fdb2
 I_d_3_V_2 = tmap(θs_div_πs) do θ_div_π
-	SRP.integral_d_k_V_l(3, 2, SRP.exppii(θ_div_π))
+    SRP.integral_d_k_V_l(3, 2, SRP.exppii(θ_div_π))
 end
 
 # ╔═╡ a0bcac27-bbf7-481e-96bd-f1b619e7a54a
 I_K_4_V_1 = tmap(θs_div_πs) do θ_div_π
-	SRP.integral_K_4_V_1(SRP.exppii(θ_div_π))
+    SRP.integral_K_4_V_1(SRP.exppii(θ_div_π))
 end
 
 # ╔═╡ 7bc1266a-4f01-439b-81fb-5b1e86612ef2
 let
-	fig = Figure()
-	ax = Axis(
-		fig[1, 1],
-		xlabel = L"\theta",
-	)
-	band!(ax, θs, lbound.(real(I_d_1_V_4)), ubound.(real(I_d_1_V_4)))
-	hlines!(ax, [-15, 15])
-	fig
+    fig = Figure()
+    ax = Axis(fig[1, 1], xlabel = L"\theta")
+    band!(ax, θs, lbound.(real(I_d_1_V_4)), ubound.(real(I_d_1_V_4)))
+    hlines!(ax, [-15, 15])
+    fig
 end
 
 # ╔═╡ 6187163b-832d-4c9f-862f-a3483505fda6
 let
-	fig = Figure()
-	ax = Axis(
-		fig[1, 1],
-		xlabel = L"\theta",
-	)
-	band!(ax, θs, lbound.(real(I_d_2_V_3)), ubound.(real(I_d_2_V_3)))
-	hlines!(ax, [-10, 10])
-	fig
+    fig = Figure()
+    ax = Axis(fig[1, 1], xlabel = L"\theta")
+    band!(ax, θs, lbound.(real(I_d_2_V_3)), ubound.(real(I_d_2_V_3)))
+    hlines!(ax, [-10, 10])
+    fig
 end
 
 # ╔═╡ a7509228-24ea-4395-8bdc-57457c63e28b
 let
-	fig = Figure()
-	ax = Axis(
-		fig[1, 1],
-		xlabel = L"\theta",
-	)
-	band!(ax, θs, lbound.(real(I_d_3_V_2)), ubound.(real(I_d_3_V_2)))
-	hlines!(ax, [-35, 35])
-	fig
+    fig = Figure()
+    ax = Axis(fig[1, 1], xlabel = L"\theta")
+    band!(ax, θs, lbound.(real(I_d_3_V_2)), ubound.(real(I_d_3_V_2)))
+    hlines!(ax, [-35, 35])
+    fig
 end
 
 # ╔═╡ 93cf97f7-54c1-4101-93b8-09890db8de86
@@ -133,73 +124,73 @@ md"""
 """
 
 # ╔═╡ f293357f-b59f-46e8-9b68-a83f1a7cbe42
-ArbExtras.maximum_enclosure(
-	Arf(0),
-	Arf(1),
-	degree = -1,
-	rtol = 1e-3,
-	ubound_tol = Arb(C_I_1_4),
-	depth_start = 4,
-	depth = 30,
-	abs_value = true,
-	threaded = true,
-	verbose = true,
+@time ArbExtras.maximum_enclosure(
+    Arf(0),
+    Arf(1),
+    degree = -1,
+    rtol = 1e-3,
+    ubound_tol = Arb(C_I_1_4),
+    depth_start = 4,
+    depth = 30,
+    abs_value = true,
+    threaded = true,
+    verbose = true,
 ) do θ_div_π
-	real(SRP.integral_d_k_V_l(1, 4, SRP.exppii(θ_div_π)))
+    real(SRP.integral_d_k_V_l(1, 4, SRP.exppii(θ_div_π)))
 end
 
 # ╔═╡ 0cfdcd21-461a-4626-b7c8-f6257b9ff3e6
-ArbExtras.maximum_enclosure(
-	Arf(0),
-	Arf(1),
-	degree = -1,
-	rtol = 1e-3,
-	ubound_tol = Arb(C_I_2_3),
-	depth_start = 4,
-	depth = 30,
-	abs_value = true,
-	threaded = true,
-	verbose = true,
+@time ArbExtras.maximum_enclosure(
+    Arf(0),
+    Arf(1),
+    degree = -1,
+    rtol = 1e-3,
+    ubound_tol = Arb(C_I_2_3),
+    depth_start = 4,
+    depth = 30,
+    abs_value = true,
+    threaded = true,
+    verbose = true,
 ) do θ_div_π
-	real(SRP.integral_d_k_V_l(2, 3, SRP.exppii(θ_div_π)))
+    real(SRP.integral_d_k_V_l(2, 3, SRP.exppii(θ_div_π)))
 end
 
 # ╔═╡ 3d283f17-149d-4e1d-a6d3-0ed64a449490
-ArbExtras.maximum_enclosure(
-	Arf(0),
-	Arf(1),
-	degree = -1,
-	rtol = 1e-3,
-	ubound_tol = Arb(C_I_3_2),
-	depth_start = 4,
-	depth = 30,
-	abs_value = true,
-	threaded = true,
-	verbose = true,
+@time ArbExtras.maximum_enclosure(
+    Arf(0),
+    Arf(1),
+    degree = -1,
+    rtol = 1e-3,
+    ubound_tol = Arb(C_I_3_2),
+    depth_start = 4,
+    depth = 30,
+    abs_value = true,
+    threaded = true,
+    verbose = true,
 ) do θ_div_π
-	real(SRP.integral_d_k_V_l(3, 2, SRP.exppii(θ_div_π)))
+    real(SRP.integral_d_k_V_l(3, 2, SRP.exppii(θ_div_π)))
 end
 
 # ╔═╡ 67c63d90-496a-4fca-9146-b2ba24ebb4be
-ArbExtras.maximum_enclosure(
-	Arf(0),
-	Arf(1),
-	degree = -1,
-	rtol = 1e-3,
-	ubound_tol = Arb(C_I_4_1),
-	depth_start = 4,
-	depth = 30,
-	abs_value = true,
-	threaded = true,
-	verbose = true,
+@time ArbExtras.maximum_enclosure(
+    Arf(0),
+    Arf(1),
+    degree = -1,
+    rtol = 1e-3,
+    ubound_tol = Arb(C_I_4_1),
+    depth_start = 4,
+    depth = 30,
+    abs_value = true,
+    threaded = true,
+    verbose = true,
 ) do θ_div_π
-	real(SRP.integral_K_4_V_1(SRP.exppii(θ_div_π)))
+    real(SRP.integral_K_4_V_1(SRP.exppii(θ_div_π)))
 end
 
 # ╔═╡ Cell order:
 # ╟─18d792d6-8c0c-4214-bd98-670611da3e1e
 # ╠═fca89648-853b-11f0-3116-5b610b900eb4
-# ╠═bdc6dcff-50a0-49d7-98a2-00b24f5ecfe6
+# ╟─bdc6dcff-50a0-49d7-98a2-00b24f5ecfe6
 # ╠═d22dc5aa-bac2-4f8a-968b-ece39e295129
 # ╠═5c5f73da-4135-412f-a31f-da02450f235a
 # ╠═4b108a4d-cd35-4f5c-ad2f-523d6c3c73d9

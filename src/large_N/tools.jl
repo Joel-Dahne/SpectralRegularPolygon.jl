@@ -1,13 +1,4 @@
 """
-    rgamma(x)
-
-Compute the reciprocal gamma function, defined by `rgamma(x) = 1 /
-gamma(x)`.
-"""
-rgamma(x::Arb) = Arblib.rgamma!(zero(x), x)
-rgamma(x::ArbSeries) = Arblib.rgamma_series!(zero(x), x, length(x))
-
-"""
     <<(p::Union{ArbSeries,AcbSeries}, n::Integer)
 
 Return `p` divided by `x^n`, updating the degree accordingly
