@@ -207,98 +207,121 @@ function S(n::Int, z)
     end
 end
 
+function S_integral_integrand(n::Int, z::Acb, t::Arblib.AcbOrRef)
+    if n == 2
+        # Note that n = 2 is the only case when the function is
+        # bounded at t = 0.
+        if Arblib.contains_zero(t)
+            fx_div_x(Acb(t)) do t
+                -4log(1 - t * z)
+            end
+        else
+            return -4log(1 - t * z) / t
+        end
+    elseif 3 <= n <= 5
+        logt = log(t)
+
+        # We write the function as a polynomial in log(1 - t * z)
+        p = AcbPoly()
+        if n == 3
+            p[1] = -12logt
+            p[2] = 12
+        elseif n == 4
+            p[1] = -24logt^2
+            p[2] = 48logt
+            p[3] = -32
+        elseif n == 5
+            p[1] = -40logt^3
+            p[2] = 120logt^2
+            p[3] = 160logt
+            p[4] = 80
+        end
+
+        return p(log(1 - t * z)) / t
+    else
+        ArbExtras.derivative_function(n) do inv_N
+            inv_N * t^inv_N * ((1 - t * z)^-2inv_N - 1) / t
+        end(Arb(0))
+    end
+end
+
 function S_integral(n::Int, z::Arblib.AcbOrRef)
+    a = n == 2 ? Arb(0) : Arb(1e-8)
     b = Arblib.contains(z, Acb(1)) ? Arb(1) - 1e-8 : Arb(1)
 
-    # Integrate from 0 to b
-    res_0_b = if n == 2
-        # In this case the integrand is bounded at t = 0, so we can
-        # integrate from 0 to b directly.
-        Arblib.integrate(
-            0,
-            b,
-            warn_on_no_convergence = false,
-            opts = Arblib.calc_integrate_opt_struct(0, 1_000, 0, 0, 0),
-        ) do t
-            if Arblib.contains_zero(t)
-                fx_div_x(Acb(t)) do t
-                    -2log(1 - t * z)
-                end
-            else
-                -2log(1 - t * z) / t
-            end
-        end
+    # Integrate from 0 to a
+    res_0_a = if iszero(a)
+        zero(z) # Nothing to integrate
     else
-        a = Arb(1e-8)
-
-        # Integrate from a to b
-        res_a_b =
-            Arblib.integrate(
-                a,
-                b,
-                warn_on_no_convergence = false,
-                opts = Arblib.calc_integrate_opt_struct(0, 2_000, 0, 0, 0),
-            ) do t
-                ArbExtras.derivative_function(n) do inv_N
-                    inv_N * t^inv_N * ((1 - t * z)^-2inv_N - 1) / t
-                end(Arb(0))
-            end / factorial(n)
-
-        # Integrate from 0 to a
-        res_0_a = let t = Arb((0, a))
+        let t = Arb((0, a))
             # Enclosure of log(1 - t * z) / t for t in [0, a]
             log_removable = fx_div_x(Acb(t)) do t
                 log(1 - t * z)
             end
+            log1mtz = log(1 - t * z)
 
             if n == 3
-                -2(integral_log(1, a) - integral_log(0, a) * log(1 - t * z)) * log_removable
+                (-12integral_log(1, a) + 12integral_log(0, a) * log1mtz) * log_removable / factorial(3)
             elseif n == 4
                 (
-                    -3integral_log(2, a) + 6integral_log(1, a) * log(1 - t * z) -
-                    4integral_log(0, a) * log(1 - t * z)^2
-                ) * log_removable / 3
+                    -24integral_log(2, a) + 48integral_log(1, a) * log1mtz -
+                    32integral_log(0, a) * log1mtz^2
+                ) * log_removable / factorial(4)
             elseif n == 5
                 (
-                    -integral_log(3, a) + 3integral_log(2, a) * log(1 - t * z) -
-                    4integral_log(1, a) * log(1 - t * z)^2 +
-                    2integral_log(0, a) * log(1 - t * z)^3
-                ) * log_removable / 3
+                    -40integral_log(3, a) + 120integral_log(2, a) * log1mtz -
+                    160integral_log(1, a) * log1mtz^2 +
+                    80integral_log(0, a) * log1mtz^3
+                ) * log_removable / factorial(5)
             else
-                throw(ArgumentError("error bound not implemented for n > 5"))
+                throw(ArgumentError("integration around zero not implemented for n > 5"))
             end
         end
-
-        res_0_a + res_a_b
     end
+
+    # Integrate from a to b
+    res_a_b =
+        Arblib.integrate(
+            a,
+            b,
+            warn_on_no_convergence = false,
+            atol = max(Arblib.radius(abs(res_0_a)) / 2, 2.0^-precision(z)),
+            opts = Arblib.calc_integrate_opt_struct(0, 2_000, 0, 0, 0),
+        ) do t
+            S_integral_integrand(n, z, t)
+        end / factorial(n)
 
     # Integrate from b to 1
     res_b_1 = if isone(b)
-        zero(res_0_b) # Nothing to integrate
+        zero(z) # Nothing to integrate
     else
         let t = Arblib.union(b, Arb(1))
             if n == 2
                 -2 / t * integral_log_1mtz(z, 1, b)
+
+                -4integral_log_1mtz(z, 1, b) / (factorial(2) * t)
             elseif n == 3
-                -2 / t * (log(t) * integral_log_1mtz(z, 1, b) - integral_log_1mtz(z, 2, b))
+                (-12log(t) * integral_log_1mtz(z, 1, b) + 12integral_log_1mtz(z, 2, b)) / (factorial(3) * t)
             elseif n == 4
-                1 / 3t * (
-                    -3log(t)^2 * integral_log_1mtz(z, 1, b) +
-                    6log(t) * integral_log_1mtz(z, 2, b) - 4integral_log_1mtz(z, 3, b)
-                )
+                (
+                    -24log(t)^2 * integral_log_1mtz(z, 1, b) +
+                    48log(t) * integral_log_1mtz(z, 2, b) -
+                    32integral_log_1mtz(z, 3, b)
+                ) / (factorial(4) * t)
             elseif n == 5
-                1 / 3t * (
-                    -log(t)^3 * integral_log_1mtz(z, 1, b) +
-                    3log(t)^2 * integral_log_1mtz(z, 2, b) -
-                    4log(t) * integral_log_1mtz(z, 3, b) + 2integral_log_1mtz(z, 4, b)
-                )
+                (
+                    -40log(t)^3 * integral_log_1mtz(z, 1, b) +
+                    120log(t)^2 * integral_log_1mtz(z, 2, b) -
+                    160log(t) * integral_log_1mtz(z, 3, b) +
+                    80integral_log_1mtz(z, 4, b)
+                ) / (factorial(5) * t)
             else
                 throw(ArgumentError("error bound not implemented for n > 5"))
             end
         end
     end
 
-    return res_0_b + res_b_1
+    return res_0_a + res_a_b + res_b_1
 end
 
 # polylog(2, z) that allows evaluation around z = 1

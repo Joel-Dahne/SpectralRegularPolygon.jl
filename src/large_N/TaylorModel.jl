@@ -277,12 +277,7 @@ function compose(f, M::TaylorModel)
     # Compute remainder term
     J = M(M.I) # Interval to compute remainder on
     if isfinite(J)
-        # We compute a tighter enclosure with the help of ArbExtras.enclosure_series
-        remainder_term = if isreal(J)
-            ArbExtras.enclosure_series(ArbExtras.derivative_function(f, degree + 1), real(J)) / factorial(degree + 1)
-        else
-            ArbExtras.derivative_function(f, degree + 1)(J)
-        end
+        remainder_term = ArbExtras.derivative_function(f, degree + 1)(J)
     else
         remainder_term = indeterminate(J)
     end

@@ -50,13 +50,6 @@ function F_N_model(N₀::Int, z::Acb)
         a = Arb(1e-8)
         b = Arblib.contains(z, Acb(1)) ? Arb(1) - 1e-8 : Arb(1)
 
-        # Integrate from a to b
-        remainder_a_b = Arblib.integrate(a, b) do t
-            ArbExtras.derivative_function(6) do inv_N
-                inv_N * t^inv_N * ((1 - t * z)^-2inv_N - 1) / t
-            end(inv_N)
-        end
-
         # Integrate from 0 to a
         remainder_0_a = let t = Arb((0, a))
             # Enclosure of log(1 - t * z) / t
@@ -102,6 +95,18 @@ function F_N_model(N₀::Int, z::Acb)
                 log(1 - t * z)^4 *
                 (-3 + inv_N * log(1 - t * z))
             )
+        end
+
+        # Integrate from a to b
+        remainder_a_b = Arblib.integrate(
+            a,
+            b,
+            atol = Arblib.radius(abs(remainder_0_a)) / 2,
+            warn_on_no_convergence = false,
+        ) do t
+            ArbExtras.derivative_function(6) do inv_N
+                inv_N * t^inv_N * ((1 - t * z)^-2inv_N - 1)
+            end(inv_N) / t
         end
 
         # Integrate from b to 1
