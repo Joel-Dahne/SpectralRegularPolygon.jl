@@ -406,60 +406,72 @@ function K(inv_N::Arb, z::Acb, t::Acb)
         F_N(inv_N, conj(z)) *
         (F_N(inv_N, z) - (t / z)^inv_N * F_N(inv_N, t)),
     )
-
-    return besselj0(
-        sqrt_ρ *
-        abs(z)^inv_N *
-        sqrt(F_N(inv_N, conj(z)) * (F_N(inv_N, z) - (t / z)^inv_N * F_N(inv_N, t))),
-    )
 end
 
-function K_model(N₀::Int, z::Acb, t::Acb)
+function K_model(N₀::Int, z::Acb)
     inv_N = Arb((0, 1 // N₀))
 
-    ρ_model = ArbTaylorModel(inv_N, Arb(0), degree = 5) do inv_N
-        _c_N(inv_N)^2 * λ_approx(inv_N)
-    end
+    # It is really important to get a good enclosure of ρ, so we
+    # manual bisect to get better enclosures
+    ρ_model = truncate(
+        ArbTaylorModel(inv_N, Arb(0), degree = 10) do inv_N
+            if iswide(inv_N[0])
+                # Bisect in inv_N[0]. Note that all other coefficients
+                # are always exact.
+                parts = map(
+                    ArbExtras.bisect_interval_recursive(
+                        Arblib.getinterval(inv_N[0])...,
+                        10,
+                    ),
+                ) do inv_N0_part
+                    inv_N_part = copy(inv_N)
+                    inv_N_part[0] = inv_N0_part
+                    _c_N(inv_N_part)^2 * λ_approx(inv_N_part)
+                end
+                foldl(Arblib.union, parts)
+            else
+                _c_N(inv_N)^2 * λ_approx(inv_N)
+            end
+        end,
+        degree = 5,
+    )
+
     abs_z_pow_2inv_N_model = ArbTaylorModel(inv_N, Arb(0), degree = 5) do inv_N
         abs(z)^2inv_N
     end
 
-    t_div_z_pow_inv_N_model = AcbTaylorModel(inv_N, Arb(0), degree = 5) do inv_N
-        (t / z)^inv_N
-    end
     F_N_z_model = F_N_model(N₀, z)
     F_N_conj_z_model = F_N_model(N₀, conj(z))
-    F_N_t_model = F_N_model(N₀, t)
 
-    return compose(
-        besselj0_sqrt,
-        ρ_model *
-        abs_z_pow_2inv_N_model *
-        F_N_conj_z_model *
-        (F_N_z_model - t_div_z_pow_inv_N_model * F_N_t_model),
-    )
+    return t::Acb -> begin
+        t_div_z_pow_inv_N_model = AcbTaylorModel(inv_N, Arb(0), degree = 5) do inv_N
+            (t / z)^inv_N
+        end
 
-    sqrt_ρ_model = ArbTaylorModel(inv_N, Arb(0), degree = 4) do inv_N
-        _c_N(inv_N) * sqrt(λ_approx(inv_N))
+        F_N_t_model = F_N_model(N₀, t)
+
+        return compose(
+            x -> hypgeom0f1_regularized(Acb(1), -x / 4),
+            ρ_model *
+            abs_z_pow_2inv_N_model *
+            F_N_conj_z_model *
+            (F_N_z_model - t_div_z_pow_inv_N_model * F_N_t_model),
+        )
     end
-    abs_z_pow_inv_N_model = ArbTaylorModel(inv_N, Arb(0), degree = 4) do inv_N
-        abs(z)^inv_N
-    end
-
-    sqrt_argument = F_N_conj_z_model * (F_N_z_model - t_div_z_pow_inv_N_model * F_N_t_model)
-    # Taylor model of square root after factoring out inv(N)
-    sqrt_model = compose(sqrt, sqrt_argument << 1)
-
-    return besselj0_sqrt(sqrt_ρ_model * abs_z_pow_inv_N_model * sqrt_model)
 end
 
-function K_4(N₀::Int, z::Acb, t::Arblib.AcbOrRef)
-    t = convert(Acb, t) # Make it play nicely with AcbRef
-    inv_N = Arb((1 // N₀, 1 // N₀)) # FIXME: This should be full interval [0, 1 / N₀]
-    return (
-        K(inv_N, z, t) - d(0, z, t) - inv_N * d(1, z, t) - inv_N^2 * d(2, z, t) -
-        inv_N^3 * d(3, z, t)
-    ) / inv_N^4
+function K_4(N₀::Int, z::Acb)
+    inv_N = Arb((0, 1 // N₀))
+    K = K_model(N₀, z)
+
+    return t::Arblib.AcbOrRef -> begin
+        M = K(convert(Acb, t))
+        M.p[0] = 0
+        M.p[1] = 0
+        M.p[2] = 0
+        M.p[3] = 0
+        return (M << 4)(inv_N)
+    end
 end
 
 function integral_K_4(N₀::Int, z::Acb, a::Arb)
@@ -467,6 +479,8 @@ function integral_K_4(N₀::Int, z::Acb, a::Arb)
 end
 
 function integral_K_4_V_1(N₀::Int, z::Acb)
+    K4 = K_4(N₀, z)
+
     a = Arb(1e-4)
     az = a * z
 
@@ -482,7 +496,7 @@ function integral_K_4_V_1(N₀::Int, z::Acb)
 
         V_div_t * integral_K_4(N₀, z, a)
     end
-    @show res_0_az
+
     b = Arblib.contains(z, Acb(1)) ? Arb(0.999) : Arb(1)
     bz = b * z
 
@@ -507,7 +521,7 @@ function integral_K_4_V_1(N₀::Int, z::Acb)
             opts = Arblib.calc_integrate_opt_struct(0, 4_000, 0, 1, 0),
             warn_on_no_convergence = false,
         ) do t
-            K_4(N₀, z, t) * V(1, t) / t
+            K4(t) * V(1, t) / t
         end
 
         if iswide(z)
@@ -516,13 +530,13 @@ function integral_K_4_V_1(N₀::Int, z::Acb)
             # IMPROVE: Get better enclosures of this using mean value
             # theorem?
             (res_az_thin_bz_thin) +
-            (az_thin - az) * K_4(N₀, z, az) * V(1, az) / az +
-            (bz - bz_thin) * K_4(N₀, z, bz) * V(1, bz) / bz
+            (az_thin - az) * K4(az) * V(1, az) / az +
+            (bz - bz_thin) * K4(bz) * V(1, bz) / bz
         else
             res_az_thin_bz_thin # We integrated everything
         end
     end
-    @show res_az_bz
+
     res_bz_z = if isone(b)
         zero(res_az_bz) # We integrated everything
     else
@@ -533,9 +547,9 @@ function integral_K_4_V_1(N₀::Int, z::Acb)
             # ∫ V(l, s * z) ds from s = b to 1.
             #
             Cs = V_log_bound_coefficients(1)
-            K_4(N₀, z, t) / t * Cs[1] * integral_log_1mtz(Acb(1), 1, b)
+            K4(t) / t * Cs[1] * integral_log_1mtz(Acb(1), 1, b)
         end
     end
-    @show res_bz_z
+
     return res_0_az + res_az_bz + res_bz_z
 end

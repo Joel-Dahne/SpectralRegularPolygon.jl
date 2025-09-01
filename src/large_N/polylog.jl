@@ -207,7 +207,7 @@ function S(n::Int, z)
     end
 end
 
-function S_integral_integrand(n::Int, z::Acb, t::Arblib.AcbOrRef)
+function S_integral_integrand(n::Int, z::Arblib.AcbOrRef, t::Arblib.AcbOrRef)
     if n == 2
         # Note that n = 2 is the only case when the function is
         # bounded at t = 0.
@@ -233,7 +233,7 @@ function S_integral_integrand(n::Int, z::Acb, t::Arblib.AcbOrRef)
         elseif n == 5
             p[1] = -40logt^3
             p[2] = 120logt^2
-            p[3] = 160logt
+            p[3] = -160logt
             p[4] = 80
         end
 
@@ -282,14 +282,13 @@ function S_integral(n::Int, z::Arblib.AcbOrRef)
     # Integrate from a to b
     res_a_b =
         Arblib.integrate(
+            t -> S_integral_integrand(n, z, t),
             a,
             b,
             warn_on_no_convergence = false,
-            atol = max(Arblib.radius(abs(res_0_a)) / 2, 2.0^-precision(z)),
+            atol = max(Arblib.radius(abs(res_0_a)), 2.0^-precision(z)),
             opts = Arblib.calc_integrate_opt_struct(0, 2_000, 0, 0, 0),
-        ) do t
-            S_integral_integrand(n, z, t)
-        end / factorial(n)
+        ) / factorial(n)
 
     # Integrate from b to 1
     res_b_1 = if isone(b)
