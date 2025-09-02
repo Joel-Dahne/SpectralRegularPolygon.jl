@@ -1,5 +1,14 @@
 const N₀ = 64
 
+# Lemma 2.6
+const C_b_2 = "3.5"
+const C_b_3 = "2.5"
+const C_b_4 = "10"
+const C_b_5 = "12"
+const C_T_2 = "3.5"
+const C_T_4 = "15"
+const C_T_6 = "50"
+
 # Lemma 2.10
 const C_I_1_4 = "15"
 const C_I_2_3 = "10"

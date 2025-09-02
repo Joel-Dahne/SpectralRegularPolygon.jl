@@ -27,19 +27,42 @@ md"""
 # Proof of Lemma 2.6
 """
 
-# ╔═╡ b20ebf73-ffca-41f6-a2be-13d56881ad25
-N₀ = 64
-
 # ╔═╡ 4de76364-83fd-4889-91ff-cf0ae92ffdea
 md"""
 We want to prove that for $|z| = 1$ we have the following bounds:
 
-$$|b_2(z)| \leq 3.5,\ |b_3(z)| \leq 2.5,\ |b_4(z)| \leq 10,\ |b_5(z)| \leq 12,$$
+$$|b_2(z)| \leq C_{b,2},\ |b_3(z)| \leq C_{b,3},\ |b_4(z)| \leq C_{b,4},\ |b_5(z)| \leq C_{b,5},$$
 
-and for $N \geq$ $N₀ have
+and for $N \geq N_0$ have
 
-$$|T_2(z)| \leq 3.5,\ |T_4(z)| \leq 15,\ |T_6(z)| \leq 50.$$
+$$|T_2(z)| \leq C_{T,2},\ |T_4(z)| \leq C_{T,4},\ |T_6(z)| \leq C_{T,6}.$$
+
+Here $N_0$, $C_{b,k}$ and $C_{T,l}$ are given by:
 """
+
+# ╔═╡ b20ebf73-ffca-41f6-a2be-13d56881ad25
+N₀ = 64
+
+# ╔═╡ bff31288-f074-4e51-a4b5-b97de10af009
+C_b_2 = SRP.C_b_2
+
+# ╔═╡ 53e1c0b9-ae24-49a9-90a9-a7d2c9aa0a34
+C_b_3 = SRP.C_b_3
+
+# ╔═╡ cb12a4fa-c971-4551-8481-dfd35c1f824d
+C_b_4 = SRP.C_b_4
+
+# ╔═╡ 0840b31c-ae3c-408f-a991-16828560178c
+C_b_5 = SRP.C_b_5
+
+# ╔═╡ ea0e8a40-c152-4be3-b442-cfc85fb8f3e9
+C_T_2 = SRP.C_T_2
+
+# ╔═╡ cba219da-6ae9-465b-8f47-7681945c8421
+C_T_4 = SRP.C_T_4
+
+# ╔═╡ ae26b910-dc30-4904-aa25-c9f0a860d6ca
+C_T_6 = SRP.C_T_6
 
 # ╔═╡ e707c5eb-acd8-43fc-8fd1-1e0f9683d96b
 md"""
@@ -73,7 +96,7 @@ b5s = tmap(θs_div_πs) do θ_div_π
 end
 
 # ╔═╡ c25aea0b-f364-4c25-9fa8-8315fcc319cb
-T6s = let T_6 = SRP.T_6_bound(N₀)
+T6s = let T_6 = SRP.T_6(N₀)
     tmap(θs_div_πs) do θ_div_π
         T_6(SRP.exppii(θ_div_π))
     end
@@ -83,8 +106,9 @@ end
 let
     fig = Figure()
     ax = Axis(fig[1, 1], xlabel = L"\theta", ylabel = L"b_2(e^{i\theta})")
-    scatterlines!(ax, θs, b2s)
-    scatterlines!(ax, θs, abs.(b2s))
+	band!(ax, θs, lbound.(b2s), ubound.(b2s))
+	scatterlines!(ax, θs, b2s)
+    hlines!(ax, [-Arb(C_b_2), Arb(C_b_2)])
     fig
 end
 
@@ -92,8 +116,9 @@ end
 let
     fig = Figure()
     ax = Axis(fig[1, 1], xlabel = L"\theta", ylabel = L"b_3(e^{i\theta})")
-    scatterlines!(ax, θs, b3s)
-    scatterlines!(ax, θs, abs.(b3s))
+	band!(ax, θs, lbound.(b3s), ubound.(b3s))
+	scatterlines!(ax, θs, b3s)
+    hlines!(ax, [-Arb(C_b_3), Arb(C_b_3)])
     fig
 end
 
@@ -101,8 +126,9 @@ end
 let
     fig = Figure()
     ax = Axis(fig[1, 1], xlabel = L"\theta", ylabel = L"b_4(e^{i\theta})")
+	band!(ax, θs, lbound.(b4s), ubound.(b4s))
     scatterlines!(ax, θs, b4s)
-    scatterlines!(ax, θs, abs.(b4s))
+    hlines!(ax, [-Arb(C_b_4), Arb(C_b_4)])
     fig
 end
 
@@ -110,8 +136,9 @@ end
 let
     fig = Figure()
     ax = Axis(fig[1, 1], xlabel = L"\theta", ylabel = L"b_5(e^{i\theta})")
-    scatterlines!(ax, θs, b5s)
-    scatterlines!(ax, θs, abs.(b5s))
+	band!(ax, θs, lbound.(b5s), ubound.(b5s))
+	scatterlines!(ax, θs, b5s)
+    hlines!(ax, [-Arb(C_b_5), Arb(C_b_5)])
     fig
 end
 
@@ -119,9 +146,9 @@ end
 let
     fig = Figure()
     ax = Axis(fig[1, 1], xlabel = L"\theta", ylabel = L"T_6(e^{i\theta})")
-    band!(ax, θs, lbound.(T6s), ubound.(T6s))
-    #scatterlines!(ax, θs, lbound.(T6s))
-    #scatterlines!(ax, θs, ubound.(T6s))
+	band!(ax, θs, lbound.(T6s), ubound.(T6s))
+	scatterlines!(ax, θs, T6s)
+    hlines!(ax, [-Arb(C_T_6), Arb(C_T_6)])
     fig
 end
 
@@ -131,7 +158,7 @@ md"""
 """
 
 # ╔═╡ 0a8e3984-1047-4f89-8f16-d47b89fcd6cf
-ArbExtras.maximum_enclosure(
+@time b_2_bound = ArbExtras.maximum_enclosure(
     Arf(0),
     Arf(1),
     degree = -1,
@@ -144,7 +171,7 @@ ArbExtras.maximum_enclosure(
 end
 
 # ╔═╡ fd627d82-96e2-4f57-923b-dd879acf5bc6
-ArbExtras.maximum_enclosure(
+@time b_3_bound = ArbExtras.maximum_enclosure(
     Arf(0),
     Arf(1),
     degree = -1,
@@ -157,7 +184,7 @@ ArbExtras.maximum_enclosure(
 end
 
 # ╔═╡ b3f8fb15-2864-4479-8b2a-74586b2c8e8b
-ArbExtras.maximum_enclosure(
+@time b_4_bound = ArbExtras.maximum_enclosure(
     Arf(0),
     Arf(1),
     degree = -1,
@@ -170,7 +197,7 @@ ArbExtras.maximum_enclosure(
 end
 
 # ╔═╡ 00ac7282-9dac-4289-8d5a-5bf5dd539878
-ArbExtras.maximum_enclosure(
+@time b_5_bound = ArbExtras.maximum_enclosure(
     Arf(0),
     Arf(1),
     degree = -1,
@@ -183,13 +210,13 @@ ArbExtras.maximum_enclosure(
 end
 
 # ╔═╡ 763878e0-5a56-4c0e-985f-f0521cab30eb
-let T_6 = SRP.T_6_bound(N₀)
+@time T_6_bound = let T_6 = SRP.T_6(N₀)
     ArbExtras.maximum_enclosure(
         Arf(0),
         Arf(1),
         degree = -1,
-        rtol = 1e-3,
-        ubound_tol = 1.01ubound(abs(T_6(Acb(1)))),
+        ubound_tol = Arb(C_T_6),
+		depth = 30,
         abs_value = true,
         threaded = true,
         verbose = true,
@@ -198,11 +225,45 @@ let T_6 = SRP.T_6_bound(N₀)
     end
 end
 
+# ╔═╡ dad6497c-bfee-4235-82e6-2099220844b3
+T_2_bound = b_2_bound + b_3_bound / N₀ + b_4_bound / N₀^2 + b_5_bound / N₀^3 + T_6_bound / N₀^4
+
+# ╔═╡ 769879b3-3c7b-4ae5-ad75-5f5fee225f90
+T_4_bound = b_4_bound + b_5_bound / N₀ + T_6_bound / N₀^2
+
+# ╔═╡ 48596d0e-6804-426a-b3a4-7d64f3d7df93
+b_2_bound <= Arb(C_b_2)
+
+# ╔═╡ b9322190-84d9-4a11-b708-8ff8c11fc367
+b_3_bound <= Arb(C_b_3)
+
+# ╔═╡ 7ad99c3c-5dfe-4518-bf91-113388af8a2c
+b_4_bound <= Arb(C_b_4)
+
+# ╔═╡ 8f495d5a-03cd-4d31-ad19-2fb4fde08d70
+b_5_bound <= Arb(C_b_5)
+
+# ╔═╡ a9cb0e9a-f69e-45d0-995a-cea5db9c22ec
+T_2_bound <= Arb(C_T_2)
+
+# ╔═╡ d9af7e04-5297-4a4f-961c-171b2c939d8f
+T_4_bound <= Arb(C_T_4)
+
+# ╔═╡ 26926dfc-0236-4f86-a7be-a8881e6f5f30
+T_6_bound <= Arb(C_T_6)
+
 # ╔═╡ Cell order:
 # ╟─c45a43db-337d-4ce7-afeb-61a9f50ba398
 # ╠═cc7c7dea-83ab-11f0-04b8-a7eb5cc4403a
+# ╟─4de76364-83fd-4889-91ff-cf0ae92ffdea
 # ╠═b20ebf73-ffca-41f6-a2be-13d56881ad25
-# ╠═4de76364-83fd-4889-91ff-cf0ae92ffdea
+# ╠═bff31288-f074-4e51-a4b5-b97de10af009
+# ╠═53e1c0b9-ae24-49a9-90a9-a7d2c9aa0a34
+# ╠═cb12a4fa-c971-4551-8481-dfd35c1f824d
+# ╠═0840b31c-ae3c-408f-a991-16828560178c
+# ╠═ea0e8a40-c152-4be3-b442-cfc85fb8f3e9
+# ╠═cba219da-6ae9-465b-8f47-7681945c8421
+# ╠═ae26b910-dc30-4904-aa25-c9f0a860d6ca
 # ╟─e707c5eb-acd8-43fc-8fd1-1e0f9683d96b
 # ╠═0aa4c803-768e-4b65-ba2c-c17f400d17d9
 # ╠═28ef9722-2d9c-4ad3-ac78-baec417e9a45
@@ -211,14 +272,23 @@ end
 # ╠═f8466db6-f0d4-44cc-b369-a587f8565bc7
 # ╠═95b752e2-5927-4235-babb-5a2198f172aa
 # ╠═c25aea0b-f364-4c25-9fa8-8315fcc319cb
-# ╠═0209a6b1-f5ba-4ba6-9b5f-2f2cbdd2c643
+# ╟─0209a6b1-f5ba-4ba6-9b5f-2f2cbdd2c643
 # ╟─1441945f-d537-4ac6-b21d-cfcc62c28cef
 # ╟─0c002f46-d981-4461-a2fe-0ceaf79ece35
-# ╠═0d186cc4-b8cd-4336-aa8d-e2ffdc37c80a
-# ╠═1f4ebea3-1b83-49d4-aabc-cc57b0bba1af
+# ╟─0d186cc4-b8cd-4336-aa8d-e2ffdc37c80a
+# ╟─1f4ebea3-1b83-49d4-aabc-cc57b0bba1af
 # ╟─e6f37ebc-4884-4028-a937-93d71c27e3d0
 # ╠═0a8e3984-1047-4f89-8f16-d47b89fcd6cf
 # ╠═fd627d82-96e2-4f57-923b-dd879acf5bc6
 # ╠═b3f8fb15-2864-4479-8b2a-74586b2c8e8b
 # ╠═00ac7282-9dac-4289-8d5a-5bf5dd539878
 # ╠═763878e0-5a56-4c0e-985f-f0521cab30eb
+# ╠═dad6497c-bfee-4235-82e6-2099220844b3
+# ╠═769879b3-3c7b-4ae5-ad75-5f5fee225f90
+# ╠═48596d0e-6804-426a-b3a4-7d64f3d7df93
+# ╠═b9322190-84d9-4a11-b708-8ff8c11fc367
+# ╠═7ad99c3c-5dfe-4518-bf91-113388af8a2c
+# ╠═8f495d5a-03cd-4d31-ad19-2fb4fde08d70
+# ╠═a9cb0e9a-f69e-45d0-995a-cea5db9c22ec
+# ╠═d9af7e04-5297-4a4f-961c-171b2c939d8f
+# ╠═26926dfc-0236-4f86-a7be-a8881e6f5f30
