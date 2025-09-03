@@ -63,8 +63,8 @@ function G(inv_N)
     inv_Np1 = inv_N / (1 + inv_N) # Enclosure of inv(N + 1)
 
     return SRP.λ_disc() * (
-        SRP.λ_approx_div_λ(inv_N) / (1 + SRP.ϵ_prime(inv_N)) -
-        SRP.λ_approx_div_λ(inv_Np1) / (1 - SRP.ϵ_prime(inv_Np1))
+        SRP.λ_app_div_λ(inv_N) / (1 + SRP.ϵ_prime(inv_N)) -
+        SRP.λ_app_div_λ(inv_Np1) / (1 - SRP.ϵ_prime(inv_Np1))
     )
 end
 
@@ -139,11 +139,11 @@ function G_q(inv_N)
     inv_Np1 = inv_N / (1 + inv_N)
     inv_Np2 = inv_Np1 / (1 + inv_Np1)
 
-    # Note that we use λ_approx_div_λ since the λs cancel
-    return SRP.λ_approx_div_λ(inv_N) * (1 - SRP.ϵ_prime(inv_Np1)) /
-           ((1 + SRP.ϵ_prime(inv_N)) * SRP.λ_approx_div_λ(inv_Np1)) -
-           SRP.λ_approx_div_λ(inv_Np1) * (1 + SRP.ϵ_prime(inv_Np2)) /
-           ((1 - SRP.ϵ_prime(inv_Np1)) * SRP.λ_approx_div_λ(inv_Np2))
+    # Note that we use λ_app_div_λ since the λs cancel
+    return SRP.λ_app_div_λ(inv_N) * (1 - SRP.ϵ_prime(inv_Np1)) /
+           ((1 + SRP.ϵ_prime(inv_N)) * SRP.λ_app_div_λ(inv_Np1)) -
+           SRP.λ_app_div_λ(inv_Np1) * (1 + SRP.ϵ_prime(inv_Np2)) /
+           ((1 - SRP.ϵ_prime(inv_Np1)) * SRP.λ_app_div_λ(inv_Np2))
 end
 
 # ╔═╡ 80973d1e-71af-454e-b0ee-a949e445ed44

@@ -130,16 +130,15 @@ d_0(z, t) = one(z)
 d_1(z, t) = λ_disc() / 4 * log(t / z)
 function d_2(z, t)
     λ = λ_disc()
-    return λ^2 / 64 * log(t / z)^2 +
-           λ / 8 * (log(t / z)^2 + 2S_integral(2, t) - 2S_integral(2, z))
+    return λ^2 / 64 * log(t / z)^2 + λ / 8 * (log(t / z)^2 + 2S(2, t) - 2S(2, z))
 end
 function d_2_z_part(z)
     λ = λ_disc()
-    return -λ / 4 * S_integral(2, z)
+    return -λ / 4 * S(2, z)
 end
 function d_2_zt_part(z, t)
     λ = λ_disc()
-    return λ^2 / 64 * log(t / z)^2 + λ / 8 * (log(t / z)^2 + 2S_integral(2, t))
+    return λ^2 / 64 * log(t / z)^2 + λ / 8 * (log(t / z)^2 + 2S(2, t))
 end
 
 function d_3(z, t)
@@ -148,31 +147,31 @@ function d_3(z, t)
     # than the version in the paper.
     return λ / 4 * (
         log(t / z) * (
-            (λ^2 / 576 + λ / 16 + 1 // 6) * log(t / z)^2 + (λ / 8 + 1) * S_integral(2, t) -
-            λ / 8 * S_integral(2, z) + S_integral(2, conj(z))
-        ) + S_integral(3, t) - S_integral(3, z)
+            (λ^2 / 576 + λ / 16 + 1 // 6) * log(t / z)^2 + (λ / 8 + 1) * S(2, t) -
+            λ / 8 * S(2, z) + S(2, conj(z))
+        ) + S(3, t) - S(3, z)
     )
     # This is the version in the paper
     #return λ^3 / 2304 * log(t / z)^3 +
-    #       λ^2 / 64 * log(t / z) * (log(t / z)^2 + 2S_integral(2, t) - 2S_integral(2, z)) +
+    #       λ^2 / 64 * log(t / z) * (log(t / z)^2 + 2S(2, t) - 2S(2, z)) +
     #       λ / 24 * (
     #           log(t / z)^3 +
-    #           6log(t / z) * S_integral(2, t) +
-    #           6log(t / z) * S_integral(2, conj(z)) +
-    #           6S_integral(3, t) - 6S_integral(3, z)
+    #           6log(t / z) * S(2, t) +
+    #           6log(t / z) * S(2, conj(z)) +
+    #           6S(3, t) - 6S(3, z)
     #       )
 end
 function d_3_z_part(z)
     λ = λ_disc()
-    return -λ / 4 * S_integral(3, z)
+    return -λ / 4 * S(3, z)
 end
 function d_3_zt_part(z, t)
     λ = λ_disc()
     return λ / 4 * (
         log(t / z) * (
-            (λ^2 / 576 + λ / 16 + 1 // 6) * log(t / z)^2 + (λ / 8 + 1) * S_integral(2, t) -
-            λ / 8 * S_integral(2, z) + S_integral(2, conj(z))
-        ) + S_integral(3, t)
+            (λ^2 / 576 + λ / 16 + 1 // 6) * log(t / z)^2 + (λ / 8 + 1) * S(2, t) -
+            λ / 8 * S(2, z) + S(2, conj(z))
+        ) + S(3, t)
     )
 end
 
@@ -182,15 +181,15 @@ function d_3_analytic_z(z, t)
     return λ / 4 * (
         log(t / z) * (
             (λ^2 / 576 + (1 // 16) * λ + 1 // 6) * log(t / z)^2 +
-            ((1 // 8) * λ + 1) * S_integral(2, t) - (1 // 8) * λ * S_integral(2, z)
-        ) + S_integral(3, t) - S_integral(3, z)
+            ((1 // 8) * λ + 1) * S(2, t) - (1 // 8) * λ * S(2, z)
+        ) + S(3, t) - S(3, z)
     )
 end
 
 # Part of d_3 analytic in conj(z)
 function d_3_analytic_conj_z(z, t)
     λ = λ_disc()
-    return λ / 4 * log(t / z) * S_integral(2, conj(z))
+    return λ / 4 * log(t / z) * S(2, conj(z))
 end
 
 function integral_d_0(z::Acb, a::Arb)
@@ -217,7 +216,7 @@ function integral_d_2(z::Acb, a::Arb)
     λ = λ_disc()
     t = Arblib.union(zero(z), a * z)
     return (λ^2 / 64 + λ / 8) * integral_log_z(2, z, a) +
-           λ / 4 * (S_integral(2, t) - S_integral(2, z)) * a * z
+           λ / 4 * (S(2, t) - S(2, z)) * a * z
 end
 
 """
@@ -239,11 +238,9 @@ function integral_d_3(z::Acb, a::Arb)
     λ = λ_disc()
     t = Arblib.union(zero(z), a * z)
     return (λ^3 / 2304 + λ^2 / 64 + λ / 24) * integral_log_z(3, z, a) +
-           (
-               (λ^2 / 32 + λ / 4) * S_integral(2, t) -
-               (λ^2 / 32 * S_integral(2, z) - λ / 4 * S_integral(2, conj(z)))
-           ) * integral_log_z(1, z, a) +
-           λ / 4 * (S_integral(3, t) - S_integral(3, z)) * a * z
+           ((λ^2 / 32 + λ / 4) * S(2, t) - (λ^2 / 32 * S(2, z) - λ / 4 * S(2, conj(z)))) *
+           integral_log_z(1, z, a) +
+           λ / 4 * (S(3, t) - S(3, z)) * a * z
 end
 
 d(k::Int, z, t) =
@@ -394,45 +391,13 @@ function integral_d_k_V_l(k::Int, l::Int, z::Acb)
     return res_0_az + res_az_bz + res_bz_z
 end
 
-function K(inv_N::Arb, z::Acb, t::Acb)
-    ρ = _c_N(inv_N)^2 * λ_approx(inv_N)
-    sqrt_ρ = _c_N(inv_N) * sqrt(λ_approx(inv_N))
-
-    return hypgeom0f1_regularized(
-        Acb(1),
-        -1 // 4 *
-        ρ *
-        abs(z)^2inv_N *
-        F_N(inv_N, conj(z)) *
-        (F_N(inv_N, z) - (t / z)^inv_N * F_N(inv_N, t)),
-    )
-end
-
 function K_model(N₀::Int, z::Acb)
     inv_N = Arb((0, 1 // N₀))
 
     # It is really important to get a good enclosure of ρ, so we
-    # manual bisect to get better enclosures
+    # compute a higher order Taylor model and then truncate it.
     ρ_model = truncate(
-        ArbTaylorModel(inv_N, Arb(0), degree = 10) do inv_N
-            if iswide(inv_N[0])
-                # Bisect in inv_N[0]. Note that all other coefficients
-                # are always exact.
-                parts = map(
-                    ArbExtras.bisect_interval_recursive(
-                        Arblib.getinterval(inv_N[0])...,
-                        10,
-                    ),
-                ) do inv_N0_part
-                    inv_N_part = copy(inv_N)
-                    inv_N_part[0] = inv_N0_part
-                    _c_N(inv_N_part)^2 * λ_approx(inv_N_part)
-                end
-                foldl(Arblib.union, parts)
-            else
-                _c_N(inv_N)^2 * λ_approx(inv_N)
-            end
-        end,
+        ArbTaylorModel(inv_N -> c_N(inv_N)^2 * λ_app(inv_N), inv_N, Arb(0), degree = 10),
         degree = 5,
     )
 

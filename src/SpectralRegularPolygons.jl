@@ -23,7 +23,8 @@ import Arblib:
     midpoint,
     ubound,
     abs_ubound,
-    add_error
+    add_error,
+    getinterval
 import GeometryBasics: Point, Point2
 import SpecialFunctions: besselj, besselj0, besselj1, bessely0, bessely1, zeta, gamma
 
@@ -52,7 +53,6 @@ include("large_N/tools.jl")
 include("large_N/TaylorModel.jl")
 include("large_N/polylog.jl")
 include("large_N/section_2.jl")
-include("large_N/lemma_2_6.jl")
 include("large_N/lemma_2_10.jl")
 
 end # module SpectralRegularPolygons
