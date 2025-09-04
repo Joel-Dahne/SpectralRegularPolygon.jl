@@ -31,6 +31,7 @@ md"""
 
 # ╔═╡ 4de76364-83fd-4889-91ff-cf0ae92ffdea
 md"""
+## Goal
 We want to prove that for $|z| = 1$ we have the following bounds:
 
 $$|b_2(z)| \leq C_{b,2},\ |b_3(z)| \leq C_{b,3},\ |b_4(z)| \leq C_{b,4},\ |b_5(z)| \leq C_{b,5},$$
