@@ -31,13 +31,13 @@ md"""
 ## Goal
 Let $g(w) = J_0(w\sqrt{\lambda})$, we want to prove that
 
-$$|g'''(w)| \leq C_g,$$
+$$|g'''(w)| \leq C_{g'''},$$
 
-for $w \in [0, \infty)$, where $C_g$ is given by:
+for $w \in [0, \infty)$, where $C_{g'''}$ is given by:
 """
 
 # ╔═╡ 279cd351-92ec-40a7-889e-980444f43fed
-C_g = SRP.C_g
+C_gd3 = SRP.C_gd3
 
 # ╔═╡ 72009879-ad52-46db-931c-97af0db81870
 md"""
@@ -62,8 +62,14 @@ We split the interval $[0, \infty)$ into two parts, $[0, 5]$ and $(5, \infty)$. 
 """
 
 # ╔═╡ dd258019-77b9-4da2-874e-896162b18c78
-g_d3_bound_0_5 =
-    ArbExtras.maximum_enclosure(g_d3, Arf(0), Arf(5), abs_value = true, verbose = true)
+g_d3_bound_0_5 = ArbExtras.maximum_enclosure(
+    g_d3,
+    Arf(0),
+    Arf(5),
+    rtol = 1e-5,
+    abs_value = true,
+    verbose = true,
+)
 
 # ╔═╡ 4b00cb82-1e2c-448c-b832-b94ed22d92c6
 md"""
@@ -81,16 +87,19 @@ Where this last value is given by:
 # ╔═╡ 8e11a8f8-3b11-4b6d-a8ad-c6a368e20abb
 g_d3_bound_5_inf = Arb("0.7858") * λ^(4 // 3) * Arb(5)^(-1 // 3)
 
+# ╔═╡ f50b7428-db8a-4511-a8c1-b8bdd8eb5dec
+string(g_d3_bound_5_inf, digits = 5)
+
 # ╔═╡ e62a9ae7-d492-4a03-9c9d-9736ce9de35a
 md"""
 It is then straight forward to verify that the bounds on $[0, 5]$ and $(5, \infty)$ satisfy the required inequality:
 """
 
 # ╔═╡ bc230116-438e-4b7f-874e-1b18a83bab92
-g_d3_bound_0_5 < Arb(C_g)
+g_d3_bound_0_5 < Arb(C_gd3)
 
 # ╔═╡ da0960f3-4793-47a8-a1cf-a813b55e2a9e
-g_d3_bound_5_inf < Arb(C_g)
+g_d3_bound_5_inf < Arb(C_gd3)
 
 # ╔═╡ 9dabbf48-5575-40f2-93cb-35be265f423a
 md"""
@@ -123,7 +132,14 @@ let
         colorrange,
     )
     lines!(ax, range(0, 20, 1000), w -> -0.7858 * λ^(4 // 3) * w^(-1 // 3), color = :orange)
-    hlines!(ax, [-Arb(C_g), Arb(C_g)], label = L"\pm C_g", color = 3; colormap, colorrange)
+    hlines!(
+        ax,
+        [-Arb(C_gd3), Arb(C_gd3)],
+        label = L"\pm C_g",
+        color = 3;
+        colormap,
+        colorrange,
+    )
     axislegend(ax, position = :rb)
     fig
 end
@@ -140,6 +156,7 @@ end
 # ╠═dd258019-77b9-4da2-874e-896162b18c78
 # ╟─4b00cb82-1e2c-448c-b832-b94ed22d92c6
 # ╠═8e11a8f8-3b11-4b6d-a8ad-c6a368e20abb
+# ╠═f50b7428-db8a-4511-a8c1-b8bdd8eb5dec
 # ╟─e62a9ae7-d492-4a03-9c9d-9736ce9de35a
 # ╠═bc230116-438e-4b7f-874e-1b18a83bab92
 # ╠═da0960f3-4793-47a8-a1cf-a813b55e2a9e

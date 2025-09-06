@@ -11,16 +11,7 @@ const C_T_4 = "11"
 const C_T_6 = "50"
 
 # Lemma 2.7
-# FIXME: We probably have to bound the other two terms in the Lemma as
-# well?
-const C_g = "6.1"
-
-# Corollary 2.8
-# FIXME: These should preferably be written in terms of the constants
-# above.
-const C_E_J_0_6 = "163.1" # FIXME: Update this
-const C_E_J_0_7 = "75" # FIXME: Update this
-const C_E_J_0_8 = "225" # FIXME: Update this
+const C_gd3 = "6.1"
 
 # Lemma 2.10
 const C_I_1_4 = "15"
