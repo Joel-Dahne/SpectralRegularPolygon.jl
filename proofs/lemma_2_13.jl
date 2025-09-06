@@ -16,7 +16,7 @@ begin
     using SpecialFunctions
 
     import SpectralRegularPolygons as SRP
-	
+
     setprecision(Arb, 128)
 end
 

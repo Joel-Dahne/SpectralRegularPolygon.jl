@@ -4,10 +4,10 @@ const N₀ = 64
 const C_b_2 = "3.5"
 const C_b_3 = "2.5"
 const C_b_4 = "10"
-const C_b_5 = "12"
+const C_b_5 = "11"
 
-const C_T_2 = "3.5"
-const C_T_4 = "15"
+const C_T_2 = "4"
+const C_T_4 = "11"
 const C_T_6 = "50"
 
 # Lemma 2.7

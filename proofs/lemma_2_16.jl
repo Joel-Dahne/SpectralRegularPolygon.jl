@@ -80,9 +80,9 @@ and then verify that it satisfies the requirement. Note that it suffices to veri
 
 # ╔═╡ a71afcc0-01e6-4b7f-a9b0-86ccf4e9c9b6
 res1 = map(N₀:128) do N
-	let inv_N = Acb(1 // N)
-		SRP._c_N(real(inv_N)) * R * real(SRP.hypgeom2f1(2inv_N, inv_N, 1 + inv_N, Acb(-R^N)))
-	end
+    let inv_N = Acb(1 // N)
+        SRP._c_N(real(inv_N)) * R * real(SRP.hypgeom2f1(2inv_N, inv_N, 1 + inv_N, Acb(-R^N)))
+    end
 end
 
 # ╔═╡ c0433aef-5b65-46ee-83f8-bfbccc9cd0df
@@ -90,7 +90,7 @@ all(Arb(R_inner) .< res1)
 
 # ╔═╡ 4c40fe01-bbb6-442d-af53-9413cdb1a20f
 res2 = let inv_N = Acb(Arb((0, 1 // 128)))
-	SRP.c_N(N₀) * R * real(SRP.hypgeom2f1(2inv_N, inv_N, 1 + inv_N, Acb(Arb((-R^128, 0)))))
+    SRP.c_N(N₀) * R * real(SRP.hypgeom2f1(2inv_N, inv_N, 1 + inv_N, Acb(Arb((-R^128, 0)))))
 end
 
 # ╔═╡ bcbc717a-f1e2-4acf-93b9-392abc3dfc4f
@@ -121,9 +121,9 @@ For $N \geq N_0$ and $z \in \mathbb{D}_R$ we can thus directly compute an enclos
 
 # ╔═╡ 5171eccd-39cc-4afc-9d8b-3d5c5aa17968
 f_derivative = let
-	inv_N = Arb((0, 1 // N₀))
+    inv_N = Arb((0, 1 // N₀))
     z_pow_N = add_error(Acb(0), R^N₀)
-	SRP.c_N(N₀) / (1 - z_pow_N)^2inv_N
+    SRP.c_N(N₀) / (1 - z_pow_N)^2inv_N
 end
 
 # ╔═╡ 0ae4fcea-8a49-456d-9f93-0e7d820e023c
@@ -133,8 +133,8 @@ For the $V$'s the enclosure can also be directly computer:
 
 # ╔═╡ 4b747119-b501-4dc8-8a11-10cd7c6a58c7
 V_1, V_2, V_3, V_4 = let
-	z_pow_N = add_error(Acb(0), R^N₀)
-	SRP.V(1, z_pow_N), SRP.V(2, z_pow_N), SRP.V(3, z_pow_N), SRP.V(4, z_pow_N)
+    z_pow_N = add_error(Acb(0), R^N₀)
+    SRP.V(1, z_pow_N), SRP.V(2, z_pow_N), SRP.V(3, z_pow_N), SRP.V(4, z_pow_N)
 end
 
 # ╔═╡ 6fc302f2-f256-4ffd-ad6d-ca28edb7172a

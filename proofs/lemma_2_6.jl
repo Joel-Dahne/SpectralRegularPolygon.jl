@@ -278,6 +278,9 @@ end
     T_6(SRP.exppii(θ_div_π))
 end
 
+# ╔═╡ 92e50091-4405-4691-aec5-8704fac4215a
+getinterval(Arb, T_6_bound) # TODO: Format this in a nice way
+
 # ╔═╡ dad6497c-bfee-4235-82e6-2099220844b3
 T_2_bound =
     b_2_bound + b_3_bound / N₀ + b_4_bound / N₀^2 + b_5_bound / N₀^3 + T_6_bound / N₀^4
@@ -346,6 +349,7 @@ T_6_bound <= Arb(C_T_6)
 # ╠═b3f8fb15-2864-4479-8b2a-74586b2c8e8b
 # ╠═00ac7282-9dac-4289-8d5a-5bf5dd539878
 # ╠═763878e0-5a56-4c0e-985f-f0521cab30eb
+# ╠═92e50091-4405-4691-aec5-8704fac4215a
 # ╠═dad6497c-bfee-4235-82e6-2099220844b3
 # ╠═769879b3-3c7b-4ae5-ad75-5f5fee225f90
 # ╠═48596d0e-6804-426a-b3a4-7d64f3d7df93

@@ -62,7 +62,8 @@ We split the interval $[0, \infty)$ into two parts, $[0, 5]$ and $(5, \infty)$. 
 """
 
 # ╔═╡ dd258019-77b9-4da2-874e-896162b18c78
-g_d3_bound_0_5 = ArbExtras.maximum_enclosure(g_d3, Arf(0), Arf(5), abs_value = true, verbose = true)
+g_d3_bound_0_5 =
+    ArbExtras.maximum_enclosure(g_d3, Arf(0), Arf(5), abs_value = true, verbose = true)
 
 # ╔═╡ 4b00cb82-1e2c-448c-b832-b94ed22d92c6
 md"""
@@ -99,19 +100,32 @@ We can visualize the bounds in the plot below:
 
 # ╔═╡ c1cf75a7-2e6d-43a4-8715-009c872be9ef
 let
-	fig = Figure()
-	ax = Axis(
-		fig[1, 1],
-		xlabel = L"w",
-	)
-	colormap = :tab10
-	colorrange = (1, 10)
-	lines!(ax, range(0, 20, 1000), g_d3 ∘ Arb, label = L"g'''(w)", color = 1; colormap, colorrange)
-	lines!(ax, range(0, 20, 1000), w -> 0.7858 * λ^(4 // 3) * w^(-1 // 3), label = L"\pm 0.7858\lambda^{4/3}w^{-1/3}", color = 2; colormap, colorrange)
-	lines!(ax, range(0, 20, 1000), w -> -0.7858 * λ^(4 // 3) * w^(-1 // 3), color = :orange)
-	hlines!(ax, [-Arb(C_g), Arb(C_g)], label = L"\pm C_g", color = 3; colormap, colorrange)
-	axislegend(ax, position = :rb)
-	fig
+    fig = Figure()
+    ax = Axis(fig[1, 1], xlabel = L"w")
+    colormap = :tab10
+    colorrange = (1, 10)
+    lines!(
+        ax,
+        range(0, 20, 1000),
+        g_d3 ∘ Arb,
+        label = L"g'''(w)",
+        color = 1;
+        colormap,
+        colorrange,
+    )
+    lines!(
+        ax,
+        range(0, 20, 1000),
+        w -> 0.7858 * λ^(4 // 3) * w^(-1 // 3),
+        label = L"\pm 0.7858\lambda^{4/3}w^{-1/3}",
+        color = 2;
+        colormap,
+        colorrange,
+    )
+    lines!(ax, range(0, 20, 1000), w -> -0.7858 * λ^(4 // 3) * w^(-1 // 3), color = :orange)
+    hlines!(ax, [-Arb(C_g), Arb(C_g)], label = L"\pm C_g", color = 3; colormap, colorrange)
+    axislegend(ax, position = :rb)
+    fig
 end
 
 # ╔═╡ Cell order:
