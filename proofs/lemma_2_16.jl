@@ -12,12 +12,10 @@ begin
     using CairoMakie
     using Arblib
     using ArbExtras
-    using OhMyThreads
     using PlutoUI
     using SpecialFunctions
 
     import SpectralRegularPolygons as SRP
-    import ProgressLogging: @withprogress, @logprogress
 
     setprecision(Arb, 128)
 end
@@ -81,7 +79,7 @@ and then verify that it satisfies the requirement. Note that it suffices to veri
 # ╔═╡ a71afcc0-01e6-4b7f-a9b0-86ccf4e9c9b6
 res1 = map(N₀:128) do N
     let inv_N = Acb(1 // N)
-        SRP._c_N(real(inv_N)) * R * real(SRP.hypgeom2f1(2inv_N, inv_N, 1 + inv_N, Acb(-R^N)))
+        SRP.c_N(real(inv_N)) * R * real(SRP.hypgeom2f1(2inv_N, inv_N, 1 + inv_N, Acb(-R^N)))
     end
 end
 
@@ -90,7 +88,9 @@ all(Arb(R_inner) .< res1)
 
 # ╔═╡ 4c40fe01-bbb6-442d-af53-9413cdb1a20f
 res2 = let inv_N = Acb(Arb((0, 1 // 128)))
-    SRP.c_N(N₀) * R * real(SRP.hypgeom2f1(2inv_N, inv_N, 1 + inv_N, Acb(Arb((-R^128, 0)))))
+    SRP.c_N(real(inv_N)) *
+    R *
+    real(SRP.hypgeom2f1(2inv_N, inv_N, 1 + inv_N, Acb(Arb((-R^128, 0)))))
 end
 
 # ╔═╡ bcbc717a-f1e2-4acf-93b9-392abc3dfc4f
@@ -123,7 +123,7 @@ For $N \geq N_0$ and $z \in \mathbb{D}_R$ we can thus directly compute an enclos
 f_derivative = let
     inv_N = Arb((0, 1 // N₀))
     z_pow_N = add_error(Acb(0), R^N₀)
-    SRP.c_N(N₀) / (1 - z_pow_N)^2inv_N
+    SRP.c_N(inv_N) / (1 - z_pow_N)^2inv_N
 end
 
 # ╔═╡ 0ae4fcea-8a49-456d-9f93-0e7d820e023c
@@ -169,7 +169,7 @@ V_4_div_f_derivative <= Arb(C_V_4)
 # ╔═╡ Cell order:
 # ╟─3f5fec32-8fd2-4cf5-9c74-e380a5853da1
 # ╠═580af86c-85b6-11f0-05e7-e9613df5232a
-# ╠═0c0d1542-c675-4aaf-8bdf-07221c25e8eb
+# ╟─0c0d1542-c675-4aaf-8bdf-07221c25e8eb
 # ╠═aff645f1-6bc1-4b18-878e-9bdfce4ee2ae
 # ╠═c6db017d-4648-4cf1-a242-38305afca079
 # ╠═b68730ae-0b72-4ddb-86f1-a5b56d55cb60

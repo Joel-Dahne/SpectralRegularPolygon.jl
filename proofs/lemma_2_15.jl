@@ -11,13 +11,9 @@ begin
     using SpectralRegularPolygons
     using CairoMakie
     using Arblib
-    using ArbExtras
-    using OhMyThreads
     using PlutoUI
-    using SpecialFunctions
 
     import SpectralRegularPolygons as SRP
-    import ProgressLogging: @withprogress, @logprogress
 
     setprecision(Arb, 128)
 end
@@ -68,8 +64,14 @@ and the statement follows for all $N \geq N_0$. Computing $I_{N_0}$ and $C_{N_0}
 # ╔═╡ 6ece39a2-2a2f-43b8-b999-0a3ef450a04c
 I_N_0 = sqrt(π / (N₀ * tanpi(Arb(1 // N₀))))
 
+# ╔═╡ e368dc1a-5f8d-458a-9a92-e1b41eb9fbaa
+string(I_N_0, digits = 5)
+
 # ╔═╡ bdcba7fd-86d5-4a88-ab79-e3f83dcac661
 C_N_0 = sqrt(π / (N₀ // 2 * sinpi(Arb(2 // N₀))))
+
+# ╔═╡ 0a6d8a1f-d4f7-4e47-8ce2-d92054aaca34
+string(C_N_0, digits = 5)
 
 # ╔═╡ bfc91c06-da88-4fdb-afd1-4a8a4d9eeeb1
 md"""
@@ -91,7 +93,9 @@ C_N_0 <= Arb(R_outer)
 # ╠═945657ac-d0e5-433a-813a-40bfdf4cbcd4
 # ╟─501b94c5-e1c0-43ec-bbc0-74ca2fc6ebf1
 # ╠═6ece39a2-2a2f-43b8-b999-0a3ef450a04c
+# ╠═e368dc1a-5f8d-458a-9a92-e1b41eb9fbaa
 # ╠═bdcba7fd-86d5-4a88-ab79-e3f83dcac661
+# ╠═0a6d8a1f-d4f7-4e47-8ce2-d92054aaca34
 # ╟─bfc91c06-da88-4fdb-afd1-4a8a4d9eeeb1
 # ╠═2bbfb9e5-db35-4248-b3e9-1db3aaaf88c9
 # ╠═789a0a04-5aa5-48de-84a0-277631076b87

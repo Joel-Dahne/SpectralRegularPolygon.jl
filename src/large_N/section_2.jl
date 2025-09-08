@@ -215,10 +215,10 @@ function k_inv_N(inv_N::Union{Arb,ArbSeries})
     λ = λ_disc()
     R = Arb(R_inner)
     E_I =
-        Arb(C_E_I_1) * inv_N +
-        Arb(C_E_I_2) * inv_N^2 +
-        Arb(C_E_I_3) * inv_N^3 +
-        Arb(C_E_I_4) * inv_N^4
+        Arb(C_V_1) * inv_N +
+        Arb(C_V_2) * inv_N^2 +
+        Arb(C_V_3) * inv_N^3 +
+        Arb(C_V_4) * inv_N^4
     a₀ = c_N(inv_N) / (sqrt(λ) * besselj1(sqrt(λ)))
 
     return (
@@ -230,7 +230,22 @@ function k_inv_N(inv_N::Union{Arb,ArbSeries})
 end
 
 function ϵ_prime(inv_N::Union{Arb,ArbSeries})
-    ϵ = Arb(C_ε_6) * inv_N^6 + Arb(C_ε_7) * inv_N^7 + Arb(C_ε_8) * inv_N^8
+    # Bound of g'(1), which is the same as that for g''(1)
+    λ = λ_disc()
+    g_d_1 = abs(sqrt(λ) * besselj1(sqrt(λ)))
+    g_d2_1 = g_d_1
 
-    sqrt(Arb(π)) * ϵ / sqrt(k_inv_N(inv_N))
+    ε =
+        Arb(C_a_0) *
+        inv_N^6 *
+        (
+            g_d_1 * Arb(C_T_6) +
+            g_d2_1 / 2 * Arb(C_b_3)^2 +
+            g_d2_1 * Arb(C_b_2) * Arb(C_T_4) +
+            Arb(C_T_2)^3 * Arb(C_gd3) / 6 +
+            2inv_N * Arb(C_b_3) * Arb(C_T_4) +
+            inv_N^2 * Arb(C_T_4)^2
+        ) + inv_N^6 * (Arb(C_I_1_4) + Arb(C_I_2_3) + Arb(C_I_3_2) + Arb(C_I_4_1))
+
+    sqrt(Arb(π)) * ε / sqrt(k_inv_N(inv_N))
 end

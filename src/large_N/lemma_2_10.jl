@@ -113,6 +113,10 @@ Return coefficients `Cs` such that
 ```
 abs(V(l, t)) <= sum(j -> C[j] * abs(log(1 - t))^j / factorial(j), 1:l)
 ```
+FIXME: Rewrite this to instead give the bound
+```
+abs(V(l, t)) <= sum(j -> C[j] * log(1 - abs(t))^j / factorial(j), 1:l)
+```
 """
 V_log_bound_coefficients(l::Int) =
     if l == 1
@@ -381,6 +385,7 @@ function integral_d_k_V_l(k::Int, l::Int, z::Acb)
             # The change of variables s = t / z gives
             # ∫ V(l, s * z) ds from s = b to 1.
             #
+            # FIXME: The sum is only an upper bound, need to create a ball.
             Cs = V_log_bound_coefficients(l)
             d(k, z, t) / t * sum(1:l) do j
                 Cs[j] / factorial(j) * integral_log_1mtz(Acb(1), j, b)
@@ -440,6 +445,9 @@ function K_4(N₀::Int, z::Acb)
 end
 
 function integral_K_4(N₀::Int, z::Acb, a::Arb)
+    # It seems like K_4 is not bounded at t = 0? But it is a bit
+    # unclear, because evaluating it at exactly t = 0 gives a finite
+    # value? Is there some bug involved?
     return zero(z) # FIXME: Implement this
 end
 

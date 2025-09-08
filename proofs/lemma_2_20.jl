@@ -12,12 +12,10 @@ begin
     using CairoMakie
     using Arblib
     using ArbExtras
-    using OhMyThreads
     using PlutoUI
     using SpecialFunctions
 
     import SpectralRegularPolygons as SRP
-    import ProgressLogging: @withprogress, @logprogress
 
     setprecision(Arb, 128)
 end

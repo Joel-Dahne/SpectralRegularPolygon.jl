@@ -12,12 +12,10 @@ begin
     using CairoMakie
     using Arblib
     using ArbExtras
-    using OhMyThreads
     using PlutoUI
     using SpecialFunctions
 
     import SpectralRegularPolygons as SRP
-    import ProgressLogging: @withprogress, @logprogress
 
     setprecision(Arb, 128)
 end
@@ -99,6 +97,9 @@ Finally we scale the result to get an enclosure of $\lambda_2(\mathbb{D}_{R_{\te
 # ╔═╡ dc6c68cb-2624-449d-b396-de0c01a29275
 λ₂_R_outer = λ₂ / Arb(R_outer)^2
 
+# ╔═╡ 1863ce44-3b91-46e5-be48-00696a001688
+string(λ₂_R_outer, digits = 5)
+
 # ╔═╡ f225159f-9f55-46c0-a25c-f079eb69fe51
 md"""
 ### Step 2 - Compute $\lambda_{\text{app}}$ and $\epsilon'(N)$
@@ -114,7 +115,7 @@ The values can now be enclosed:
 """
 
 # ╔═╡ 1c759096-6aa3-4e81-bd4b-4ab753bb73f8
-λ_app = SRP.λ_approx(inv_N)
+λ_app = SRP.λ_app(inv_N)
 
 # ╔═╡ 0566b7a3-f43d-4146-bc69-ac541e18ea2f
 ε_prime = SRP.ϵ_prime(inv_N)
@@ -153,6 +154,7 @@ Finally, we just verify the inequality:
 # ╠═9ff56c39-723d-4206-8895-b11bb19ab4f7
 # ╟─4550ca4a-557a-4508-991b-d9150d6bf4f2
 # ╠═dc6c68cb-2624-449d-b396-de0c01a29275
+# ╠═1863ce44-3b91-46e5-be48-00696a001688
 # ╟─f225159f-9f55-46c0-a25c-f079eb69fe51
 # ╠═ea12574f-90c9-43d1-93f4-847f5b52351a
 # ╟─d709f4f2-8ca5-43b7-9087-45ec56b041bc
