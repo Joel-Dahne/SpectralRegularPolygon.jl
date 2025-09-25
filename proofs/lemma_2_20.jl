@@ -31,11 +31,11 @@ md"""
 ## Goal
 We want to prove that for $N \geq N_0$ we have
 
-$$\frac{\lambda_{\text{app}}(N)}{1 + \varepsilon'(N)} > \frac{\lambda_{\text{app}}(N+1)}{1 - \varepsilon'(N+1)}$$
+$$\frac{\lambda_{\text{app}}(N)}{1 + \hat{\varepsilon}(N)} > \frac{\lambda_{\text{app}}(N+1)}{1 - \hat{\varepsilon}(N+1)}$$
 
 and
 
-$$\frac{\lambda_{\text{app}}(N)(1-\varepsilon'(N+1))}{(1+\varepsilon'(N))\lambda_{\text{app}}(N+1)} > \frac{\lambda_{\text{app}}(N+1)(1+\varepsilon'(N+2))}{(1-\varepsilon'(N+1))\lambda_{\text{app}}(N+2)},$$
+$$\frac{\lambda_{\text{app}}(N)(1-\hat{\varepsilon}(N+1))}{(1+\hat{\varepsilon}(N))\lambda_{\text{app}}(N+1)} > \frac{\lambda_{\text{app}}(N+1)(1+\hat{\varepsilon}(N+2))}{(1-\hat{\varepsilon}(N+1))\lambda_{\text{app}}(N+2)},$$
 
 where $N_0$ is given by:
 """
@@ -49,11 +49,11 @@ md"""
 ### Part 1
 Let us start by proving that
 
-$$\frac{\lambda_{\text{app}}(N)}{1 + \varepsilon'(N)} > \frac{\lambda_{\text{app}}(N+1)}{1 - \varepsilon'(N+1)}.$$
+$$\frac{\lambda_{\text{app}}(N)}{1 + \hat{\varepsilon}(N)} > \frac{\lambda_{\text{app}}(N+1)}{1 - \hat{\varepsilon}(N+1)}.$$
 
 It is convenient to see the inequality as a function of $N^{-1}$, rather than $N$. For that reason we introduce the function
 
-$$G(N^{-1}) = \frac{\lambda_{\text{app}}(N)}{1 + \varepsilon'(N)} - \frac{\lambda_{\text{app}}(N+1)}{1 - \varepsilon'(N+1)}.$$
+$$G(N^{-1}) = \frac{\lambda_{\text{app}}(N)}{1 + \hat{\varepsilon}(N)} - \frac{\lambda_{\text{app}}(N+1)}{1 - \hat{\varepsilon}(N+1)}.$$
 """
 
 # ╔═╡ 03f4726b-2d20-4a77-83ba-41824798533f
@@ -61,8 +61,8 @@ function G(inv_N)
     inv_Np1 = inv_N / (1 + inv_N) # Enclosure of inv(N + 1)
 
     return SRP.λ_disc() * (
-        SRP.λ_app_div_λ(inv_N) / (1 + SRP.ϵ_prime(inv_N)) -
-        SRP.λ_app_div_λ(inv_Np1) / (1 - SRP.ϵ_prime(inv_Np1))
+        SRP.λ_app_div_λ(inv_N) / (1 + SRP.epsilon_hat(inv_N)) -
+        SRP.λ_app_div_λ(inv_Np1) / (1 - SRP.epsilon_hat(inv_Np1))
     )
 end
 
@@ -124,11 +124,11 @@ md"""
 md"""
 Next we prove that
 
-$$\frac{\lambda_{\text{app}}(N)(1-\varepsilon'(N+1))}{(1+\varepsilon'(N))\lambda_{\text{app}}(N+1)} > \frac{\lambda_{\text{app}}(N+1)(1+\varepsilon'(N+2))}{(1-\varepsilon'(N+1))\lambda_{\text{app}}(N+2)}.$$
+$$\frac{\lambda_{\text{app}}(N)(1-\hat{\varepsilon}(N+1))}{(1+\hat{\varepsilon}(N))\lambda_{\text{app}}(N+1)} > \frac{\lambda_{\text{app}}(N+1)(1+\hat{\varepsilon}(N+2))}{(1-\hat{\varepsilon}(N+1))\lambda_{\text{app}}(N+2)}.$$
 
 The approach is similar to the one above, we let
 
-$$G_q(N^{-1}) = \frac{\lambda_{\text{app}}(N)(1-\varepsilon'(N+1))}{(1+\varepsilon'(N))\lambda_{\text{app}}(N+1)} - \frac{\lambda_{\text{app}}(N+1)(1+\varepsilon'(N+2))}{(1-\varepsilon'(N+1))\lambda_{\text{app}}(N+2)}.$$
+$$G_q(N^{-1}) = \frac{\lambda_{\text{app}}(N)(1-\hat{\varepsilon}(N+1))}{(1+\hat{\varepsilon}(N))\lambda_{\text{app}}(N+1)} - \frac{\lambda_{\text{app}}(N+1)(1+\hat{\varepsilon}(N+2))}{(1-\hat{\varepsilon}(N+1))\lambda_{\text{app}}(N+2)}.$$
 """
 
 # ╔═╡ 89947765-e753-4750-b6cc-084c0c86280f
@@ -138,10 +138,10 @@ function G_q(inv_N)
     inv_Np2 = inv_Np1 / (1 + inv_Np1)
 
     # Note that we use λ_app_div_λ since the λs cancel
-    return SRP.λ_app_div_λ(inv_N) * (1 - SRP.ϵ_prime(inv_Np1)) /
-           ((1 + SRP.ϵ_prime(inv_N)) * SRP.λ_app_div_λ(inv_Np1)) -
-           SRP.λ_app_div_λ(inv_Np1) * (1 + SRP.ϵ_prime(inv_Np2)) /
-           ((1 - SRP.ϵ_prime(inv_Np1)) * SRP.λ_app_div_λ(inv_Np2))
+    return SRP.λ_app_div_λ(inv_N) * (1 - SRP.epsilon_hat(inv_Np1)) /
+           ((1 + SRP.epsilon_hat(inv_N)) * SRP.λ_app_div_λ(inv_Np1)) -
+           SRP.λ_app_div_λ(inv_Np1) * (1 + SRP.epsilon_hat(inv_Np2)) /
+           ((1 - SRP.epsilon_hat(inv_Np1)) * SRP.λ_app_div_λ(inv_Np2))
 end
 
 # ╔═╡ 80973d1e-71af-454e-b0ee-a949e445ed44

@@ -31,7 +31,7 @@ md"""
 ## Goal
 We want to prove that for $N \geq N_0$ we have
 
-$$\frac{\lambda_{\text{app}}}{1 - \varepsilon'(N)} < \lambda_2(\mathbb{D}_{R_{\text{outer}}}),$$
+$$\frac{\lambda_{\text{app}}}{1 - \hat{\varepsilon}(N)} < \lambda_2(\mathbb{D}_{R_{\text{outer}}}),$$
 
 where $\lambda_2(\mathbb{D}_{R_{\text{outer}}})$ denotes the second eigenvalue of the $\mathbb{D}_{R_{\text{outer}}}$ and $N_0$ and $R_{\text{outer}}$ are given by:
 """
@@ -50,7 +50,7 @@ As a first step we compute an enclosure of $\lambda_2(\mathbb{D}_{R_{\text{outer
 
 $$\lambda_2(\mathbb{D}_{R_{\text{outer}}}) = \frac{\lambda_2(\mathbb{D})}{R_{\text{outer}}^2}.$$
 
-To compute $\lambda_2(\mathbb{D})$ we use that it is given by 
+To compute $\lambda_2(\mathbb{D})$ we use that it is given by
 
 $$\lambda_2(\mathbb{D}) = j_{1,1}^2,$$
 
@@ -102,8 +102,8 @@ string(λ₂_R_outer, digits = 5)
 
 # ╔═╡ f225159f-9f55-46c0-a25c-f079eb69fe51
 md"""
-### Step 2 - Compute $\lambda_{\text{app}}$ and $\epsilon'(N)$
-The functions for computing $\lambda_{\text{app}}$ and $\epsilon'(N)$ are implemented in the package. They take as input an enclosure of $N^{-1}$, so we start by computing an enclosure of this that is valid for all $N \geq N_0$:
+### Step 2 - Compute $\lambda_{\text{app}}$ and $\hat{\varepsilon}(N)$
+The functions for computing $\lambda_{\text{app}}$ and $\hat{\varepsilon}(N)$ are implemented in the package. They take as input an enclosure of $N^{-1}$, so we start by computing an enclosure of this that is valid for all $N \geq N_0$:
 """
 
 # ╔═╡ ea12574f-90c9-43d1-93f4-847f5b52351a
@@ -118,7 +118,7 @@ The values can now be enclosed:
 λ_app = SRP.λ_app(inv_N)
 
 # ╔═╡ 0566b7a3-f43d-4146-bc69-ac541e18ea2f
-ε_prime = SRP.ϵ_prime(inv_N)
+ε_hat = SRP.epsilon_hat(inv_N)
 
 # ╔═╡ 27563f0b-4c28-408e-9db2-d3f756762d6b
 md"""
@@ -126,7 +126,7 @@ This gives us:
 """
 
 # ╔═╡ bd7280e8-d4d4-4230-8909-912c3f0ae084
-λ_app / (1 - ε_prime)
+λ_app / (1 - ε_hat)
 
 # ╔═╡ a10e7f9e-33c5-4f8d-b28f-587dfd9063d7
 md"""
@@ -135,11 +135,11 @@ Finally, we just verify the inequality:
 """
 
 # ╔═╡ 840d2b7b-8e6d-44ce-a8d5-dfa45095be07
-λ_app / (1 - ε_prime) < λ₂_R_outer
+λ_app / (1 - ε_hat) < λ₂_R_outer
 
 # ╔═╡ Cell order:
 # ╟─9047fbda-85bb-11f0-3c79-517d4f9a6381
-# ╠═5ccffc41-fd3b-439c-86bb-ec92e86fa30a
+# ╟─5ccffc41-fd3b-439c-86bb-ec92e86fa30a
 # ╟─a8e5d438-7f29-43c5-8576-eccff74668d9
 # ╠═6a32743d-ec5d-44be-9b84-20c55481446f
 # ╠═8c1beb93-8fba-4269-9001-204575c784f1

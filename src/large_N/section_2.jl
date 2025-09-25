@@ -224,15 +224,15 @@ function epsilon(inv_N::Union{Arb,ArbSeries})
     g_d2_1 = g_d_1
 
     return Arb(C_a_0) *
-        inv_N^6 *
-        (
-            g_d_1 * Arb(C_T_6) +
-            g_d2_1 / 2 * Arb(C_b_3)^2 +
-            g_d2_1 * Arb(C_b_2) * Arb(C_T_4) +
-            Arb(C_T_2)^3 * Arb(C_gd3) / 6 +
-            2inv_N * Arb(C_b_3) * Arb(C_T_4) +
-            inv_N^2 * Arb(C_T_4)^2
-        ) + inv_N^6 * (Arb(C_I_1_4) + Arb(C_I_2_3) + Arb(C_I_3_2) + Arb(C_I_4_1))
+           inv_N^6 *
+           (
+               g_d_1 * Arb(C_T_6) +
+               g_d2_1 / 2 * Arb(C_b_3)^2 +
+               g_d2_1 * Arb(C_b_2) * Arb(C_T_4) +
+               Arb(C_T_2)^3 * Arb(C_gd3) / 6 +
+               2inv_N * Arb(C_b_3) * Arb(C_T_4) +
+               inv_N^2 * Arb(C_T_4)^2
+           ) + inv_N^6 * (Arb(C_I_1_4) + Arb(C_I_2_3) + Arb(C_I_3_2) + Arb(C_I_4_1))
 end
 
 """
@@ -262,7 +262,7 @@ end
 """
     epsilon_hat(inv_N::Union{Arb,ArbSeries})
 
-Compute ``\hat{ε}`` coming from Equation REF(19) in the paper. Note
+Compute `hat{ε}` coming from Equation REF(19) in the paper. Note
 that this takes as input `inv(N)` and not `N`.
 """
 function epsilon_hat(inv_N::Union{Arb,ArbSeries})
