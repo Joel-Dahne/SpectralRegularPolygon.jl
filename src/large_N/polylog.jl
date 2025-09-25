@@ -91,25 +91,25 @@ function S(n::Int, z::Arblib.AcbOrRef)
         zero(z) # Nothing to integrate
     else
         let t = Arb((0, a))
-            # Enclosure of log(1 - t * z) / t for t in [0, a]
-            log_removable = fx_div_x(Acb(t)) do t
+            # Enclosure of log(1 - t * z) / t
+            log_1mtz_div_t = fx_div_x(Acb(t)) do t
                 log(1 - t * z)
             end
             log1mtz = log(1 - t * z)
 
             if n == 3
-                (-12integral_log(1, a) + 12integral_log(0, a) * log1mtz) * log_removable / factorial(3)
+                (-12integral_log(1, a) + 12integral_log(0, a) * log1mtz) * log_1mtz_div_t / factorial(3)
             elseif n == 4
                 (
                     -24integral_log(2, a) + 48integral_log(1, a) * log1mtz -
                     32integral_log(0, a) * log1mtz^2
-                ) * log_removable / factorial(4)
+                ) * log_1mtz_div_t / factorial(4)
             elseif n == 5
                 (
                     -40integral_log(3, a) + 120integral_log(2, a) * log1mtz -
                     160integral_log(1, a) * log1mtz^2 +
                     80integral_log(0, a) * log1mtz^3
-                ) * log_removable / factorial(5)
+                ) * log_1mtz_div_t / factorial(5)
             else
                 throw(ArgumentError("integration around zero not implemented for n > 5"))
             end
@@ -161,20 +161,20 @@ function S(n::Int, z::Arblib.AcbOrRef)
 end
 
 """
-    polylog_r_div_z_bound(r::Int, zᵤ::Arb)
+    polylog_r_div_z_bound(r::Int, a::Arb)
 
-For `0 < zᵤ < 1`, return `C` such that for any multiple polylogarithm
+For `0 < a < 1`, return `C` such that for any multiple polylogarithm
 with `r` parameters (with are required to be positive integers) and
-complex `z` with `abs(z) <= zᵤ`, the absolute value is bounded by `C *
-zᵤ`.
+complex `z` with `abs(z) <= a`, the absolute value is bounded by `C *
+z`.
 
 IMPROVE: We can get better bounds for specific values of the
 parameters, in particular when all values are 1. Might be worth it to
 implement those specific bounds.
 """
-function polylog_r_div_z_bound(r::Int, zᵤ::Arb)
-    0 < zᵤ < 1 || return indeterminate(zᵤ)
-    return 1 / (1 - zᵤ)^r
+function polylog_r_div_z_bound(r::Int, a::Arb)
+    0 < a < 1 || return indeterminate(a)
+    return 1 / (1 - a)^r
 end
 
 

@@ -211,6 +211,36 @@ function F_N_model(N₀::Int, z::Acb)
     )
 end
 
+"""
+    epsilon(inv_N::Union{Arb,ArbSeries})
+
+Compute `ε(N)` coming from Equation REF(16) in the paper. Note that
+this takes as input `inv(N)` and not `N`.
+"""
+function epsilon(inv_N::Union{Arb,ArbSeries})
+    # Bound of g'(1), which is the same as that for g''(1)
+    λ = λ_disc()
+    g_d_1 = abs(sqrt(λ) * besselj1(sqrt(λ)))
+    g_d2_1 = g_d_1
+
+    return Arb(C_a_0) *
+        inv_N^6 *
+        (
+            g_d_1 * Arb(C_T_6) +
+            g_d2_1 / 2 * Arb(C_b_3)^2 +
+            g_d2_1 * Arb(C_b_2) * Arb(C_T_4) +
+            Arb(C_T_2)^3 * Arb(C_gd3) / 6 +
+            2inv_N * Arb(C_b_3) * Arb(C_T_4) +
+            inv_N^2 * Arb(C_T_4)^2
+        ) + inv_N^6 * (Arb(C_I_1_4) + Arb(C_I_2_3) + Arb(C_I_3_2) + Arb(C_I_4_1))
+end
+
+"""
+    k_inv_N(inv_N::Union{Arb,ArbSeries})
+
+Compute `k(N)` coming from Equation REF(18) in the paper. Note that
+this takes as input `inv(N)` and not `N`.
+"""
 function k_inv_N(inv_N::Union{Arb,ArbSeries})
     λ = λ_disc()
     R = Arb(R_inner)
@@ -229,23 +259,12 @@ function k_inv_N(inv_N::Union{Arb,ArbSeries})
     )
 end
 
-function ϵ_prime(inv_N::Union{Arb,ArbSeries})
-    # Bound of g'(1), which is the same as that for g''(1)
-    λ = λ_disc()
-    g_d_1 = abs(sqrt(λ) * besselj1(sqrt(λ)))
-    g_d2_1 = g_d_1
+"""
+    epsilon_hat(inv_N::Union{Arb,ArbSeries})
 
-    ε =
-        Arb(C_a_0) *
-        inv_N^6 *
-        (
-            g_d_1 * Arb(C_T_6) +
-            g_d2_1 / 2 * Arb(C_b_3)^2 +
-            g_d2_1 * Arb(C_b_2) * Arb(C_T_4) +
-            Arb(C_T_2)^3 * Arb(C_gd3) / 6 +
-            2inv_N * Arb(C_b_3) * Arb(C_T_4) +
-            inv_N^2 * Arb(C_T_4)^2
-        ) + inv_N^6 * (Arb(C_I_1_4) + Arb(C_I_2_3) + Arb(C_I_3_2) + Arb(C_I_4_1))
-
-    sqrt(Arb(π)) * ε / sqrt(k_inv_N(inv_N))
+Compute ``\hat{ε}`` coming from Equation REF(19) in the paper. Note
+that this takes as input `inv(N)` and not `N`.
+"""
+function epsilon_hat(inv_N::Union{Arb,ArbSeries})
+    return sqrt(Arb(π)) * epsilon(inv_N) / sqrt(k_inv_N(inv_N))
 end
