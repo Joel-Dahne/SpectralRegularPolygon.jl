@@ -12,6 +12,7 @@ begin
     using CairoMakie
     using Arblib
     using ArbExtras
+    using OhMyThreads
     using PlutoUI
     using SpecialFunctions
 
@@ -26,9 +27,6 @@ md"""
 This notebook contains the computer-assisted part of the proof of Lemma 2.10.
 """
 
-# ╔═╡ d22dc5aa-bac2-4f8a-968b-ece39e295129
-N₀ = SRP.N₀
-
 # ╔═╡ bdc6dcff-50a0-49d7-98a2-00b24f5ecfe6
 md"""
 We want to prove that for $|z| = 1$ we have the following bounds:
@@ -39,12 +37,15 @@ $$\left|\operatorname{Re}\int_0^z \frac{1}{t} d_2(z, t)V_3(t)\ dt\right| \leq C_
 
 $$\left|\operatorname{Re}\int_0^z \frac{1}{t} d_3(z, t)V_2(t)\ dt\right| \leq C_{I,3,2}$$
 
-and for $N \geq$ $N₀ have
+and for $N \geq N_0$ have
 
 $$\left|\operatorname{Re}\int_0^z \frac{1}{t} K_4(z, t)V_1(t)\ dt\right| \leq C_{I,4,1}.$$
 
 Here $N_0$ and $C_{I,k,l}$ are given by
 """
+
+# ╔═╡ d22dc5aa-bac2-4f8a-968b-ece39e295129
+N₀ = SRP.N₀
 
 # ╔═╡ 5c5f73da-4135-412f-a31f-da02450f235a
 C_I_1_4 = SRP.C_I_1_4
