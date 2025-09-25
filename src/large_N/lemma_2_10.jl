@@ -37,14 +37,13 @@ function V_3_div_z_bound(zᵤ::Arb)
     0 < zᵤ < 1 || return indeterminate(zᵤ)
     λ = λ_disc()
     return abs(λ^2 / 16 - λ + 2) * polylog_r_div_z_bound(1, zᵤ) +
-           abs(3λ - 12) * polylog_r_div_z_bound(2, zᵤ) +
-           abs(λ - 4) * polylog_r_div_z_bound(2, zᵤ) +
+           (abs(3λ - 12) + abs(λ - 4)) * polylog_r_div_z_bound(2, zᵤ) +
            8polylog_r_div_z_bound(3, zᵤ)
 end
 
 function V_3_log_bound_coefficients()
     λ = λ_disc()
-    return Arb[abs(λ^2 / 16 - λ + 2), abs(3λ-12)+(λ-4), 8]
+    return Arb[abs(λ^2 / 16 - λ + 2), abs(3λ-12)+abs(λ-4), 8]
 end
 
 function V_4(z)
@@ -63,15 +62,12 @@ end
 function V_4_div_z_bound(zᵤ::Arb)
     0 < zᵤ < 1 || return indeterminate(zᵤ)
     λ = λ_disc()
-    return abs(λ^3 / 192 - λ^2 / 8 - λ / 2 - 2) * polylog_r_div_z_bound(1, zᵤ) +
-           abs(λ^2 / 8 - 2λ + 4) * polylog_r_div_z_bound(2, zᵤ) +
-           abs(λ^2 / 4 - 4λ + 12) * polylog_r_div_z_bound(2, zᵤ) +
-           abs(5λ^2 / 8 - 8λ + 28) * polylog_r_div_z_bound(2, zᵤ) +
-           abs(2λ - 8) * polylog_r_div_z_bound(3, zᵤ) +
-           abs(6λ - 24) * polylog_r_div_z_bound(3, zᵤ) +
-           abs(14λ - 56) * polylog_r_div_z_bound(3, zᵤ) +
-           16polylog_r_div_z_bound(4, zᵤ) +
-           abs(2λ * zeta(Arb(3))) * polylog_r_div_z_bound(1, zᵤ)
+    return (abs(λ^3 / 192 - λ^2 / 8 - λ / 2 - 2) + abs(2λ * zeta(Arb(3)))) *
+           polylog_r_div_z_bound(1, zᵤ) +
+           (abs(λ^2 / 8 - 2λ + 4) + abs(λ^2 / 4 - 4λ + 12) + abs(5λ^2 / 8 - 8λ + 28)) *
+           polylog_r_div_z_bound(2, zᵤ) +
+           (abs(2λ - 8) + abs(6λ - 24) + abs(14λ - 56)) * polylog_r_div_z_bound(3, zᵤ) +
+           16polylog_r_div_z_bound(4, zᵤ)
 end
 
 function V_4_log_bound_coefficients()
@@ -213,8 +209,8 @@ We write `d_2` as
 (λ^2 / 64 + λ / 8) * log(t / z)^2 +
 λ / 4 * (S(2, t) - S(2, z))
 ```
-The `S` factors with `t` we enclose on the entire interval.
-We then integrate the log-terms with [`integral_log_z`](@ref).
+The `S(2, t)` factor we enclose on the entire interval. We then
+integrate the log-terms with [`integral_log_z`](@ref).
 """
 function integral_d_2(z::Acb, a::Arb)
     λ = λ_disc()
@@ -231,7 +227,8 @@ We write `d_3` as
 (λ^3 / 2304 + λ^2 / 64 + λ / 24) * log(t / z)^3 +
 (
 (λ^2 / 32 + λ / 4) * S(2, t) -
-(λ^2 / 32 * S(2, z) - λ / 4 * S(2, conj(z)))
+λ^2 / 32 * S(2, z)
++ λ / 4 * S(2, conj(z))
 ) * log(t / z)
 λ / 4 * (S(3, t) - S(3, z))
 ```
@@ -242,7 +239,7 @@ function integral_d_3(z::Acb, a::Arb)
     λ = λ_disc()
     t = Arblib.union(zero(z), a * z)
     return (λ^3 / 2304 + λ^2 / 64 + λ / 24) * integral_log_z(3, z, a) +
-           ((λ^2 / 32 + λ / 4) * S(2, t) - (λ^2 / 32 * S(2, z) - λ / 4 * S(2, conj(z)))) *
+           ((λ^2 / 32 + λ / 4) * S(2, t) - λ^2 / 32 * S(2, z) + λ / 4 * S(2, conj(z))) *
            integral_log_z(1, z, a) +
            λ / 4 * (S(3, t) - S(3, z)) * a * z
 end
@@ -296,15 +293,16 @@ function integral_d_k_V_l(k::Int, l::Int, z::Acb)
 
     # Integrate from 0 to a * z
     res_0_az = let
-        # Factor out enclosure of V(l, t) / t and integrate d(k, z, t)
+        # V(l, t) / t is bounded near t = 0, hence we can factor out a
+        # bound of it and integrate only d(k, z, t).
 
-        # Compute enclosure of V(l, t) / t for t in [0, a * z]
+        # Compute bound of V(l, t) / t for t in [0, a * z]
         # IMPROVE: Improving this enclosure would allow us to take a
         # larger a, which should make the integration much faster.
         azᵤ = abs_ubound(Arb, az)
-        V_div_t = add_error(Acb(0), V_div_z_bound(l, azᵤ))
+        D_l_a = V_div_z_bound(l, azᵤ)
 
-        V_div_t * integral_d(k, z, a)
+        add_error(Acb(0), D_l_a * abs(integral_d(k, z, a)))
     end
 
     b = Arblib.contains(z, Acb(1)) ? Arb(0.999) : Arb(1)
@@ -366,8 +364,6 @@ function integral_d_k_V_l(k::Int, l::Int, z::Acb)
         if iswide(z)
             # Add enclosures of integral from az to az_thin and from
             # z_thin to z.
-            # IMPROVE: Get better enclosures of this using mean value
-            # theorem?
             (res_az_thin_bz_thin) +
             (az_thin - az) * d(k, z, az) * V(l, az) / az +
             (bz - bz_thin) * d(k, z, bz) * V(l, bz) / bz
@@ -380,16 +376,19 @@ function integral_d_k_V_l(k::Int, l::Int, z::Acb)
         zero(res_az_bz) # We integrated everything
     else
         let t = Arblib.union(bz, z)
-            # Factor out d(k, z, t) / t from the integral. That leaves
-            # ∫ V(l, t) dt from t = b * z to z.
-            # The change of variables s = t / z gives
-            # ∫ V(l, s * z) ds from s = b to 1.
-            #
-            # FIXME: The sum is only an upper bound, need to create a ball.
+            # d(k, z, t) / t is bounded on the interval of
+            # integration, we factor out a bound for it.
+            d_k_div_t_bound = abs_ubound(d(k, z, t) / t)
+
+            # To bound ∫ V(l, t) dt from t = b * z to z we use
+            # V_log_bound_coefficients to get a bound in terms of
+            # logarithms, that are then explicitly integrated.
             Cs = V_log_bound_coefficients(l)
-            d(k, z, t) / t * sum(1:l) do j
-                Cs[j] / factorial(j) * integral_log_1mtz(Acb(1), j, b)
+            integral_V_bound = sum(1:l) do j
+                (-1)^j * Cs[j] / factorial(j) * integral_log_1mtz(Acb(1), j, b)
             end
+
+            add_error(Acb(0), d_k_div_t_bound * integral_V_bound)
         end
     end
 
@@ -459,15 +458,17 @@ function integral_K_4_V_1(N₀::Int, z::Acb)
 
     # Integrate from 0 to a * z
     res_0_az = let
-        # Factor out enclosure of V(1, t) / t and integrate K_4(N₀, z, t)
+        # V(l, t) / t is bounded near t = 0, hence we can factor out a
+        # bound of it and integrate only K_4(z, t).
 
-        # Compute enclosure of V(1, t) / t for t in [0, a * z]
+
+        # Compute bound of V(l, t) / t for t in [0, a * z]
         # IMPROVE: Improving this enclosure would allow us to take a
         # larger a, which should make the integration much faster.
         azᵤ = abs_ubound(Arb, az)
-        V_div_t = add_error(Acb(0), V_div_z_bound(1, azᵤ))
+        D_1_a = V_div_z_bound(1, azᵤ)
 
-        V_div_t * integral_K_4(N₀, z, a)
+        add_error(Acb(0), D_1_a * integral_K_4(N₀, z, a))
     end
 
     b = Arblib.contains(z, Acb(1)) ? Arb(0.999) : Arb(1)
@@ -514,13 +515,17 @@ function integral_K_4_V_1(N₀::Int, z::Acb)
         zero(res_az_bz) # We integrated everything
     else
         let t = Arblib.union(bz, z)
-            # Factor out K_4(N₀, z, t) / t from the integral. That leaves
-            # ∫ V(l, t) dt from t = b * z to z.
-            # The change of variables s = t / z gives
-            # ∫ V(l, s * z) ds from s = b to 1.
-            #
+            # K_4(z, t) / t is bounded on the interval of
+            # integration, we factor out a bound for it.
+            K_4_div_t_bound = abs_ubound(K4(t) / t)
+
+            # To bound ∫ V(l, t) dt from t = b * z to z we use
+            # V_log_bound_coefficients to get a bound in terms of
+            # logarithms, that are then explicitly integrated.
             Cs = V_log_bound_coefficients(1)
-            K4(t) / t * Cs[1] * integral_log_1mtz(Acb(1), 1, b)
+            integral_V_bound = -Cs[1] * integral_log_1mtz(Acb(1), 1, b)
+
+            add_error(Acb(0), d_k_div_t_bound * integral_V_bound)
         end
     end
 
