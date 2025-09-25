@@ -27,7 +27,7 @@ const R_inner = "0.95"
 const R_outer = "1.01"
 
 # Lemma 2.16
-const C_V_1 = "2.5"
-const C_V_2 = "4.5"
-const C_V_3 = "5"
-const C_V_4 = "60"
+const C_V_1 = "0.1"
+const C_V_2 = "0.25"
+const C_V_3 = "0.75"
+const C_V_4 = "3.9"

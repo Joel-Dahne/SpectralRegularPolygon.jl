@@ -71,30 +71,37 @@ R = Arb("0.951")
 
 # ╔═╡ e370ed08-5c81-4725-b2b1-d7ff3671859a
 md"""
-and then verify that it satisfies the requirement. Note that it suffices to verify that $f$ maps $\mathbb{D}_R$ to a set that contains $\mathbb{D}_{R_{\text{inner}}}$. 
+and then verify that it satisfies the requirement. Note that since $f$ is continuous it suffices to verify that $f$ maps $\mathbb{D}_R$ to a set that contains $\mathbb{D}_{R_{\text{inner}}}$. We therefore need to show that for $|z| = R$ we have
 
-**TODO:** Explain better what we do here
+$$|f(z)| > R_{\text{inner}}.$$
+
+As discussed in the paper we have the bound
+
+$$|f(z)| \geq c_{N_0}R\left|{}_2F_1 \left(\frac{2}{N}, \frac{1}{N}, 1 + \frac{1}{N}; -R^N\right)\right|.$$
+
+Enclosing the ${}_2 F_1$ function we get
 """
 
-# ╔═╡ a71afcc0-01e6-4b7f-a9b0-86ccf4e9c9b6
-res1 = map(N₀:128) do N
-    let inv_N = Acb(1 // N)
-        SRP.c_N(real(inv_N)) * R * real(SRP.hypgeom2f1(2inv_N, inv_N, 1 + inv_N, Acb(-R^N)))
-    end
+# ╔═╡ aab12f29-6a10-4a4b-aed2-b38586a11030
+hypgeom2f1_lower_bound = let inv_N = Acb(Arb((0, 1 // N₀)))
+    abs(SRP.hypgeom2f1(2inv_N, inv_N, 1 + inv_N, Acb(Arb((-R^N₀, 0)))))
 end
+
+# ╔═╡ 0e8957bf-ba22-452e-8298-431e755a0248
+md"""
+Giving the following lower bound for $f(z)$
+"""
+
+# ╔═╡ c8b728d8-bb50-485c-a07c-b94ee856134b
+f_lower_bound = SRP.c_N(Arb(1 // N₀)) * R * hypgeom2f1_lower_bound
+
+# ╔═╡ 3c7e96b8-4041-4449-84a5-926464afda10
+md"""
+We can now veryify that indeed $|f(z)| > R_{\text{inner}}$
+"""
 
 # ╔═╡ c0433aef-5b65-46ee-83f8-bfbccc9cd0df
-all(Arb(R_inner) .< res1)
-
-# ╔═╡ 4c40fe01-bbb6-442d-af53-9413cdb1a20f
-res2 = let inv_N = Acb(Arb((0, 1 // 128)))
-    SRP.c_N(real(inv_N)) *
-    R *
-    real(SRP.hypgeom2f1(2inv_N, inv_N, 1 + inv_N, Acb(Arb((-R^128, 0)))))
-end
-
-# ╔═╡ bcbc717a-f1e2-4acf-93b9-392abc3dfc4f
-Arb(R_inner) < res2
+f_lower_bound > Arb(R_inner)
 
 # ╔═╡ b973d37b-9a60-4104-9274-b35a05a6ab35
 md"""
@@ -107,7 +114,7 @@ for $x \in \mathbb{D}_{R_{\text{inner}}}$ it suffices to bound
 
 $$\left|\frac{V_l(z^N)}{f'(z)}\right| \leq C_{V_l}$$
 
-for $z \in \mathbb{D}_R.$ Note that both numerator and denominator are non-zero, we can hence bound them individually.
+for $z \in \mathbb{D}_R$.
 """
 
 # ╔═╡ eeed099f-6ab6-47a4-802c-3c15c1d77acd
@@ -116,55 +123,65 @@ We have
 
 $$f'(z) = \frac{c_N}{(1 - z^N)^{2/N}}.$$
 
-For $N \geq N_0$ and $z \in \mathbb{D}_R$ we can thus directly compute an enclosure as:
+The monotonicity of $c_N$ then gives us the lower bound
+
+$$|f'(z)| \geq c_{N_0}.$$
 """
 
-# ╔═╡ 5171eccd-39cc-4afc-9d8b-3d5c5aa17968
-f_derivative = let
-    inv_N = Arb((0, 1 // N₀))
-    z_pow_N = add_error(Acb(0), R^N₀)
-    SRP.c_N(inv_N) / (1 - z_pow_N)^2inv_N
-end
-
-# ╔═╡ 0ae4fcea-8a49-456d-9f93-0e7d820e023c
+# ╔═╡ d27a57f5-a1a2-46c4-be8a-f8f873171474
 md"""
-For the $V$'s the enclosure can also be directly computer:
-"""
+For $V_l(z^N)$ we have the bound
 
-# ╔═╡ 4b747119-b501-4dc8-8a11-10cd7c6a58c7
-V_1, V_2, V_3, V_4 = let
-    z_pow_N = add_error(Acb(0), R^N₀)
-    SRP.V(1, z_pow_N), SRP.V(2, z_pow_N), SRP.V(3, z_pow_N), SRP.V(4, z_pow_N)
-end
+$$|V_l(z^N)| \leq D_{l,R^{N_0}}R^{N_0}$$
 
-# ╔═╡ 6fc302f2-f256-4ffd-ad6d-ca28edb7172a
-md"""
-Finally, we can compute the quotients and verify that the bounds hold:
+with which we can compute the bounds
 """
 
 # ╔═╡ 306843ed-caa8-46a4-b502-b9eb29f50f6a
-V_1_div_f_derivative = abs(V_1 / f_derivative)
+V_1_div_f_derivative_bound = SRP.V_1_div_z_bound(R^N₀) * R^N₀ / SRP.c_N(Arb(1 // N₀))
 
-# ╔═╡ f362faec-92e8-400c-90c3-84f241e4ef42
-V_2_div_f_derivative = abs(V_2 / f_derivative)
+# ╔═╡ 3e005f47-3652-4e42-ae1e-aa45ca1501d3
+V_2_div_f_derivative_bound = SRP.V_2_div_z_bound(R^N₀) * R^N₀ / SRP.c_N(Arb(1 // N₀))
 
-# ╔═╡ 2fe32659-bb87-42ea-aafb-fdfa19cbdbdc
-V_3_div_f_derivative = abs(V_3 / f_derivative)
+# ╔═╡ 7cf179cf-1bd1-476d-afb3-b0cd1878ce57
+V_3_div_f_derivative_bound = SRP.V_3_div_z_bound(R^N₀) * R^N₀ / SRP.c_N(Arb(1 // N₀))
 
-# ╔═╡ ee0ab4d2-2244-417e-a25a-b37913349aee
-V_4_div_f_derivative = abs(V_4 / f_derivative)
+# ╔═╡ cfafb8aa-1b68-4eee-8879-279848a2a816
+V_4_div_f_derivative_bound = SRP.V_4_div_z_bound(R^N₀) * R^N₀ / SRP.c_N(Arb(1 // N₀))
 
-# ╔═╡ cd20b05d-021c-4e31-903e-e2413dda41eb
-V_1_div_f_derivative <= Arb(C_V_1)
+# ╔═╡ 937a9361-dbc9-4a37-965f-c67c1044e173
+md"""
+We can now verify that the inequalities hold.
+"""
 
-# ╔═╡ fd4cf253-9734-497d-ba47-03f5a8aa2d45
-V_2_div_f_derivative <= Arb(C_V_2)
+# ╔═╡ 296b6791-55d5-4e3a-a588-07e532a50233
+V_1_div_f_derivative_bound <= Arb(C_V_1)
 
-# ╔═╡ 3b72ba1e-fd40-4317-a3d4-534bb5cd4eff
-V_3_div_f_derivative <= Arb(C_V_3)
+# ╔═╡ 534cae05-8e68-4e71-b9c0-da59d8d6a5a0
+V_2_div_f_derivative_bound <= Arb(C_V_2)
 
-# ╔═╡ 23b5a202-6d64-4288-9b7b-870939c2370b
-V_4_div_f_derivative <= Arb(C_V_4)
+# ╔═╡ d0f31778-4df0-421d-af93-2cb282d56428
+V_3_div_f_derivative_bound <= Arb(C_V_3)
+
+# ╔═╡ e2294887-d1f1-4685-9db6-a7a4d88575bb
+V_4_div_f_derivative_bound <= Arb(C_V_4)
+
+# ╔═╡ fc28d9db-e652-4cd4-9052-ad57e85d1735
+md"""
+We print less precise bounds for inclusing in the paper.
+"""
+
+# ╔═╡ 960ac5af-fb5c-4ad7-9c26-bef9aeb549b6
+string(V_1_div_f_derivative_bound, digits = 5)
+
+# ╔═╡ 20a841ac-5687-43bc-8c9a-4d5435946733
+string(V_2_div_f_derivative_bound, digits = 5)
+
+# ╔═╡ f99dfdd9-188a-46e9-9489-42b5e4f5329e
+string(V_3_div_f_derivative_bound, digits = 5)
+
+# ╔═╡ 766ded14-8337-432d-8080-91a44b90807a
+string(V_4_div_f_derivative_bound, digits = 5)
 
 # ╔═╡ Cell order:
 # ╟─3f5fec32-8fd2-4cf5-9c74-e380a5853da1
@@ -180,21 +197,25 @@ V_4_div_f_derivative <= Arb(C_V_4)
 # ╟─92ae3ec0-8330-4f72-b093-6cb4184c67e0
 # ╠═7724b725-ad79-4f07-b128-92a778ffaccf
 # ╟─e370ed08-5c81-4725-b2b1-d7ff3671859a
-# ╠═a71afcc0-01e6-4b7f-a9b0-86ccf4e9c9b6
+# ╠═aab12f29-6a10-4a4b-aed2-b38586a11030
+# ╟─0e8957bf-ba22-452e-8298-431e755a0248
+# ╠═c8b728d8-bb50-485c-a07c-b94ee856134b
+# ╟─3c7e96b8-4041-4449-84a5-926464afda10
 # ╠═c0433aef-5b65-46ee-83f8-bfbccc9cd0df
-# ╠═4c40fe01-bbb6-442d-af53-9413cdb1a20f
-# ╠═bcbc717a-f1e2-4acf-93b9-392abc3dfc4f
 # ╟─b973d37b-9a60-4104-9274-b35a05a6ab35
 # ╟─eeed099f-6ab6-47a4-802c-3c15c1d77acd
-# ╠═5171eccd-39cc-4afc-9d8b-3d5c5aa17968
-# ╟─0ae4fcea-8a49-456d-9f93-0e7d820e023c
-# ╠═4b747119-b501-4dc8-8a11-10cd7c6a58c7
-# ╟─6fc302f2-f256-4ffd-ad6d-ca28edb7172a
+# ╟─d27a57f5-a1a2-46c4-be8a-f8f873171474
 # ╠═306843ed-caa8-46a4-b502-b9eb29f50f6a
-# ╠═f362faec-92e8-400c-90c3-84f241e4ef42
-# ╠═2fe32659-bb87-42ea-aafb-fdfa19cbdbdc
-# ╠═ee0ab4d2-2244-417e-a25a-b37913349aee
-# ╠═cd20b05d-021c-4e31-903e-e2413dda41eb
-# ╠═fd4cf253-9734-497d-ba47-03f5a8aa2d45
-# ╠═3b72ba1e-fd40-4317-a3d4-534bb5cd4eff
-# ╠═23b5a202-6d64-4288-9b7b-870939c2370b
+# ╠═3e005f47-3652-4e42-ae1e-aa45ca1501d3
+# ╠═7cf179cf-1bd1-476d-afb3-b0cd1878ce57
+# ╠═cfafb8aa-1b68-4eee-8879-279848a2a816
+# ╟─937a9361-dbc9-4a37-965f-c67c1044e173
+# ╠═296b6791-55d5-4e3a-a588-07e532a50233
+# ╠═534cae05-8e68-4e71-b9c0-da59d8d6a5a0
+# ╠═d0f31778-4df0-421d-af93-2cb282d56428
+# ╠═e2294887-d1f1-4685-9db6-a7a4d88575bb
+# ╟─fc28d9db-e652-4cd4-9052-ad57e85d1735
+# ╠═960ac5af-fb5c-4ad7-9c26-bef9aeb549b6
+# ╠═20a841ac-5687-43bc-8c9a-4d5435946733
+# ╠═f99dfdd9-188a-46e9-9489-42b5e4f5329e
+# ╠═766ded14-8337-432d-8080-91a44b90807a
