@@ -31,3 +31,12 @@ const C_V_1 = "0.1"
 const C_V_2 = "0.25"
 const C_V_3 = "0.75"
 const C_V_4 = "3.9"
+
+# TODO: Where should we prove these bounds
+const C_S_2 = "3.3" # FIXME: This is a temporary (but correct) value
+const C_S_3 = "2.5" # FIXME: This is a temporary (but correct) value
+const C_F_N_2 = "2.5" # FIXME: This is a temporary (approximate) value
+const C_F_N_3 = "2.5" # FIXME: This is a temporary (approximate) value
+const C_F_N_4 = "1.3" # FIXME: This is a temporary (approximate) value
+const C_J0_8 = "0.2734375" # FIXME: This is exact value at ξ = 0
+# (which is maximum), but this is not proved.
