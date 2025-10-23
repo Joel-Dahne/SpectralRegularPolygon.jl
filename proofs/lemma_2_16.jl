@@ -75,16 +75,14 @@ and then verify that it satisfies the requirement. Note that since $f$ is contin
 
 $$|f(z)| > R_{\text{inner}}.$$
 
-As discussed in the paper we have the bound
-
-$$|f(z)| \geq c_{N_0}R\left|{}_2F_1 \left(\frac{2}{N}, \frac{1}{N}, 1 + \frac{1}{N}; -R^N\right)\right|.$$
-
 Enclosing the ${}_2 F_1$ function we get
 """
 
-# ╔═╡ aab12f29-6a10-4a4b-aed2-b38586a11030
-hypgeom2f1_lower_bound = let inv_N = Acb(Arb((0, 1 // N₀)))
-    abs(SRP.hypgeom2f1(2inv_N, inv_N, 1 + inv_N, Acb(Arb((-R^N₀, 0)))))
+# ╔═╡ 6d0d96b1-e115-4400-9bc9-779787c7aac4
+hypgeom2f1_enclosure = let
+    inv_N = Acb((0, 1 // N₀))
+    z_pow_N = add_error(Acb(0), Arb(R)^N₀)
+    abs(SRP.hypgeom2f1(2inv_N, inv_N, 1 + inv_N, z_pow_N))
 end
 
 # ╔═╡ 0e8957bf-ba22-452e-8298-431e755a0248
@@ -93,7 +91,7 @@ Giving the following lower bound for $f(z)$
 """
 
 # ╔═╡ c8b728d8-bb50-485c-a07c-b94ee856134b
-f_lower_bound = SRP.c_N(Arb(1 // N₀)) * R * hypgeom2f1_lower_bound
+f_lower_bound = SRP.c_N(Arb(1 // N₀)) * R * hypgeom2f1_enclosure
 
 # ╔═╡ 3c7e96b8-4041-4449-84a5-926464afda10
 md"""
@@ -197,7 +195,7 @@ string(V_4_div_f_derivative_bound, digits = 5)
 # ╟─92ae3ec0-8330-4f72-b093-6cb4184c67e0
 # ╠═7724b725-ad79-4f07-b128-92a778ffaccf
 # ╟─e370ed08-5c81-4725-b2b1-d7ff3671859a
-# ╠═aab12f29-6a10-4a4b-aed2-b38586a11030
+# ╠═6d0d96b1-e115-4400-9bc9-779787c7aac4
 # ╟─0e8957bf-ba22-452e-8298-431e755a0248
 # ╠═c8b728d8-bb50-485c-a07c-b94ee856134b
 # ╟─3c7e96b8-4041-4449-84a5-926464afda10
