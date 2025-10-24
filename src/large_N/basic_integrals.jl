@@ -14,7 +14,7 @@ function integral_log(m::Int, a::Arb)
     0 < a < 1 || throw(ArgumentError("only supports 0 < a < 1"))
 
     # Write sum as a polynomial for efficient evaluation
-    p = ArbPoly([(-1)^n * factorial(m) / factorial(n) for n = 0:m])
+    p = ArbPoly([(-1)^n * factorial(m) // factorial(n) for n = 0:m])
 
     return (-1)^m * a * p(log(a))
 end
