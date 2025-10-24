@@ -385,7 +385,7 @@ function integral_d_k_V_l(k::Int, l::Int, z::Acb)
             # logarithms, that are then explicitly integrated.
             Cs = V_log_bound_coefficients(l)
             integral_V_bound = sum(1:l) do j
-                (-1)^j * Cs[j] / factorial(j) * integral_log_1mtz(Acb(1), j, b)
+                Cs[j] / factorial(j) * abs(integral_log_1mtz(Acb(1), j, b))
             end
 
             add_error(Acb(0), d_k_div_t_bound * integral_V_bound)
@@ -467,180 +467,28 @@ function K_4(N₀::Int, z::Acb)
 end
 
 """
-    integral_T_K_1_bound(N₀::Int, z::Acb, a::Arb)
-
-Compute an upper bound of the integral of the absolute value of
-`T_K_1(z, t)` from `0` to `a * z`.
-"""
-function integral_T_K_1_bound(N₀::Int, z::Acb, a::Arb)
-    inv_N = Arb((0, 1 // N₀))
-    λ = λ_disc()
-    ρ_div_λ_m1_model = ArbTaylorModel(inv_N, Arb(0), degree = 5) do inv_N
-        c_N(inv_N)^2 * λ_app_div_λ(inv_N) - 1
-    end
-    ρ_div_λ = 1 + ρ_div_λ_m1_model(inv_N)
-
-    # IMPROVE: Do we want to compute C_ρ_λ as a separate lemma in the
-    # paper? Should we explain what we do more carefully?
-    C_ρ_λ = abs(truncate(ρ_div_λ_m1_model, degree = 4).p[end])
-    C_F_N_2 = Arb(SpectralRegularPolygons.C_F_N_2)
-    C_F_N_3 = Arb(SpectralRegularPolygons.C_F_N_3)
-    C_F_N_4 = Arb(SpectralRegularPolygons.C_F_N_4)
-    C_S_2 = Arb(SpectralRegularPolygons.C_S_2)
-    C_S_3 = Arb(SpectralRegularPolygons.C_S_3)
-    C_S_2_tilde = sqrt(ρ_div_λ) * C_S_2
-    C_S_3_tilde = sqrt(ρ_div_λ) * C_S_3
-
-    T_K_1_0 =
-        λ / 4 * (1 + C_F_N_2 / N₀^2) * 2C_F_N_4 +
-        C_F_N_2 * λ / 4 *
-        (C_S_2_tilde + C_S_3_tilde / N₀ + (C_S_2_tilde + C_S_3_tilde / N₀)) +
-        λ / 2 * C_ρ_λ / N₀^3 * (C_S_2 + C_S_3 / N₀)
-    T_K_1_1 =
-        ((2 + (C_F_N_2 + C_S_2_tilde) / N₀^2) * C_F_N_3) * λ / 4 +
-        2C_F_N_2 * C_S_2 * λ / 4N₀ +
-        C_S_2^2 * λ / 4N₀
-    T_K_1_2 = Arb(0)
-    T_K_1_3 = ((2 + C_F_N_2 / N₀) * C_F_N_2) * λ / 8
-    T_K_1_4 =
-        λ / 4 * (1 + C_F_N_2 / N₀^2) / 24 * (1 + C_F_N_4 / N₀^4) +
-        C_F_N_2 * λ / 4 * (C_S_2_tilde + C_S_3_tilde / N₀) / 24N₀^4 +
-        λ / 4 * (C_S_2_tilde + C_S_3_tilde / N₀) / 24N₀^2 +
-        ((2 + C_F_N_2 / N₀^2) * C_F_N_2) * λ / 24N₀
-
-    return T_K_1_0 * abs(integral_log_z(0, z, a)) +
-           T_K_1_1 * abs(integral_log_z(1, z, a)) +
-           T_K_1_2 * abs(integral_log_z(2, z, a)) +
-           T_K_1_3 * abs(integral_log_z(3, z, a)) +
-           T_K_1_4 * abs(integral_log_z(4, z, a))
-end
-
-"""
-    integral_T_K_2_bound(N₀::Int, z::Acb, a::Arb)
-
-Compute an upper bound of the integral of the absolute value of
-`T_K_2(z, t)` from `0` to `a * z`.
-"""
-function integral_T_K_2_bound(N₀::Int, z::Acb, a::Arb)
-    inv_N = Arb((0, 1 // N₀))
-    λ = λ_disc()
-    ρ_div_λ_m1_model = ArbTaylorModel(inv_N, Arb(0), degree = 5) do inv_N
-        c_N(inv_N)^2 * λ_app_div_λ(inv_N) - 1
-    end
-    ρ_div_λ = 1 + ρ_div_λ_m1_model(inv_N)
-
-    # IMPROVE: Do we want to compute C_ρ_λ as a separate lemma in the
-    # paper? Should we explain what we do more carefully?
-    C_ρ_λ = abs(truncate(ρ_div_λ_m1_model, degree = 4).p[end])
-    C_F_N_2 = Arb(SpectralRegularPolygons.C_F_N_2)
-    C_F_N_3 = Arb(SpectralRegularPolygons.C_F_N_3)
-    C_S_2 = Arb(SpectralRegularPolygons.C_S_2)
-    C_S_2_tilde = sqrt(ρ_div_λ) * C_S_2
-
-    T_K_2_0 = λ^2 / 16 * (1 + C_F_N_2 / N₀^2) * C_F_N_2^2
-    T_K_2_1 =
-        λ^2 / 16 * (1 + C_F_N_2 / N₀^2) * C_F_N_3 +
-        λ^2 / 16 * C_ρ_λ * C_S_2 / N₀^4 +
-        λ^2 / 32N₀ *
-        ((1 + C_F_N_2 / N₀^2) * (2 + C_F_N_2 / N₀^2) + 1) *
-        C_F_N_2 *
-        C_S_2_tilde
-    T_K_2_2 =
-        λ^2 / 32 * (1 + C_F_N_2 / N₀^2)^3 * C_F_N_2 +
-        λ^2 / 64 * ((1 + C_F_N_2 / N₀^2)^2 + 1) * (2 + C_F_N_2 / N₀^2) * C_F_N_2
-    T_K_2_3 = λ^2 / 64N₀ * ((1 + C_F_N_2 / N₀^2)^2 + 1) * (2 + C_F_N_2 / N₀^2) * C_F_N_2
-    T_K_2_4 =
-        λ^2 / 256 * (1 + C_F_N_2 / N₀^2)^4 +
-        λ^2 / 192 * (1 + C_F_N_2 / N₀^2)^3 * (1 + (C_F_N_2 + C_S_2_tilde) / N₀^2) +
-        λ^2 / 192N₀^4 *
-        ((1 + C_F_N_2 / N₀^2) * (2 + C_F_N_2 / N₀^2) + 1) *
-        C_F_N_2 *
-        C_S_2_tilde +
-        λ^2 / 192N₀^2 * C_S_2_tilde
-
-    return T_K_2_0 * abs(integral_log_z(0, z, a)) +
-           T_K_2_1 * abs(integral_log_z(1, z, a)) +
-           T_K_2_2 * abs(integral_log_z(2, z, a)) +
-           T_K_2_3 * abs(integral_log_z(3, z, a)) +
-           T_K_2_4 * abs(integral_log_z(4, z, a))
-end
-
-"""
-    integral_T_K_3_bound(N₀::Int, z::Acb, a::Arb)
-
-Compute an upper bound of the integral of the absolute value of
-`T_K_3(z, t)` from `0` to `a * z`.
-"""
-function integral_T_K_3_bound(N₀::Int, z::Acb, a::Arb)
-    λ = λ_disc()
-
-    C_F_N_2 = Arb(SpectralRegularPolygons.C_F_N_2)
-
-    T_K_3_0 = λ^3 / 2304 * (1 + C_F_N_2 / N₀^2)^3 * 8C_F_N_2^3 / N₀^2
-    T_K_3_1 = 3λ^3 / 2304 * (1 + C_F_N_2 / N₀^2)^4 * 4C_F_N_2^2 / N₀
-    T_K_3_2 =
-        λ^3 / 2304 * (1 + C_F_N_2 / N₀^2)^3 * 12C_F_N_2^2 / 2 * (1 + C_F_N_2 / N₀^2) /
-        N₀^2 + 3λ^3 / 2304 * (1 + C_F_N_2 / N₀^2)^5 * 2C_F_N_2
-    T_K_3_3 =
-        λ^3 / 2304 *
-        ((1 + C_F_N_2 / N₀^2)^3 + 1) *
-        ((1 + C_F_N_2 / N₀^2)^2 + (2 + C_F_N_2 / N₀^2)) *
-        C_F_N_2 + 3λ^3 / 2304 * (1 + C_F_N_2 / N₀^2)^5 * C_F_N_2 / N₀
-    T_K_3_4 =
-        λ^3 / 2304 * (1 + C_F_N_2 / N₀^2)^3 * 6C_F_N_2 / 4 * (1 + C_F_N_2 / N₀^2)^2 / N₀^2 +
-        3λ^3 / 2304 * (1 + C_F_N_2 / N₀^2)^6 / 2
-    T_K_3_6 = λ^3 / 2304 * (1 + C_F_N_2 / N₀^2)^6 / 8N₀^2
-
-    return T_K_3_0 * abs(integral_log_z(0, z, a)) +
-           T_K_3_1 * abs(integral_log_z(1, z, a)) +
-           T_K_3_2 * abs(integral_log_z(2, z, a)) +
-           T_K_3_3 * abs(integral_log_z(3, z, a)) +
-           T_K_3_4 * abs(integral_log_z(4, z, a)) +
-           T_K_3_6 * abs(integral_log_z(6, z, a))
-end
-
-"""
-    integral_T_K_4_bound(N₀::Int, z::Acb, a::Arb)
-
-Compute an upper bound of the integral of the absolute value of
-`T_K_4(z, t)` from `0` to `a * z`.
-
-TODO: This term doesn't have a name in the paper. Should we call it
-`T_K_4`?
-"""
-function integral_T_K_4_bound(N₀::Int, z::Acb, a::Arb)
-    inv_N = Arb((0, 1 // N₀))
-
-    C_J0_8 = Arb(SpectralRegularPolygons.C_J0_8)
-    C_ρ = abs_ubound(Arb, c_N(inv_N)^2 * λ_app(inv_N))
-    C_F_N_2 = Arb(SpectralRegularPolygons.C_F_N_2)
-
-    coefficients = ArbPoly((2C_F_N_2 / N₀, 1 + C_F_N_2 / N₀^2))^4
-
-    return C_J0_8 / factorial(8) *
-           C_ρ^4 *
-           (1 + C_F_N_2 / N₀)^4 *
-           sum(0:4) do m
-               coefficients[m] * abs(integral_log_z(m, z, a))
-           end
-end
-
-"""
     integral_K_4(N₀::Int, z::Acb, a::Arb)
 
 Compute an upper bound of the absolute value of the integral of `K_4`
 from `0` to `a * z`. It uses the bound
 ```
-abs(K_4(z, t)) <= abs(T_K_1(z, t)) + abs(T_K_2(z, t)) + abs(T_K_3(z, t)) +
-    abs(R_K(z, t))
+abs(K_4(z, t)) <=
+    L_0
+    + L_1 * abs(log(t / z))
+    + L_2 * abs(log(t / z))^2
+    + L_3 * abs(log(t / z))^3
+    + L_4 * abs(log(t / z))^4
+    + L_6 * abs(log(t / z))^6
 ```
 and integrates termwise.
 """
 function integral_K_4_bound(N₀::Int, z::Acb, a::Arb)
-    return integral_T_K_1_bound(N₀, z, a) +
-           integral_T_K_2_bound(N₀, z, a) +
-           integral_T_K_3_bound(N₀, z, a) +
-           integral_T_K_4_bound(N₀, z, a)
+    return Arb(C_L_0) * abs(integral_log_z(0, z, a)) +
+           Arb(C_L_1) * abs(integral_log_z(1, z, a)) +
+           Arb(C_L_2) * abs(integral_log_z(2, z, a)) +
+           Arb(C_L_3) * abs(integral_log_z(3, z, a)) +
+           Arb(C_L_4) * abs(integral_log_z(4, z, a)) +
+           Arb(C_L_6) * abs(integral_log_z(6, z, a))
 end
 
 function integral_K_4_V_1(N₀::Int, z::Acb)
@@ -716,9 +564,13 @@ function integral_K_4_V_1(N₀::Int, z::Acb)
             # V_log_bound_coefficients to get a bound in terms of
             # logarithms, that are then explicitly integrated.
             Cs = V_log_bound_coefficients(1)
-            integral_V_bound = -Cs[1] * integral_log_1mtz(Acb(1), 1, b)
+            # This sum only has one term, but we write it like this to
+            # make the form clearer.
+            integral_V_bound = sum(1:1) do j
+                Cs[j] / factorial(j) * abs(integral_log_1mtz(Acb(1), j, b))
+            end
 
-            add_error(Acb(0), d_k_div_t_bound * integral_V_bound)
+            add_error(Acb(0), K_4_div_t_bound * integral_V_bound)
         end
     end
 

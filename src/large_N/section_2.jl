@@ -157,6 +157,7 @@ function F_N_model(N₀::Int, z::Acb)
         end
 
         # Integrate from a to b
+        # IMPROVE: Optimizing this would have a large effect on Lemma 2.10
         remainder_a_b = Arblib.integrate(
             a,
             b,
