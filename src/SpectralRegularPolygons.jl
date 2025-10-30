@@ -29,6 +29,10 @@ import Arblib:
 import GeometryBasics: Point, Point2
 import SpecialFunctions: besselj, besselj0, besselj1, bessely0, bessely1, zeta, gamma
 
+# This is the point at which we switch between the case for small and
+# large N.
+const N₀ = 64
+
 # Some generic code use for both small and large N
 include("arb.jl")
 

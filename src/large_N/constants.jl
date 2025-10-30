@@ -1,5 +1,3 @@
-const N₀ = 64
-
 # Lemma 2.6
 const C_b_2 = "3.5"
 const C_b_3 = "2.5"
