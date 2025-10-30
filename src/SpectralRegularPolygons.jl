@@ -29,8 +29,6 @@ import Arblib:
 import GeometryBasics: Point, Point2
 import SpecialFunctions: besselj, besselj0, besselj1, bessely0, bessely1, zeta, gamma
 
-export RegularPolygon, Eigenfunction
-
 # Some generic code use for both small and large N
 include("arb.jl")
 
