@@ -233,7 +233,7 @@ function epsilon(inv_N::Union{Arb,ArbSeries})
                Arb(C_T_2)^3 * Arb(C_gd3) / 6 +
                2inv_N * Arb(C_b_3) * Arb(C_T_4) +
                inv_N^2 * Arb(C_T_4)^2
-           ) + inv_N^6 * (Arb(C_I_1_4) + Arb(C_I_2_3) + Arb(C_I_3_2) + Arb(C_I_4_1))
+           ) + inv_N^6 * (Arb(C_I_1_4) + Arb(C_I_2_3) + Arb(C_I_3_2) + Arb(C_I_K))
 end
 
 """

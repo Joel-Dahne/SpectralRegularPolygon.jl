@@ -57,7 +57,7 @@ C_I_2_3 = SRP.C_I_2_3
 C_I_3_2 = SRP.C_I_3_2
 
 # ╔═╡ 278f9795-6b9b-4780-a0c7-87a12efa8e09
-C_I_4_1 = SRP.C_I_4_1
+C_I_K = SRP.C_I_K
 
 # ╔═╡ b6096ef5-2ce3-4519-97db-6ccb566037f0
 md"""
@@ -122,7 +122,7 @@ let
     fig = Figure()
     ax = Axis(fig[1, 1], xlabel = L"\theta")
     band!(ax, θs, lbound.(real(I_K_4_V_1)), ubound.(real(I_K_4_V_1)))
-    hlines!(ax, [-Arb(C_I_4_1), Arb(C_I_4_1)])
+    hlines!(ax, [-Arb(C_I_K), Arb(C_I_K)])
     fig
 end
 
@@ -184,7 +184,7 @@ end
     Arf(0),
     Arf(1),
     degree = -1,
-    ubound_tol = Arb(C_I_4_1),
+    ubound_tol = Arb(C_I_K),
     depth_start = 4,
     depth = 30,
     abs_value = true,

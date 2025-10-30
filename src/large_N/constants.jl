@@ -17,7 +17,7 @@ const C_gd3 = "6.1"
 const C_I_1_4 = "15"
 const C_I_2_3 = "10"
 const C_I_3_2 = "35"
-const C_I_4_1 = "40"
+const C_I_K = "40"
 
 # Corollary 2.13
 const C_a_0 = "0.801"
