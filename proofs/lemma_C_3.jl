@@ -186,16 +186,32 @@ We combine the above bounds with the bound for the remaning term to get bounds f
 """
 
 # ╔═╡ 652e1a8d-4bea-4692-9585-fd0c6b0c0fb5
-L_0 = λ * T_K_1_0 + λ^2 * T_K_2_0 + λ^3 * T_K_3_0 + λ^4 * 16 // N₀^4 * C_J0_8 / factorial(8) * C_F_N_0^4 * C_F_N_4^4
+L_0 =
+    λ * T_K_1_0 +
+    λ^2 * T_K_2_0 +
+    λ^3 * T_K_3_0 +
+    λ^4 * 16 // N₀^4 * C_J0_8 / factorial(8) * C_F_N_0^4 * C_F_N_4^4
 
 # ╔═╡ aa3821e1-7e24-448d-a45c-fe38f7cc1ad8
-L_1 = λ * T_K_1_1 + λ^2 * T_K_2_1 + λ^3 * T_K_3_1 + λ^4 * 32 // N₀^3 * C_J0_8 / factorial(8) * C_F_N_0^5 * C_F_N_4^3
+L_1 =
+    λ * T_K_1_1 +
+    λ^2 * T_K_2_1 +
+    λ^3 * T_K_3_1 +
+    λ^4 * 32 // N₀^3 * C_J0_8 / factorial(8) * C_F_N_0^5 * C_F_N_4^3
 
 # ╔═╡ b2e037d6-af3e-42d1-9841-d5f2515396ca
-L_2 = λ * T_K_1_2 + λ^2 * T_K_2_2 + λ^3 * T_K_3_2 + λ^4 * 24 // N₀^2 * C_J0_8 / factorial(8) * C_F_N_0^6 * C_F_N_4^2
+L_2 =
+    λ * T_K_1_2 +
+    λ^2 * T_K_2_2 +
+    λ^3 * T_K_3_2 +
+    λ^4 * 24 // N₀^2 * C_J0_8 / factorial(8) * C_F_N_0^6 * C_F_N_4^2
 
 # ╔═╡ 9088108e-8d30-4f0a-b684-ed0a4ca3ddc2
-L_3 = λ * T_K_1_3 + λ^2 * T_K_2_3 + λ^3 * T_K_3_3 + λ^4 * 8 // N₀ * C_J0_8 / factorial(8) * C_F_N_0^7 * C_F_N_4
+L_3 =
+    λ * T_K_1_3 +
+    λ^2 * T_K_2_3 +
+    λ^3 * T_K_3_3 +
+    λ^4 * 8 // N₀ * C_J0_8 / factorial(8) * C_F_N_0^7 * C_F_N_4
 
 # ╔═╡ 0253d16f-ed6d-48e9-af2e-88ea6071a57e
 L_4 = λ * T_K_1_4 + λ^2 * T_K_2_4 + λ^3 * T_K_3_4 + λ^4 * C_J0_8 / factorial(8) * C_F_N_0^8
