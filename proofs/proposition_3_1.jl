@@ -58,7 +58,7 @@ $$\lambda_{1}(\mathcal{P}_3) > \lambda_{1}(\mathcal{P}_4) >
 
 where $\lambda_{1}(\mathcal{P}_N)$ denotes the first eigenvalue of the regular $N$-gon with area $\pi$. Furthermore, if
 
-$$q_N := \frac{\lambda_1(\mathcal{P}_N)}{\lambda_1(\mathcal{P}_{N+1})}$$
+$$q_N = \frac{\lambda_1(\mathcal{P}_N)}{\lambda_1(\mathcal{P}_{N+1})}$$
 
 it asserts that
 
@@ -70,11 +70,7 @@ Note that $\lambda_{1}(\mathcal{P}_3) ) = \frac{4\pi}{\sqrt{3}}$ and $\lambda_{1
 # ╔═╡ 4377e7e0-d63c-4be2-9dbe-70f86515509d
 md"""
 ## Construct approximations
-We start by computing approximations of 
-
-$$\lambda_{1}(\mathcal{P}_N)$$
-
-as well as the associated eigenfunction for $5 \leq N \leq N_0 + 1$.
+We start by computing approximations of $\lambda_{1}(\mathcal{P}_N)$ as well as the associated eigenfunction for $5 \leq N \leq N_0 + 1$.
 
 For $N \geq 12$ we use precomputed approximations, for $5 \leq N \leq 11$ we compute an approximation on the fly.
 """
@@ -123,11 +119,7 @@ md"""
 
 # ╔═╡ b8b858a8-b6f0-4780-8d38-6fce97c28d43
 md"""
-Next we compute rigorous enclosures of 
-
-$$\lambda_{1}(\mathcal{P}_N)$$
-
-for $5 \leq N \leq N_0 + 1$. 
+Next we compute rigorous enclosures of $\lambda_{1}(\mathcal{P}_N)$ for $5 \leq N \leq N_0 + 1$. 
 """
 
 # ╔═╡ b35d0bfa-2f2b-43e9-b59a-e94e0e23e2cb
@@ -338,7 +330,7 @@ end
 # ╟─a3f86580-1615-4109-98ac-a0eb403c9a78
 # ╠═2ee8254b-2a81-4047-84d5-bea626ad6b2c
 # ╟─cd3086d7-ac55-4ed2-834d-856314972790
-# ╠═4377e7e0-d63c-4be2-9dbe-70f86515509d
+# ╟─4377e7e0-d63c-4be2-9dbe-70f86515509d
 # ╠═674a8185-fe50-4f70-a0a5-e4cbe95460c4
 # ╠═5a88affb-12d4-46ed-a3dc-c02e00d1ecdf
 # ╠═2a08cf06-8258-4efb-9aae-3bc66c617c37
