@@ -204,7 +204,7 @@ Arblib.ispositive(q_minimum_a_inv_N₀)
 
 # ╔═╡ 869ec958-03a0-4bd5-a012-360a4c75384a
 md"""
-Note that the reason we split the interval in two parts is that $q^(5)$ is negative at $1 / N_0$:
+Note that the reason we split the interval in two parts is that $q^{(5)}$ is negative at $1 / N_0$:
 """
 
 # ╔═╡ 75b5d8f6-3f16-4ce0-965f-a9b8cee80196
