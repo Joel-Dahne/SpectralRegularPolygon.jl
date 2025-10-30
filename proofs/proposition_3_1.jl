@@ -202,19 +202,33 @@ end
 
 # ╔═╡ 1190007b-9b1a-4063-ba96-f98b93137b10
 let
-    a2s = map(u -> u.interior_expansion.coefficients[1], us)
+    a2s = map(u -> u.interior_expansion.coefficients[2], us)
+    a2s_scaling = besselj.(Arb.(Ns), Arb(1))
+
+    fig = Figure()
+    ax = Axis(fig[1, 1], xlabel = L"N", yscale = log10)
+
+    scatterlines!(ax, Ns, abs.(a2s) .* a2s_scaling, label = L"|a_2| J_N(1)")
+    axislegend(ax)
+
+    save_figures && save("figures/coefficient-a2-small-N.pdf", fig)
+
+    fig
+end
+
+# ╔═╡ ea84defb-8199-41c9-a427-486eb67c881a
+let
     b1s = map(u -> u.vertex_expansion.coefficients[1], us)
     b2s = map(u -> u.vertex_expansion.coefficients[2], us)
 
     fig = Figure()
     ax = Axis(fig[1, 1], xlabel = L"N")
 
-    scatterlines!(ax, Ns, a2s, label = L"a_2", marker = :circle)
-    scatterlines!(ax, Ns, b1s, label = L"b_1", marker = :diamond)
+    scatterlines!(ax, Ns, b1s, label = L"b_1", marker = :circle)
     scatterlines!(ax, Ns, b2s, label = L"b_2", marker = :cross)
     axislegend(ax)
 
-    save_figures && save("figures/coefficients-small-N.pdf", fig)
+    save_figures && save("figures/coefficients-bs-small-N.pdf", fig)
 
     fig
 end
@@ -351,6 +365,7 @@ end
 # ╟─8b6b7d10-467d-4dcd-a800-2bbe0e9573a0
 # ╟─e771c0f7-9e80-4c92-ab37-fc8f3e9866df
 # ╟─1190007b-9b1a-4063-ba96-f98b93137b10
+# ╟─ea84defb-8199-41c9-a427-486eb67c881a
 # ╟─bda98e53-cb8d-4a8d-a3c9-f521dae9a187
 # ╟─f594e504-9527-4c43-8e15-96713c15f9de
 # ╟─ea97c15b-b03f-4b6b-8e80-73ff12eaa215
