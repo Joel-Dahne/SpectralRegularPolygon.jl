@@ -51,8 +51,8 @@ function mean_value_theorem_bound(f, z::Arblib.AcbOrRef)
         df_z = f(AcbSeries((z, 1)))[1]
 
         if isfinite(df_z)
-            z0 = Arblib.midpoint(Acb, z)
-            return Arblib.add_error(f(z0), abs(df_z) * abs(z - z0))
+            z0 = midpoint(Acb, z)
+            return add_error(f(z0), abs(df_z) * abs(z - z0))
         else
             return f(z)
         end
@@ -66,11 +66,11 @@ function taylor_bound(f, z::Arblib.AcbOrRef; degree = 2)
     if iswide(z)
         df = f(AcbSeries((z, 1); degree))[end]
         if isfinite(df)
-            z0 = Arblib.midpoint(Acb, z)
+            z0 = midpoint(Acb, z)
             p = f(AcbSeries((z0, 1); degree = degree - 1))
 
             # TODO: Check that this is correct
-            return Arblib.add_error(p(z - z0), abs(df) * abs(z - z0)^degree)
+            return add_error(p(z - z0), abs(df) * abs(z - z0)^degree)
         else
             return f(z)
         end

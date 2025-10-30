@@ -11,12 +11,12 @@ function polylog(s::Int, z::Union{Arblib.ArbOrRef,Arblib.AcbOrRef})
         return add_error(zero(z), polylog_r_div_z_bound(1, zᵤ) * zᵤ)
     elseif iswide(z) && !Arblib.contains_zero(z)
         # Explicit use of mean value theorem
-        z_mid = Arblib.midpoint(Arblib._nonreftype(typeof(z)), z)
+        z_mid = midpoint(Arblib._nonreftype(typeof(z)), z)
 
         f_mid = _polylog(s, z_mid)
         df = _polylog(s - 1, z) / z
 
-        return Arblib.add_error(f_mid, abs(df) * abs(z - z_mid))
+        return add_error(f_mid, abs(df) * abs(z - z_mid))
     else
         return _polylog(s, z)
     end
@@ -123,7 +123,7 @@ function S(n::Int, z::Arblib.AcbOrRef)
             a,
             b,
             warn_on_no_convergence = false,
-            atol = max(Arblib.radius(abs(res_0_a)), 2.0^-precision(z)),
+            atol = max(radius(abs(res_0_a)), 2.0^-precision(z)),
             opts = Arblib.calc_integrate_opt_struct(0, 2_000, 0, 0, 0),
         ) / factorial(n)
 

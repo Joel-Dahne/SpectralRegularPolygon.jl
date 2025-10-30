@@ -20,6 +20,7 @@ import Arblib:
     AcbSeries,
     ArbPoly,
     AcbPoly,
+    radius,
     midpoint,
     ubound,
     abs_ubound,

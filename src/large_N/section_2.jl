@@ -161,7 +161,7 @@ function F_N_model(N₀::Int, z::Acb)
         remainder_a_b = Arblib.integrate(
             a,
             b,
-            atol = Arblib.radius(abs(remainder_0_a)) / 2,
+            atol = radius(abs(remainder_0_a)) / 2,
             warn_on_no_convergence = false,
         ) do t
             ArbExtras.derivative_function(6) do inv_N
