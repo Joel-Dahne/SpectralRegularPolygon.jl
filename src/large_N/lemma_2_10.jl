@@ -1,7 +1,18 @@
 # This file contains the implementation the functions that are bounded
 # in Lemma 2.10.
 
-V_1(z) = 2polylog(1, z)
+function V_1(z; analytic::Bool = false)
+    # Check analyticity when requested. It has a branch cut for z in
+    # [1, Inf].
+    if analytic &&
+       Arblib.contains_zero(Arblib.imagref(z)) &&
+       Arblib.contains_nonnegative(Arblib.realref(z) - 1)
+
+        return indeterminate(z)
+    end
+
+    2polylog(1, z)
+end
 
 function V_1_div_z_bound(zᵤ::Arb)
     0 < zᵤ < 1 || return indeterminate(zᵤ)
@@ -10,7 +21,16 @@ end
 
 V_1_log_bound_coefficients() = Arb[2]
 
-function V_2(z)
+function V_2(z; analytic::Bool = false)
+    # Check analyticity when requested. It has a branch cut for z in
+    # [1, Inf].
+    if analytic &&
+       Arblib.contains_zero(Arblib.imagref(z)) &&
+       Arblib.contains_nonnegative(Arblib.realref(z) - 1)
+
+        return indeterminate(z)
+    end
+
     λ = λ_disc()
     return (λ / 2 - 2) * polylog(2, z) + 4polylog_1_1(z)
 end
@@ -26,7 +46,16 @@ function V_2_log_bound_coefficients()
     return Arb[abs(λ / 2 - 2), 4]
 end
 
-function V_3(z)
+function V_3(z; analytic::Bool = false)
+    # Check analyticity when requested. It has a branch cut for z in
+    # [1, Inf].
+    if analytic &&
+       Arblib.contains_zero(Arblib.imagref(z)) &&
+       Arblib.contains_nonnegative(Arblib.realref(z) - 1)
+
+        return indeterminate(z)
+    end
+
     λ = λ_disc()
     return (λ^2 / 16 - λ + 2) * polylog(3, z) +
            (3λ - 12) * polylog_1_2(z) +
@@ -46,7 +75,16 @@ function V_3_log_bound_coefficients()
     return Arb[abs(λ^2 / 16 - λ + 2), abs(3λ-12)+abs(λ-4), 8]
 end
 
-function V_4(z)
+function V_4(z; analytic::Bool = false)
+    # Check analyticity when requested. It has a branch cut for z in
+    # [1, Inf].
+    if analytic &&
+       Arblib.contains_zero(Arblib.imagref(z)) &&
+       Arblib.contains_nonnegative(Arblib.realref(z) - 1)
+
+        return indeterminate(z)
+    end
+
     λ = λ_disc()
     return (λ^3 / 192 - λ^2 / 8 - λ / 2 - 2) * polylog(4, z) +
            (λ^2 / 8 - 2λ + 4) * polylog_3_1(z) +
@@ -80,15 +118,15 @@ function V_4_log_bound_coefficients()
     ]
 end
 
-V(l::Int, z) =
+V(l::Int, z::Arblib.AcbOrRef; analytic::Bool = false) =
     if l == 1
-        V_1(z)
+        V_1(z; analytic)
     elseif l == 2
-        V_2(z)
+        V_2(z; analytic)
     elseif l == 3
-        V_3(z)
+        V_3(z; analytic)
     elseif l == 4
-        V_4(z)
+        V_4(z; analytic)
     end
 
 V_div_z_bound(l::Int, zᵤ::Arb) =
@@ -125,29 +163,75 @@ V_log_bound_coefficients(l::Int) =
         V_4_log_bound_coefficients()
     end
 
-d_0(z, t) = one(z)
+d_0(z, t; analytic::Bool = false) = one(z)
 
-d_1(z, t) = λ_disc() / 4 * log(t / z)
-function d_2(z, t)
+function d_1(z, t; analytic::Bool = false)
+    # Compute log(t / z), checking analyticity when requested
+    log_t_div_z = Arblib.log_analytic!(zero(t), t / z, analytic)
+    isfinite(log_t_div_z) || return indeterminate(t)
+
+    λ_disc() / 4 * log_t_div_z
+end
+
+function d_2(z, t; analytic::Bool = false)
+    # Check analyticity of S(2, t) when requested. It has a branch cut
+    # for t in [1, Inf].
+    if analytic &&
+       Arblib.contains_zero(Arblib.imagref(t)) &&
+       Arblib.contains_nonnegative(Arblib.realref(t) - 1)
+
+        return indeterminate(t)
+    end
+
     λ = λ_disc()
-    return λ^2 / 64 * log(t / z)^2 + λ / 8 * (log(t / z)^2 + 2S(2, t) - 2S(2, z))
+    # Compute log(t / z), checking analyticity when requested
+    log_t_div_z = Arblib.log_analytic!(zero(t), t / z, analytic)
+    isfinite(log_t_div_z) || return indeterminate(t)
+
+    return λ^2 / 64 * log_t_div_z^2 + λ / 8 * (log_t_div_z^2 + 2S(2, t) - 2S(2, z))
 end
 function d_2_z_part(z)
     λ = λ_disc()
     return -λ / 4 * S(2, z)
 end
-function d_2_zt_part(z, t)
+function d_2_zt_part(z, t; analytic::Bool = false)
+    # Check analyticity of S(2, t) when requested. It has a branch cut
+    # for t in [1, Inf].
+    if analytic &&
+       Arblib.contains_zero(Arblib.imagref(t)) &&
+       Arblib.contains_nonnegative(Arblib.realref(t) - 1)
+
+        return indeterminate(t)
+    end
+
     λ = λ_disc()
-    return λ^2 / 64 * log(t / z)^2 + λ / 8 * (log(t / z)^2 + 2S(2, t))
+    # Compute log(t / z), checking analyticity when requested
+    log_t_div_z = Arblib.log_analytic!(zero(t), t / z, analytic)
+    isfinite(log_t_div_z) || return indeterminate(t)
+
+    return λ^2 / 64 * log_t_div_z^2 + λ / 8 * (log_t_div_z^2 + 2S(2, t))
 end
 
-function d_3(z, t)
+function d_3(z, t; analytic::Bool = false)
+    # Check analyticity of S(2, t) and S(3, t) when requested. It has
+    # a branch cut for t in [1, Inf].
+    if analytic &&
+       Arblib.contains_zero(Arblib.imagref(t)) &&
+       Arblib.contains_nonnegative(Arblib.realref(t) - 1)
+
+        return indeterminate(t)
+    end
+
     λ = λ_disc()
+    # Compute log(t / z), checking analyticity when requested
+    log_t_div_z = Arblib.log_analytic!(zero(t), t / z, analytic)
+    isfinite(log_t_div_z) || return indeterminate(t)
+
     # NOTE: This is an alternative formulation that is SLIGHTLY better
     # than the version in the paper.
     return λ / 4 * (
-        log(t / z) * (
-            (λ^2 / 576 + λ / 16 + 1 // 6) * log(t / z)^2 + (λ / 8 + 1) * S(2, t) -
+        log_t_div_z * (
+            (λ^2 / 576 + λ / 16 + 1 // 6) * log_t_div_z^2 + (λ / 8 + 1) * S(2, t) -
             λ / 8 * S(2, z) + S(2, conj(z))
         ) + S(3, t) - S(3, z)
     )
@@ -165,31 +249,27 @@ function d_3_z_part(z)
     λ = λ_disc()
     return -λ / 4 * S(3, z)
 end
-function d_3_zt_part(z, t)
+function d_3_zt_part(z, t; analytic::Bool = false)
+    # Check analyticity of S(2, t) and S(3, t) when requested. It has
+    # a branch cut for t in [1, Inf].
+    if analytic &&
+       Arblib.contains_zero(Arblib.imagref(t)) &&
+       Arblib.contains_nonnegative(Arblib.realref(t) - 1)
+
+        return indeterminate(t)
+    end
+
     λ = λ_disc()
+    # Compute log(t / z), checking analyticity when requested
+    log_t_div_z = Arblib.log_analytic!(zero(t), t / z, analytic)
+    isfinite(log_t_div_z) || return indeterminate(t)
+
     return λ / 4 * (
-        log(t / z) * (
-            (λ^2 / 576 + λ / 16 + 1 // 6) * log(t / z)^2 + (λ / 8 + 1) * S(2, t) -
+        log_t_div_z * (
+            (λ^2 / 576 + λ / 16 + 1 // 6) * log_t_div_z^2 + (λ / 8 + 1) * S(2, t) -
             λ / 8 * S(2, z) + S(2, conj(z))
         ) + S(3, t)
     )
-end
-
-# Part of d_3 analytic in z
-function d_3_analytic_z(z, t)
-    λ = λ_disc()
-    return λ / 4 * (
-        log(t / z) * (
-            (λ^2 / 576 + (1 // 16) * λ + 1 // 6) * log(t / z)^2 +
-            ((1 // 8) * λ + 1) * S(2, t) - (1 // 8) * λ * S(2, z)
-        ) + S(3, t) - S(3, z)
-    )
-end
-
-# Part of d_3 analytic in conj(z)
-function d_3_analytic_conj_z(z, t)
-    λ = λ_disc()
-    return λ / 4 * log(t / z) * S(2, conj(z))
 end
 
 function integral_d_0(z::Acb, a::Arb)
@@ -244,15 +324,15 @@ function integral_d_3(z::Acb, a::Arb)
            λ / 4 * (S(3, t) - S(3, z)) * a * z
 end
 
-d(k::Int, z, t) =
+d(k::Int, z::Arblib.AcbOrRef, t::Arblib.AcbOrRef; analytic::Bool = false) =
     if k == 0
-        d_0(z, t)
+        d_0(z, t; analytic)
     elseif k == 1
-        d_1(z, t)
+        d_1(z, t; analytic)
     elseif k == 2
-        d_2(z, t)
+        d_2(z, t; analytic)
     elseif k == 3
-        d_3(z, t)
+        d_3(z, t; analytic)
     end
 
 # Part of d only depending on z
@@ -264,11 +344,11 @@ d_z_part(k::Int, z) =
     end
 
 # Part of d only depending on z and t
-d_zt_part(k::Int, z, t) =
+d_zt_part(k::Int, z, t; analytic::Bool = false) =
     if k == 2
-        d_2_zt_part(z, t)
+        d_2_zt_part(z, t; analytic)
     elseif k == 3
-        d_3_zt_part(z, t)
+        d_3_zt_part(z, t; analytic)
     end
 
 """
@@ -319,17 +399,16 @@ function integral_d_k_V_l(k::Int, l::Int, z::Acb)
             az, bz
         end
 
-        # TODO: Verify analyticity
         res_az_thin_bz_thin = if k == 0 || k == 1
             Arblib.integrate(
+                (t; analytic) -> d(k, z, t; analytic) * V(l, t; analytic) / t,
                 az_thin,
                 bz_thin,
+                check_analytic = true,
                 atol = 1e-6,
                 opts = Arblib.calc_integrate_opt_struct(0, 4_000, 0, 1, 0),
                 warn_on_no_convergence = false,
-            ) do t
-                d(k, z, t) * V(l, t) / t
-            end
+            )
         else
             # Split d into two terms, one depending only on z and one
             # depending on both z and t.
@@ -338,25 +417,25 @@ function integral_d_k_V_l(k::Int, l::Int, z::Acb)
             # out.
             res_az_thin_bz_thin_part_1 =
                 d_z_part(k, z) * Arblib.integrate(
+                    (t; analytic) -> V(l, t; analytic) / t,
                     az_thin,
                     bz_thin,
+                    check_analytic = true,
                     atol = 1e-6,
                     opts = Arblib.calc_integrate_opt_struct(0, 4_000, 0, 1, 0),
                     warn_on_no_convergence = false,
-                ) do t
-                    V(l, t) / t
-                end
+                )
 
             # Part of d(k, z, t) depending on both z and t.
             res_az_thin_bz_thin_part_2 = Arblib.integrate(
+                (t; analytic) -> d_zt_part(k, z, t; analytic) * V(l, t; analytic) / t,
                 az_thin,
                 bz_thin,
+                check_analytic = true,
                 atol = 1e-6,
                 opts = Arblib.calc_integrate_opt_struct(0, 4_000, 0, 1, 0),
                 warn_on_no_convergence = false,
-            ) do t
-                d_zt_part(k, z, t) * V(l, t) / t
-            end
+            )
 
             res_az_thin_bz_thin_part_1 + res_az_thin_bz_thin_part_2
         end
@@ -456,7 +535,28 @@ function K_4(N₀::Int, z::Acb)
     inv_N = Arb((0, 1 // N₀))
     K = K_model(N₀, z)
 
-    return t::Arblib.AcbOrRef -> begin
+    return (t::Arblib.AcbOrRef; analytic::Bool = false) -> begin
+        if analytic
+            # Check if t overlaps the branch cut. The branch cut is
+            # for either t / z lying on the negative real axis or for
+            # t in [1, Inf].
+
+            # Check if t lies in [1, Inf]
+            if Arblib.contains_zero(Arblib.imagref(t)) &&
+               Arblib.contains_nonnegative(Arblib.realref(t) - 1)
+
+                return indeterminate(t)
+            end
+
+            # Check if t / z lies on negative real axis
+            t_div_z = t / z
+            if Arblib.contains_zero(Arblib.imagref(t_div_z)) &&
+               Arblib.contains_nonpositive(Arblib.realref(t_div_z))
+
+                return indeterminate(t)
+            end
+        end
+
         M = K(convert(Acb, t))
         M.p[0] = 0
         M.p[1] = 0
@@ -526,18 +626,15 @@ function integral_K_4_V_1(N₀::Int, z::Acb)
             az, bz
         end
 
-        # TODO: Verify analyticity
-        # IMPROVE: Look at splitting K_4 into part depending on t and
-        # part not depending on t.
         res_az_thin_bz_thin = Arblib.integrate(
+            (t; analytic) -> K4(t; analytic) * V(1, t; analytic) / t,
             az_thin,
             bz_thin,
+            check_analytic = true,
             atol = 1e-6,
             opts = Arblib.calc_integrate_opt_struct(0, 4_000, 0, 1, 0),
             warn_on_no_convergence = false,
-        ) do t
-            K4(t) * V(1, t) / t
-        end
+        )
 
         if iswide(z)
             # Add enclosures of integral from az to az_thin and from

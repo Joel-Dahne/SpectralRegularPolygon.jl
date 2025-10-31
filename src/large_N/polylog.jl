@@ -43,8 +43,28 @@ function polylog(s::Int, z::Union{ArbSeries,AcbSeries})
     return ArbExtras.compose_zero!(res, res, z)
 end
 
+function S_integrand(n::Int, z::Arblib.AcbOrRef, t::Arblib.AcbOrRef; analytic::Bool)
+    if analytic
+        # Check if t overlaps the branch cut. The branch cut is for
+        # either t or 1 - tz lying on the negative real axis. For the
+        # special case that n = 2 there is no branch cut for t on the
+        # negative real axis.
 
-function S_integrand(n::Int, z::Arblib.AcbOrRef, t::Arblib.AcbOrRef)
+        # If n != 2, check if t overlaps the non-positive real axis.
+        if n != 2 &&
+           Arblib.contains_nonpositive(Arblib.realref(t)) &&
+           Arblib.contains_zero(Arblib.imagref(t))
+            return indeterminate(t)
+        end
+
+        # Check if 1 - t * z overlaps the non-positive real axis.
+        one_m_tz = 1 - t * z
+        if Arblib.contains_nonpositive(Arblib.realref(one_m_tz)) &&
+           Arblib.contains_zero(Arblib.imagref(one_m_tz))
+            return indeterminate(t)
+        end
+    end
+
     if n == 2
         # Note that n = 2 is the only case when the function is
         # bounded at t = 0.
@@ -119,9 +139,10 @@ function S(n::Int, z::Arblib.AcbOrRef)
     # Integrate from a to b
     res_a_b =
         Arblib.integrate(
-            t -> S_integrand(n, z, t),
+            (t; analytic) -> S_integrand(n, z, t; analytic),
             a,
             b,
+            check_analytic = true,
             warn_on_no_convergence = false,
             atol = max(radius(abs(res_0_a)), 2.0^-precision(z)),
             opts = Arblib.calc_integrate_opt_struct(0, 2_000, 0, 0, 0),
@@ -167,10 +188,6 @@ For `0 < a < 1`, return `C` such that for any multiple polylogarithm
 with `r` parameters (with are required to be positive integers) and
 complex `z` with `abs(z) <= a`, the absolute value is bounded by `C *
 z`.
-
-IMPROVE: We can get better bounds for specific values of the
-parameters, in particular when all values are 1. Might be worth it to
-implement those specific bounds.
 """
 function polylog_r_div_z_bound(r::Int, a::Arb)
     0 < a < 1 || return indeterminate(a)

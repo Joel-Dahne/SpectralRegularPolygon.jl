@@ -157,17 +157,40 @@ function F_N_model(N₀::Int, z::Acb)
         end
 
         # Integrate from a to b
-        # IMPROVE: Optimizing this would have a large effect on Lemma 2.10
-        remainder_a_b = Arblib.integrate(
-            a,
-            b,
-            atol = radius(abs(remainder_0_a)) / 2,
-            warn_on_no_convergence = false,
-        ) do t
+        function integrand(t; analytic::Bool)
+            if analytic
+                # Check if t overlaps the branch cut. The branch cut
+                # is for either t or 1 - tz lying on the negative real
+                # axis. For the special case that n = 2 there is no
+                # branch cut for t on the negative real axis.
+
+
+                if Arblib.contains_nonpositive(Arblib.realref(t)) &&
+                   Arblib.contains_zero(Arblib.imagref(t))
+                    return indeterminate(t)
+                end
+
+                # Check if 1 - t * z overlaps the non-positive real axis.
+                one_m_tz = 1 - t * z
+                if Arblib.contains_nonpositive(Arblib.realref(one_m_tz)) &&
+                   Arblib.contains_zero(Arblib.imagref(one_m_tz))
+                    return indeterminate(t)
+                end
+            end
+
             ArbExtras.derivative_function(6) do inv_N
                 inv_N * t^inv_N * ((1 - t * z)^-2inv_N - 1)
             end(inv_N) / t
         end
+
+        remainder_a_b = Arblib.integrate(
+            integrand,
+            a,
+            b,
+            check_analytic = true,
+            atol = radius(abs(remainder_0_a)) / 2,
+            warn_on_no_convergence = false,
+        )
 
         # Integrate from b to 1
         remainder_b_1 = if isone(b)
