@@ -4,5 +4,9 @@ using Test
 import SpectralRegularPolygons as SRP
 
 @testset "SpectralRegularPolygons" begin
-    include("RegularPolygon.jl")
+    # Tests for small N
+    include("small_N/RegularPolygon.jl")
+
+    # Tests for large N
+    include("large_N/polylog.jl")
 end
