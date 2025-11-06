@@ -10,10 +10,16 @@ function polylog(s::Int, z::Union{Arblib.ArbOrRef,Arblib.AcbOrRef})
         zᵤ = abs_ubound(Arb, z)
         return add_error(zero(z), polylog_r_div_z_bound(1, zᵤ) * zᵤ)
     elseif iswide(z) && !Arblib.contains_zero(z)
-        # Explicit use of mean value theorem
+        # For wide values of z the Flint implementation gives very
+        # poor bounds. We make use of the mean value theorem to get
+        # improved enclosures in this case.
+
         z_mid = midpoint(Arblib._nonreftype(typeof(z)), z)
 
+        # Evaluate at the midpoint
         f_mid = _polylog(s, z_mid)
+
+        # Bound derivative on the full interval
         df = _polylog(s - 1, z) / z
 
         return add_error(f_mid, abs(df) * abs(z - z_mid))
@@ -237,6 +243,9 @@ function polylog_r_div_z_bound(r::Int, a::Arb)
     0 < a < 1 || return indeterminate(a)
     return 1 / (1 - a)^r
 end
+
+# The expressions for the multiple polylogarithms below are given in
+# the Appendix of the paper.
 
 # All of these functions accept AcbSeries as input. This is only used
 # in the tests to check if they expressions are correct by check that
