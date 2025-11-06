@@ -57,7 +57,7 @@ and use [`logpow`](@ref) to evaluate `log(1 - t * z)^n * (1 - t * z)`.
 """
 function integral_log_1mtz(z::Arblib.AcbOrRef, m::Integer, b::Arb)
     0 < b < 1 || throw(ArgumentError("only supports 0 < b < 1"))
-    m >= 0 || throw(ArgumentError("only supports m > 0"))
+    m >= 0 || throw(ArgumentError("only supports m >= 0"))
 
     primitive(t) =
         (-1)^m *
@@ -91,14 +91,9 @@ and use [`logpow`](@ref) to evaluate `log(1 - t * z)^n * (1 - t * z)^(1 + y)`.
 """
 function integral_logpow_1mtz(z::Acb, m::Int, y::Arb, b::Arb)
     0 < b < 1 || throw(ArgumentError("only supports 0 < b < 1"))
-    m >= 0 || throw(ArgumentError("only supports m > 0"))
+    m >= 0 || throw(ArgumentError("only supports m >= 0"))
 
     # Primitive function
-    primitive2(t) =
-        (-1)^(m + 1) * factorial(m) / ((1 + y)^(m + 1) * z) * sum(0:m) do n
-            (-1)^n * (1 + y)^n * logpow(1 - t * z, n, 1 + y) / factorial(n)
-        end
-
     primitive(t) =
         (-1)^(m + 1) * factorial(m) / z * sum(0:m) do n
             (-1)^n * (1 + y)^(n - m - 1) * logpow(1 - t * z, n, 1 + y) / factorial(n)

@@ -1,3 +1,8 @@
+"""
+    exppii(z)
+
+Compute `exp(z * π * im)`.
+"""
 exppii(z::Arblib.AcbOrRef) = Arblib.exp_pi_i!(zero(z), z)
 exppii(z::Arblib.ArbOrRef) = exppii(Acb(z))
 
