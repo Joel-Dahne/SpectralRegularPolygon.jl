@@ -347,6 +347,7 @@ function Base.:(<<)(M::TaylorModel, n::Integer)
     n <= Arblib.degree(M) || error("shift must be less than degree of TaylorModel")
     typeof(M)(M.p << n, M.I, M.x0)
 end
+
 function Base.:(>>)(M::TaylorModel, n::Integer)
     typeof(M)(M.p >> n, M.I, M.x0)
 end

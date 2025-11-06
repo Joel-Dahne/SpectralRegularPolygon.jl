@@ -52,3 +52,51 @@ function Base.atan(y::ArbSeries, x::ArbSeries)
 
     return res
 end
+
+"""
+    iswide(x; cutoff = 10)
+
+Return true if `x` is wide, in the meaning that the effective relative
+accuracy of `x` measured in bits is more than `cutoff` lower than it's
+precision. For `x` not of type `Arb` or `Acb` this always return
+`false`. For `x` of type `ArbSeries` or `AcbSeries` it checks the
+first coefficient.
+"""
+iswide(x::Union{Arblib.ArbOrRef,Arblib.AcbOrRef}; cutoff = 10) =
+    Arblib.rel_accuracy_bits(x) < precision(x) - cutoff
+iswide(x::Union{ArbSeries,AcbSeries}; cutoff = 10) = iswide(Arblib.ref(x, 0); cutoff)
+iswide(::Number; cutoff = 10) = false
+
+"""
+    <<(p::Union{ArbSeries,AcbSeries}, n::Integer)
+
+Return `p` divided by `x^n`, updating the degree accordingly
+
+It throws an error if the lower order coefficients are not all exactly
+equal to zero.
+
+Note that the naming is different from Arb where division by `x^n` is
+referred to as right shift whereas here we call it a left shift.
+"""
+function Base.:(<<)(p::T, n::Integer) where {T<:Union{ArbSeries,AcbSeries}}
+    n >= 0 || throw(ArgumentError("n needs to be non-negative, got $n"))
+    for i = 0:(n-1)
+        iszero(Arblib.ref(p, i)) ||
+            throw(ArgumentError("coefficient $i not equal to zero, got $(p[i])"))
+    end
+    return Arblib.shift_right!(T(degree = Arblib.degree(p) - n, prec = precision(p)), p, n)
+end
+
+"""
+    >>(p::Union{ArbSeries,AcbSeries}, n::Integer)
+
+Return `p` multiplied by `x^n`, updating the degree accordingly.
+
+Note that the naming is different from Arb where multiplication by
+`x^n` is referred to as left shift whereas here we call it a right
+shift.
+"""
+function Base.:(>>)(p::T, n::Integer) where {T<:Union{ArbSeries,AcbSeries}}
+    n >= 0 || throw(ArgumentError("n needs to be non-negative, got $n"))
+    return Arblib.shift_left!(T(degree = Arblib.degree(p) + n, prec = precision(p)), p, n)
+end
