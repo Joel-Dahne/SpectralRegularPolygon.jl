@@ -56,64 +56,70 @@
     end
 
     @testset "Multiple polylogs" begin
-        # We compare the values for the multiple polylog
-        # implementations with values computed using a Mathematica
-        # implementation. The implementation in Mathematica uses the
-        # same expressions for the polylogarithms, but since it was
-        # implemented separately this reduces the risk of accidental
-        # typos.
+        # Test that they seem to be zero at zero. Note that in most
+        # cases the expressions don't allow for evaluation directly at
+        # zero. We instead compute them close to zero and check that
+        # this is small.
 
-        # z values we test for
+        let z = Acb(1e-10, 2e-10)
+            @test abs(SRP.polylog_1_1(z)) <= 2abs(z)^2
+            @test abs(SRP.polylog_1_2(z)) <= 2abs(z)^2
+            @test abs(SRP.polylog_1_3(z)) <= 2abs(z)^2
+            @test abs(SRP.polylog_2_1(z)) <= 2abs(z)^2
+            @test abs(SRP.polylog_2_2(z)) <= 2abs(z)^2
+            @test abs(SRP.polylog_3_1(z)) <= 2abs(z)^2
+            @test abs(SRP.polylog_1_1_1(z)) <= 2abs(z)^3
+            @test abs(SRP.polylog_1_1_2(z)) <= 2abs(z)^3
+            @test abs(SRP.polylog_1_2_1(z)) <= 2abs(z)^3
+            @test abs(SRP.polylog_2_1_1(z)) <= 2abs(z)^3
+            @test abs(SRP.polylog_1_1_1_1(z)) <= 2abs(z)^4
+        end
 
-        # TODO: Actually add some tests here!
-
-        zs = []
-
-
-        polylog_1_1_values = []
-        polylog_1_2_values = []
-        polylog_1_3_values = []
-        polylog_2_1_values = []
-        polylog_2_2_values = []
-        polylog_3_1_values = []
-        polylog_1_1_1_values = []
-        polylog_1_1_2_values = []
-        polylog_1_2_1_values = []
-        polylog_2_1_1_values = []
-        polylog_1_1_1_1_values = []
-
-        for (z, res) in zip(zs, polylog_1_1_values)
-            @test Arblib.contains(SRP.polylog_1_1(z), res)
-        end
-        for (z, res) in zip(zs, polylog_1_2_values)
-            @test Arblib.contains(SRP.polylog_1_2(z), res)
-        end
-        for (z, res) in zip(zs, polylog_1_3_values)
-            @test Arblib.contains(SRP.polylog_1_3(z), res)
-        end
-        for (z, res) in zip(zs, polylog_2_1_values)
-            @test Arblib.contains(SRP.polylog_2_1(z), res)
-        end
-        for (z, res) in zip(zs, polylog_2_2_values)
-            @test Arblib.contains(SRP.polylog_2_2(z), res)
-        end
-        for (z, res) in zip(zs, polylog_3_1_values)
-            @test Arblib.contains(SRP.polylog_3_1(z), res)
-        end
-        for (z, res) in zip(zs, polylog_1_1_1_values)
-            @test Arblib.contains(SRP.polylog_1_1_1(z), res)
-        end
-        for (z, res) in zip(zs, polylog_1_1_2_values)
-            @test Arblib.contains(SRP.polylog_1_1_2(z), res)
-        end
-        for (z, res) in zip(zs, polylog_1_2_1_values)
-            @test Arblib.contains(SRP.polylog_1_2_1(z), res)
-        end
-        for (z, res) in zip(zs, polylog_2_1_1_values)
-            @test Arblib.contains(SRP.polylog_2_1_1(z), res)
-        end
-        for (z, res) in zip(zs, polylog_1_1_1_1_values)
-            @test Arblib.contains(SRP.polylog_1_1_1_1(z), res)
+        for z in [SRP.exppii(Arb(1 // 4)), Acb(0.5, 0.6), Acb(-0.3, -0.4)]
+            @test Arblib.overlaps(
+                (1 - z) * ArbExtras.derivative_function(SRP.polylog_1_1)(z),
+                SRP.polylog(1, z),
+            )
+            @test Arblib.overlaps(
+                z * ArbExtras.derivative_function(SRP.polylog_1_2)(z),
+                SRP.polylog_1_1(z),
+            )
+            @test Arblib.overlaps(
+                z * ArbExtras.derivative_function(SRP.polylog_1_3)(z),
+                SRP.polylog_1_2(z),
+            )
+            @test Arblib.overlaps(
+                (1 - z) * ArbExtras.derivative_function(SRP.polylog_2_1)(z),
+                SRP.polylog(2, z),
+            )
+            @test Arblib.overlaps(
+                z * ArbExtras.derivative_function(SRP.polylog_2_2)(z),
+                SRP.polylog_2_1(z),
+            )
+            @test Arblib.overlaps(
+                (1 - z) * ArbExtras.derivative_function(SRP.polylog_3_1)(z),
+                SRP.polylog(3, z),
+            )
+            @test Arblib.overlaps(
+                (1 - z) * ArbExtras.derivative_function(SRP.polylog_1_1_1)(z),
+                SRP.polylog_1_1(z),
+            )
+            @test Arblib.overlaps(
+                z * ArbExtras.derivative_function(SRP.polylog_1_1_2)(z),
+                SRP.polylog_1_1_1(z),
+            )
+            @test Arblib.overlaps(
+                (1 - z) * ArbExtras.derivative_function(SRP.polylog_1_2_1)(z),
+                SRP.polylog_1_2(z),
+            )
+            @test Arblib.overlaps(
+                (1 - z) * ArbExtras.derivative_function(SRP.polylog_2_1_1)(z),
+                SRP.polylog_2_1(z),
+            )
+            @test Arblib.overlaps(
+                (1 - z) * ArbExtras.derivative_function(SRP.polylog_1_1_1_1)(z),
+                SRP.polylog_1_1_1(z),
+            )
         end
     end
 end
