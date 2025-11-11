@@ -59,7 +59,8 @@ function V_3(z; analytic::Bool = false)
     λ = λ_disc()
     return (λ^2 / 16 - λ + 2) * polylog(3, z) +
            (3λ - 12) * polylog_1_2(z) +
-           (λ - 4) * polylog_2_1(z) - 8polylog_1_1_1(z)
+           (λ - 4) * polylog_2_1(z) +
+           8polylog_1_1_1(z)
 end
 
 function V_3_div_z_bound(zᵤ::Arb)
