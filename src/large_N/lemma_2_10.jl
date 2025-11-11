@@ -274,55 +274,29 @@ function d_3_zt_part(z, t; analytic::Bool = false)
 end
 
 function integral_d_0(z::Acb, a::Arb)
-    return a * z
+    return a * abs(z)
 end
 
 function integral_d_1(z::Acb, a::Arb)
     λ = λ_disc()
-    return λ / 4 * integral_log_z(1, z, a)
+    return λ / 4 * abs(z) * abs(integral_log(1, a))
 end
 
-"""
-integral_d_2(z::Acb, a::Arb)
-
-We write `d_2` as
-```
-(λ^2 / 64 + λ / 8) * log(t / z)^2 +
-λ / 4 * (S(2, t) - S(2, z))
-```
-The `S(2, t)` factor we enclose on the entire interval. We then
-integrate the log-terms with [`integral_log_z`](@ref).
-"""
 function integral_d_2(z::Acb, a::Arb)
     λ = λ_disc()
     t = Arblib.union(zero(z), a * z)
-    return (λ^2 / 64 + λ / 8) * integral_log_z(2, z, a) +
-           λ / 4 * (S(2, t) - S(2, z)) * a * z
+    return (λ^2 / 64 + λ / 8) * abs(z) * abs(integral_log(2, a)) +
+           λ / 4 * abs(S(2, t) - S(2, z)) * a * abs(z)
 end
 
-"""
-integral_d_3(z::Acb, a::Arb)
-
-We write `d_3` as
-```
-(λ^3 / 2304 + λ^2 / 64 + λ / 24) * log(t / z)^3 +
-(
-(λ^2 / 32 + λ / 4) * S(2, t) -
-λ^2 / 32 * S(2, z)
-+ λ / 4 * S(2, conj(z))
-) * log(t / z)
-λ / 4 * (S(3, t) - S(3, z))
-```
-The `S` factors with `t` we enclose on the entire interval.
-We then integrate the log-terms with [`integral_log_z`](@ref).
-"""
 function integral_d_3(z::Acb, a::Arb)
     λ = λ_disc()
     t = Arblib.union(zero(z), a * z)
-    return (λ^3 / 2304 + λ^2 / 64 + λ / 24) * integral_log_z(3, z, a) +
-           ((λ^2 / 32 + λ / 4) * S(2, t) - λ^2 / 32 * S(2, z) + λ / 4 * S(2, conj(z))) *
-           integral_log_z(1, z, a) +
-           λ / 4 * (S(3, t) - S(3, z)) * a * z
+    return (λ^3 / 2304 + λ^2 / 64 + λ / 24) * abs(z) * abs(integral_log(3, a)) +
+           (λ^2 / 32 * abs(S(2, t) - S(2, z)) + λ / 4 * abs(S(2, t) + S(2, conj(z)))) *
+           abs(z) *
+           integral_log(1, a) +
+           λ / 4 * abs(S(3, t) - S(3, z)) * a * abs(z)
 end
 
 d(k::Int, z::Arblib.AcbOrRef, t::Arblib.AcbOrRef; analytic::Bool = false) =
@@ -355,7 +329,11 @@ d_zt_part(k::Int, z, t; analytic::Bool = false) =
 """
 integral_d(k::Int, z::Acb, a::Arb)
 
-Compute the integral of `d(l, z, t)` from `0` to `a * z`.
+Compute a bound for the integral of
+```
+∫ abs(d(l, z, t)) abs(dt)
+```
+taken from `0` to `a * z`.
 """
 integral_d(k::Int, z::Acb, a::Arb) =
     if k == 0

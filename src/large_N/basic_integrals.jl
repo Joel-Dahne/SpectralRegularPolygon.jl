@@ -20,21 +20,6 @@ function integral_log(m::Int, a::Arb)
 end
 
 """
-    integral_log_z(m::Int, z::Acb, a::Arb)
-
-Compute the integral of `log(t / z)^m` from `0` to `a * z`.
-
-Use the change of coordinates `s = t / z` to get the integral from `0`
-to `a` of
-```
-z * log(s)^m
-```
-"""
-function integral_log_z(m::Int, z::Acb, a::Arb)
-    return z * integral_log(m, a)
-end
-
-"""
     integral_log_1mtz(z::Acb, m::Int, b::Arb)
 
 Compute the integral of `log(1 - t * z)^m` from `b` to `1`.
