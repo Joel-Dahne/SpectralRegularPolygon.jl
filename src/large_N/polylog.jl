@@ -205,7 +205,26 @@ function S(n::Int, z::Arblib.AcbOrRef)
         # explicit integrands. The resulting integrals can then be
         # computed explicitly using integral_log_1mtz.
 
-        # Enclosures of log(1 - t * z) / t and log(1 - t * z)
+        # Verify that the real and imaginary parts of log(1 - t * z)^m
+        # don't change sign on the interval, for 1 <= m <= n - 1.
+        let t = Arb((b, 1))
+            C = Arblib.abs_ubound(Arb, 1 - t * z)
+            C < 1 || return indeterminate(z)
+
+            # We are now ensured that log(1 - t * z) lies in the strip
+            # (-∞, log(C)) × im * [0, π] or (-∞, log(C)) × im * [π, 0]
+
+            # The strip lies inside an angular sector with angle
+            θ = atan(Arb(π), abs(log(C)))
+
+            # To ensure that log(1 - t * z)^m lies inside a single
+            # quadrant we have to verify that the angular sector which
+            # it is contained in doesn't have an angle greater than π
+            # / 2.
+            (n - 1) * θ <= Arb(π) / 2 || return indeterminate(z)
+        end
+
+        # Enclosures of log(t) and 1 / t
         logt, invt = let t = Arb((b, 1))
             log(t), inv(t)
         end
