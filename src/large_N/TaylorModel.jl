@@ -352,38 +352,6 @@ function Base.:(>>)(M::TaylorModel, n::Integer)
     typeof(M)(M.p >> n, M.I, M.x0)
 end
 
-"""
-    div_removable(M1::TaylorModel, M2::TaylorModel, order::Integer = 1; force = true)
-
-Compute `M1 / M2` in the case of a removable singularity of the given
-`order`. The degree of the output is the degree of the input minus
-`order`.
-"""
-function div_removable(
-    M1::TM,
-    M2::TM,
-    order::Integer = 1;
-    force = false,
-) where {TM<:TaylorModel}
-    checkcompatible(M1, M2)
-    order >= 1 || error("order must be positive")
-    order <= Arblib.degree(M1) || error("order must be lower than degree of input")
-
-    if force
-        # Optimize in case all things happen to be zero?
-        M1 = TM(copy(M1.p), M1.I, M1.x0)
-        M2 = TM(copy(M2.p), M2.I, M2.x0)
-        for i = 0:(order-1)
-            @assert Arblib.contains_zero(Arblib.ref(M1.p, i))
-            @assert Arblib.contains_zero(Arblib.ref(M2.p, i))
-            M1.p[i] = 0
-            M2.p[i] = 0
-        end
-    end
-
-    return (M1 << order) / (M2 << order)
-end
-
 # TaylorModel implementations of some specific functions that are used
 
 """
