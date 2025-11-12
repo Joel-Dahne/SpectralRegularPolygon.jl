@@ -11,4 +11,5 @@ import SpectralRegularPolygons as SRP
     # Tests for large N
     include("large_N/basic_integrals.jl")
     include("large_N/polylog.jl")
+    include("large_N/section_2.jl")
 end
