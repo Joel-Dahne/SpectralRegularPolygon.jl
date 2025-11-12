@@ -46,15 +46,10 @@ end
 TaylorModel = Union{ArbTaylorModel,AcbTaylorModel}
 
 """
-    ArbTaylorModel(f, I::Arb, x0::Arb; degree::Integer, enclosure_degree::Integer = -1)
+    ArbTaylorModel(f, I::Arb, x0::Arb; degree::Integer)
 
 Construct a Taylor model of `f` on the interval `I` centered at `x0`
 with the given degree.
-
-For wide values of `I` it computes a tighter enclosure of the
-remainder term using [`ArbExtras.enclosure_series`](@ref). The degree
-used for this can be set with `enclosure_degree`. Setting it to a
-negative number makes it compute it directly instead.
 """
 function ArbTaylorModel(f, I::Arb, x0::Arb; degree::Integer, enclosure_degree::Integer = -1)
     Arblib.contains(I, x0) || throw(
@@ -70,17 +65,7 @@ function ArbTaylorModel(f, I::Arb, x0::Arb; degree::Integer, enclosure_degree::I
         p = ArbSeries(p, degree = degree + 1)
 
         # Compute remainder term
-        if enclosure_degree < 0 || !iswide(I)
-            p[degree+1] = f(ArbSeries((I, 1), degree = degree + 1))[degree+1]
-        else
-            # We compute a tighter enclosure with the help of ArbExtras.enclosure_series
-            p[degree+1] =
-                ArbExtras.enclosure_series(
-                    ArbExtras.derivative_function(f, degree + 1),
-                    I,
-                    degree = enclosure_degree,
-                ) / factorial(degree + 1)
-        end
+        p[degree+1] = f(ArbSeries((I, 1), degree = degree + 1))[degree+1]
     end
 
     return ArbTaylorModel(p, I, x0)
@@ -91,11 +76,6 @@ end
 
 Construct a Taylor model of `f` on the interval `I` centered at `x0`
 with the given degree.
-
-For wide values of `I` it computes a tighter enclosure of the
-remainder term using [`ArbExtras.enclosure_series`](@ref). The degree
-used for this can be set with `enclosure_degree`. Setting it to a
-negative number makes it compute it directly instead.
 """
 function AcbTaylorModel(f, I::Arb, x0::Arb; degree::Integer, enclosure_degree::Integer = -1)
     Arblib.contains(I, x0) || throw(
@@ -111,17 +91,7 @@ function AcbTaylorModel(f, I::Arb, x0::Arb; degree::Integer, enclosure_degree::I
         p = AcbSeries(p, degree = degree + 1)
 
         # Compute remainder term
-        if enclosure_degree < 0 || !iswide(I)
-            p[degree+1] = f(AcbSeries((I, 1), degree = degree + 1))[degree+1]
-        else
-            # We compute a tighter enclosure with the help of ArbExtras.enclosure_series
-            p[degree+1] =
-                ArbExtras.enclosure_series(
-                    ArbExtras.derivative_function(f, degree + 1),
-                    I,
-                    degree = enclosure_degree,
-                ) / factorial(degree + 1)
-        end
+        p[degree+1] = f(AcbSeries((I, 1), degree = degree + 1))[degree+1]
     end
 
     return AcbTaylorModel(p, I, x0)
@@ -343,11 +313,27 @@ Base.:/(c::Union{Arb,Integer}, M::TaylorModel) = c * compose(inv, M)
 
 Base.:-(M::TaylorModel) = typef(M)(-M.p, M.I, M.x0)
 
+"""
+    <<(p::TaylorModel, n::Integer)
+
+Return a Taylor model for `p` divided by `x^n`, updating the degree
+accordingly
+"""
 function Base.:(<<)(M::TaylorModel, n::Integer)
     n <= Arblib.degree(M) || error("shift must be less than degree of TaylorModel")
     typeof(M)(M.p << n, M.I, M.x0)
 end
 
+"""
+    >>(p::TaylorModel, n::Integer)
+
+Return a Taylor model for `p` multiplied by `x^n`, updating the degree
+accordingly.
+
+Note that the naming is different from Arb where multiplication by
+`x^n` is referred to as left shift whereas here we call it a right
+shift.
+"""
 function Base.:(>>)(M::TaylorModel, n::Integer)
     typeof(M)(M.p >> n, M.I, M.x0)
 end
@@ -368,10 +354,6 @@ function Base.abs(z::AcbTaylorModel)
 
     z_mul_z_conj = z * z_conj
     # All coefficients are real, so convert it to an ArbTaylorModel
-    for i = 0:(Arblib.degree(z)+1)
-        @assert Arblib.contains_zero(imag(z_mul_z_conj.p[i]))
-    end
-    # PROVE: Verify that this makes sense also for the remainder term.
     z_mul_z_conj_real =
         ArbTaylorModel(ArbSeries(real(Arblib.coeffs(z_mul_z_conj.p))), z.I, z.x0)
 

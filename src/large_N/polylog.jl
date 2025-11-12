@@ -211,16 +211,15 @@ function S(n::Int, z::Arblib.AcbOrRef)
             C = Arblib.abs_ubound(Arb, 1 - t * z)
             C < 1 || return indeterminate(z)
 
-            # We are now ensured that log(1 - t * z) lies in the strip
-            # (-∞, log(C)) × im * [0, π] or (-∞, log(C)) × im * [π, 0]
+            # We are now ensured that log(1 - t * z) lies inside a
+            # strip with real part (-∞, log(C)) and imaginary part (0,
+            # π), (-π, 0) or [0, π] depending on weather imag(z) is
+            # positive, negative or zero.
 
-            # The strip lies inside an angular sector with angle
+            # From the paper we then have that log(1 - t * z)^m is
+            # contained in a single quadrant if m * θ <= π / 2. Where
             θ = atan(Arb(π), abs(log(C)))
 
-            # To ensure that log(1 - t * z)^m lies inside a single
-            # quadrant we have to verify that the angular sector which
-            # it is contained in doesn't have an angle greater than π
-            # / 2.
             (n - 1) * θ <= Arb(π) / 2 || return indeterminate(z)
         end
 
