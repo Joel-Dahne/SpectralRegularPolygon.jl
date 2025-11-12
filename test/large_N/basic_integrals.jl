@@ -1,5 +1,5 @@
 @testset "basic_integrals" begin
-    @testset "integral_log and integral_log_z" begin
+    @testset "integral_log" begin
         # Check that the difference when integrating to a and when
         # integrating to b is the same as the integral from a to b.
 
@@ -10,11 +10,6 @@
             @test Arblib.overlaps(
                 SRP.integral_log(m, b) - SRP.integral_log(m, a),
                 Arb(Arblib.integrate(x -> log(x)^m, a, b)),
-            )
-
-            @test Arblib.overlaps(
-                SRP.integral_log_z(m, z, b) - SRP.integral_log_z(m, z, a),
-                Arblib.integrate(t -> log(t / z)^m, a * z, b * z),
             )
         end
     end
