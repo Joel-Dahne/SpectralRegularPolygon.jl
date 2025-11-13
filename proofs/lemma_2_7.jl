@@ -23,7 +23,6 @@ end
 # ╔═╡ 93d81d7f-9ceb-4c5b-88e6-aa209faac94d
 md"""
 # Proof of Lemma 2.7
-This notebook contains the computer-assisted part of the proof of Lemma 2.7.
 """
 
 # ╔═╡ 755359f0-227d-496f-b1bc-851e3579e149
@@ -75,7 +74,7 @@ g_d3_bound_0_5 = ArbExtras.maximum_enclosure(
 md"""
 On the interval $(5, \infty)$ we use the bound
 
-$$|J_\nu(x)| \leq 0.7858x^{-1/3}$$,
+$$|J_\nu(x)| \leq 0.7858x^{-1/3},$$
 
 which holds for $x > 0$. From this we immediately get
 
@@ -87,6 +86,11 @@ Where this last value is given by:
 # ╔═╡ 8e11a8f8-3b11-4b6d-a8ad-c6a368e20abb
 g_d3_bound_5_inf = Arb("0.7858") * λ^(4 // 3) * Arb(5)^(-1 // 3)
 
+# ╔═╡ 9001f1d9-8977-4fbf-8f7d-1091ab04ffe9
+md"""
+For inclusing in the paper we print it using fewer digits.
+"""
+
 # ╔═╡ f50b7428-db8a-4511-a8c1-b8bdd8eb5dec
 string(g_d3_bound_5_inf, digits = 5)
 
@@ -96,15 +100,15 @@ It is then straight forward to verify that the bounds on $[0, 5]$ and $(5, \inft
 """
 
 # ╔═╡ bc230116-438e-4b7f-874e-1b18a83bab92
-g_d3_bound_0_5 < Arb(C_gd3)
+@assert_proof g_d3_bound_0_5 <= Arb(C_gd3)
 
 # ╔═╡ da0960f3-4793-47a8-a1cf-a813b55e2a9e
-g_d3_bound_5_inf < Arb(C_gd3)
+@assert_proof g_d3_bound_5_inf <= Arb(C_gd3)
 
 # ╔═╡ 9dabbf48-5575-40f2-93cb-35be265f423a
 md"""
 ## Plots
-We can visualize the bounds in the plot below:
+We can visualize the above bounds in the plot below. Note that this plot is not part of the proof, it is only intended to give a visualization of the results.
 """
 
 # ╔═╡ c1cf75a7-2e6d-43a4-8715-009c872be9ef
@@ -156,6 +160,7 @@ end
 # ╠═dd258019-77b9-4da2-874e-896162b18c78
 # ╟─4b00cb82-1e2c-448c-b832-b94ed22d92c6
 # ╠═8e11a8f8-3b11-4b6d-a8ad-c6a368e20abb
+# ╟─9001f1d9-8977-4fbf-8f7d-1091ab04ffe9
 # ╠═f50b7428-db8a-4511-a8c1-b8bdd8eb5dec
 # ╟─e62a9ae7-d492-4a03-9c9d-9736ce9de35a
 # ╠═bc230116-438e-4b7f-874e-1b18a83bab92
