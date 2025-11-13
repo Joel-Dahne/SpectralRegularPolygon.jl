@@ -33,6 +33,8 @@ import SpecialFunctions: besselj, besselj0, besselj1, bessely0, bessely1, zeta, 
 # large N.
 const N₀ = 64
 
+include("assert_proof.jl")
+
 # Some generic code use for both small and large N
 include("arb.jl")
 
