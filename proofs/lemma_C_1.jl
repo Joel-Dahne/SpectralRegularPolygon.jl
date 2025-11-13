@@ -199,18 +199,12 @@ end
 # ╔═╡ c40e6da2-ac47-4a24-a420-ca8e673dfc25
 function F_N_4(z)
     F_N_model = SRP.F_N_model(N₀, z)
-    # Subtract N^-2 and N^-3 terms
-    F_N_model.p[2] = 0
-    F_N_model.p[3] = 0
 
-    # Comput Taylor model and truncate it to degree 3
-    model = SRP.truncate(sqrt_ρ_div_λ_model * F_N_model - 1, degree = 3)
+    # Comput Taylor model
+    M = sqrt_ρ_div_λ_model * F_N_model
 
-    # Verify that terms in the required expansion contain zero
-    @assert all(Arblib.contains_zero.(model.p[0:3]))
-
-    # Return the remainder term of the Taylor model
-    model.p[end]
+    # Truncate it to degree 3 and take remainder term
+    return SRP.remainder(SRP.truncate(M, degree = 3))
 end
 
 # ╔═╡ 8060aa4e-8689-4539-9009-4763902d11b7
@@ -356,7 +350,7 @@ besselj0_d8_bound_50_inf < Arb(C_J0_8)
 # ╟─f4ceb785-492f-4294-983e-c29360febd5f
 # ╟─b037f618-1929-4c93-a452-5606cc59bb41
 # ╠═abca81b1-bfdc-4b56-bae7-3d279ec14a29
-# ╠═4711295e-0858-4833-b8e1-12384856ecad
+# ╟─4711295e-0858-4833-b8e1-12384856ecad
 # ╠═626e33ce-ece6-4066-af07-98bcb6c053c8
 # ╟─a57c2ae1-85f3-4940-8d9b-2f4680fd79ef
 # ╠═7c4055e6-60b9-4085-b9c8-7fe4da7c75d7

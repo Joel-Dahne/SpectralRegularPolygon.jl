@@ -348,7 +348,9 @@ integral_d(k::Int, z::Acb, a::Arb) =
 
 function integral_d_k_V_l(k::Int, l::Int, z::Acb)
     a = Arb(1e-4)
+    b = Arblib.contains(z, Acb(1)) ? Arb(0.999) : Arb(1)
     az = a * z
+    bz = b * z
 
     # Integrate from 0 to a * z
     res_0_az = let
@@ -363,9 +365,6 @@ function integral_d_k_V_l(k::Int, l::Int, z::Acb)
 
         add_error(Acb(0), D_l_a * abs(integral_d(k, z, a)))
     end
-
-    b = Arblib.contains(z, Acb(1)) ? Arb(0.999) : Arb(1)
-    bz = b * z
 
     # Integrate from a * z to b * z
     res_az_bz = let
@@ -537,6 +536,8 @@ function K_4(N₀::Int, z::Acb)
         end
 
         M = K(convert(Acb, t))
+
+        # Truncate it to degree 3 and take remainder term
         return remainder(truncate(M, degree = 3))
     end
 end
