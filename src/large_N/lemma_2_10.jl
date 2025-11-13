@@ -537,11 +537,7 @@ function K_4(N₀::Int, z::Acb)
         end
 
         M = K(convert(Acb, t))
-        M.p[0] = 0
-        M.p[1] = 0
-        M.p[2] = 0
-        M.p[3] = 0
-        return (M << 4)(inv_N)
+        return remainder(truncate(M, degree = 3))
     end
 end
 

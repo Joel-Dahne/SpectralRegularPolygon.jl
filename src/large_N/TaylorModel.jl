@@ -97,23 +97,42 @@ function AcbTaylorModel(f, I::Arb, x0::Arb; degree::Integer, enclosure_degree::I
     return AcbTaylorModel(p, I, x0)
 end
 
+"""
+    Arblib.degree(M::TaylorModel)
+
+Return the degree `n` of the Taylor model.
+"""
+Arblib.degree(M::TaylorModel) = Arblib.degree(M.p) - 1
+
+"""
+    polynomial(M::TaylorModel)
+
+Return the polynomial term `p` of the Taylor model.
+"""
+polynomial(M::TaylorModel) = Arblib.truncate!(copy(M.p), Arblib.degree(M) + 1)
+
+"""
+    remainder(M::TaylorModel)
+
+Return the remainder term `Δ` of the Taylor model.
+"""
+remainder(M::TaylorModel) = M.p[end]
+
 Base.zero(M::TaylorModel) = typeof(M)(zero(M.p), M.I, M.x0)
 Base.one(M::TaylorModel) = typeof(M)(one(M.p), M.I, M.x0)
 Base.iszero(M::TaylorModel) = iszero(M.p)
 Base.isone(M::TaylorModel) = isone(M.p)
 
-Arblib.degree(M::TaylorModel) = Arblib.degree(M.p) - 1
-
 function Base.show(io::IO, ::MIME"text/plain", M::ArbTaylorModel)
     println(io, "Arb Taylor model of degree $(Arblib.degree(M)) centered at x0 = $(M.x0)")
-    println(io, "I = $(M.I), Δ = $(M.p[end])")
-    print(io, "p = $(ArbPoly(M.p[0:end-1]))")
+    println(io, "I = $(M.I), Δ = $(remainder(M))")
+    print(io, "p = $(polynomial(M))")
 end
 
 function Base.show(io::IO, ::MIME"text/plain", M::AcbTaylorModel)
     println(io, "Acb Taylor model of degree $(Arblib.degree(M)) centered at x0 = $(M.x0)")
-    println(io, "I = $(M.I), Δ = $(M.p[end])")
-    print(io, "p = $(AcbPoly(M.p[0:end-1]))")
+    println(io, "I = $(M.I), Δ = $(remainder(M))")
+    print(io, "p = $(polynomial(M))")
 end
 
 """

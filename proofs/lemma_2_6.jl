@@ -91,7 +91,7 @@ To compute $T_6$ we first compute a Taylor model for
 
 $$\frac{\sqrt{\lambda_{\text{app}}}}{\sqrt{\lambda}} c_N |F_N(z)|.$$
 
-in terms of $N^{-1}$. If we compute the Taylor model with a remainder term of degree 6, then $T_6$ is bounded by this remainder term.
+in terms of $N^{-1}$. If we compute the Taylor model with a remainder term of degree 6, then $T_6$ is enclosed by this remainder term.
 
 Since the factor
 
@@ -115,11 +115,11 @@ doesn't depend on $z$ we can precompute it:
 
 # ╔═╡ b4186719-9e4b-4d24-9c26-adcb33acc3dc
 md"""
-TODO: Explain this a bit more.
+We can now compute $T_6$ by constructing the approriate Taylor model and taking its remainder term.
 """
 
 # ╔═╡ 26b77fc2-2e84-4d8f-8cbc-6a15a948aab7
-T_6(z) = (λ_app_div_λ_mul_c_N * abs(SRP.F_N_model(N₀, z))).p[end]
+T_6(z) = SRP.remainder(λ_app_div_λ_mul_c_N * abs(SRP.F_N_model(N₀, z)))
 
 # ╔═╡ e707c5eb-acd8-43fc-8fd1-1e0f9683d96b
 md"""
