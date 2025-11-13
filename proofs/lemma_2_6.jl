@@ -69,7 +69,7 @@ C_T_6 = SRP.C_T_6
 
 # ╔═╡ 9a1e011a-6875-4a11-b321-b703a2e15e62
 md"""
-## Implementations of functions
+## Implementation of functions
 The functions $b_2$, $b_3$, $b_4$ and $b_5$ are straight forward to implement:
 """
 
@@ -124,6 +124,7 @@ T_6(z) = SRP.remainder(λ_app_div_λ_mul_c_N * abs(SRP.F_N_model(N₀, z)))
 # ╔═╡ e707c5eb-acd8-43fc-8fd1-1e0f9683d96b
 md"""
 ## Plots
+To get a better understanding for how the functions behave we plot them on the interval $[0, 2\pi]$. Note that these plots are not part of the proof, they are only mean to give an idea for what the functions behave like.
 """
 
 # ╔═╡ 0aa4c803-768e-4b65-ba2c-c17f400d17d9
@@ -156,6 +157,11 @@ end
 T6s = tmap(θs_div_πs) do θ_div_π
     T_6(SRP.exppii(θ_div_π))
 end
+
+# ╔═╡ 4d9c27d5-7f2a-4ace-b6be-dbe6a736e376
+md"""
+In the below plots, the horizontal lines indicate the bounds that are proved to hold.
+"""
 
 # ╔═╡ 0209a6b1-f5ba-4ba6-9b5f-2f2cbdd2c643
 let
@@ -278,8 +284,18 @@ end
     T_6(SRP.exppii(θ_div_π))
 end
 
+# ╔═╡ a4f8dc0d-c0fe-4933-ab2a-4d74ab5b7151
+md"""
+For `T_6_bound` it is better to print the lower and upper bounds for the interval separately.
+"""
+
 # ╔═╡ 92e50091-4405-4691-aec5-8704fac4215a
-getinterval(Arb, T_6_bound) # TODO: Format this in a nice way
+string.(getinterval(Arb, T_6_bound), digits = 10)
+
+# ╔═╡ 3bb73fbc-a75f-451e-b9d3-2c1d0c197e6d
+md"""
+Given the above bounds we can compute bounds for $T_2$ and $T_4$.
+"""
 
 # ╔═╡ dad6497c-bfee-4235-82e6-2099220844b3
 T_2_bound =
@@ -288,26 +304,31 @@ T_2_bound =
 # ╔═╡ 769879b3-3c7b-4ae5-ad75-5f5fee225f90
 T_4_bound = b_4_bound + b_5_bound / N₀ + T_6_bound / N₀^2
 
+# ╔═╡ bb30e341-3697-44cc-9b1b-b793d23cdc09
+md"""
+Finally we verify that the required bounds are satisfied.
+"""
+
 # ╔═╡ 48596d0e-6804-426a-b3a4-7d64f3d7df93
-b_2_bound <= Arb(C_b_2)
+@assert_proof b_2_bound <= Arb(C_b_2)
 
 # ╔═╡ b9322190-84d9-4a11-b708-8ff8c11fc367
-b_3_bound <= Arb(C_b_3)
+@assert_proof b_3_bound <= Arb(C_b_3)
 
 # ╔═╡ 7ad99c3c-5dfe-4518-bf91-113388af8a2c
-b_4_bound <= Arb(C_b_4)
+@assert_proof b_4_bound <= Arb(C_b_4)
 
 # ╔═╡ 8f495d5a-03cd-4d31-ad19-2fb4fde08d70
-b_5_bound <= Arb(C_b_5)
+@assert_proof b_5_bound <= Arb(C_b_5)
 
 # ╔═╡ a9cb0e9a-f69e-45d0-995a-cea5db9c22ec
-T_2_bound <= Arb(C_T_2)
+@assert_proof T_2_bound <= Arb(C_T_2)
 
 # ╔═╡ d9af7e04-5297-4a4f-961c-171b2c939d8f
-T_4_bound <= Arb(C_T_4)
+@assert_proof T_4_bound <= Arb(C_T_4)
 
 # ╔═╡ 26926dfc-0236-4f86-a7be-a8881e6f5f30
-T_6_bound <= Arb(C_T_6)
+@assert_proof T_6_bound <= Arb(C_T_6)
 
 # ╔═╡ Cell order:
 # ╟─c45a43db-337d-4ce7-afeb-61a9f50ba398
@@ -338,20 +359,24 @@ T_6_bound <= Arb(C_T_6)
 # ╠═f8466db6-f0d4-44cc-b369-a587f8565bc7
 # ╠═95b752e2-5927-4235-babb-5a2198f172aa
 # ╠═c25aea0b-f364-4c25-9fa8-8315fcc319cb
+# ╟─4d9c27d5-7f2a-4ace-b6be-dbe6a736e376
 # ╟─0209a6b1-f5ba-4ba6-9b5f-2f2cbdd2c643
 # ╟─1441945f-d537-4ac6-b21d-cfcc62c28cef
 # ╟─0c002f46-d981-4461-a2fe-0ceaf79ece35
 # ╟─0d186cc4-b8cd-4336-aa8d-e2ffdc37c80a
-# ╠═1f4ebea3-1b83-49d4-aabc-cc57b0bba1af
+# ╟─1f4ebea3-1b83-49d4-aabc-cc57b0bba1af
 # ╟─e6f37ebc-4884-4028-a937-93d71c27e3d0
 # ╠═0a8e3984-1047-4f89-8f16-d47b89fcd6cf
 # ╠═fd627d82-96e2-4f57-923b-dd879acf5bc6
 # ╠═b3f8fb15-2864-4479-8b2a-74586b2c8e8b
 # ╠═00ac7282-9dac-4289-8d5a-5bf5dd539878
 # ╠═763878e0-5a56-4c0e-985f-f0521cab30eb
+# ╟─a4f8dc0d-c0fe-4933-ab2a-4d74ab5b7151
 # ╠═92e50091-4405-4691-aec5-8704fac4215a
+# ╟─3bb73fbc-a75f-451e-b9d3-2c1d0c197e6d
 # ╠═dad6497c-bfee-4235-82e6-2099220844b3
 # ╠═769879b3-3c7b-4ae5-ad75-5f5fee225f90
+# ╟─bb30e341-3697-44cc-9b1b-b793d23cdc09
 # ╠═48596d0e-6804-426a-b3a4-7d64f3d7df93
 # ╠═b9322190-84d9-4a11-b708-8ff8c11fc367
 # ╠═7ad99c3c-5dfe-4518-bf91-113388af8a2c
