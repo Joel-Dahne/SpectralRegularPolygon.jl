@@ -559,12 +559,12 @@ abs(K_4(z, t)) <=
 and integrates termwise.
 """
 function integral_K_4_bound(N₀::Int, z::Acb, a::Arb)
-    return Arb(C_L_0) * abs(integral_log_z(0, z, a)) +
-           Arb(C_L_1) * abs(integral_log_z(1, z, a)) +
-           Arb(C_L_2) * abs(integral_log_z(2, z, a)) +
-           Arb(C_L_3) * abs(integral_log_z(3, z, a)) +
-           Arb(C_L_4) * abs(integral_log_z(4, z, a)) +
-           Arb(C_L_6) * abs(integral_log_z(6, z, a))
+    return Arb(C_L_0) * abs(integral_log(0, a)) +
+           Arb(C_L_1) * abs(integral_log(1, a)) +
+           Arb(C_L_2) * abs(integral_log(2, a)) +
+           Arb(C_L_3) * abs(integral_log(3, a)) +
+           Arb(C_L_4) * abs(integral_log(4, a)) +
+           Arb(C_L_6) * abs(integral_log(6, a))
 end
 
 function integral_K_4_V_1(N₀::Int, z::Acb)
