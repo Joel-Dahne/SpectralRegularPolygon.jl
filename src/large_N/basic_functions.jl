@@ -44,23 +44,6 @@ Compute `abs(x)^y` in a way that works if `x` overlaps with zero.
 abspow(x::Arb, y::Arb) = abspow!(zero(x), x, y)
 
 """
-    pow(z::Acb, y::Arb)
-
-Compute `z^y` in a way that works if `z` overlaps with zero.
-
-For `z` overlapping zero it uses that the result is bounded in
-absolute value by `abs(z)^y`, which can be computed using
-[`abspow`](@ref).
-"""
-function pow(z::Acb, y::Arb)
-    if Arblib.contains_zero(z)
-        return Arblib.add_error!(zero(z), abspow(abs_ubound(Arb, z), y))
-    else
-        return z^y
-    end
-end
-
-"""
     logabspow(x::Arb, m::Integer, y::Union{Arb,Integer})
 
 Compute `log(abs(x))^m * abs(x)^y` in a way that works for `x`
@@ -149,7 +132,9 @@ and using [`logabspow`](@ref).
 function logpow(z::Acb, m::Integer, y::Arb)
     m >= 0 || throw(ArgumentError("only supports m >= 0"))
 
-    m == 0 && return pow(z, y)
+    m == 0 &&
+    return Arblib.contains_zero(z) ? abspow(abs(z), y) * exp(Acb(0, Base.angle(z))) :
+               z^y
 
     if Arblib.contains_zero(z)
         return sum(0:m) do n
