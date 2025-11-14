@@ -571,7 +571,9 @@ function integral_K_4_V_1(N₀::Int, z::Acb)
     K4 = K_4(N₀, z)
 
     a = Arb(1e-4)
+    b = Arblib.contains(z, Acb(1)) ? Arb(1) - 1e-6 : Arb(1)
     az = a * z
+    bz = b * z
 
     # Integrate from 0 to a * z
     res_0_az = let
@@ -587,9 +589,6 @@ function integral_K_4_V_1(N₀::Int, z::Acb)
 
         add_error(Acb(0), D_1_a * integral_K_4_bound(N₀, z, a))
     end
-
-    b = Arblib.contains(z, Acb(1)) ? Arb(0.999) : Arb(1)
-    bz = b * z
 
     # Integrate from a * z to b * z
     res_az_bz = let
