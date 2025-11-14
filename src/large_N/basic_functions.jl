@@ -133,7 +133,7 @@ function logpow(z::Acb, m::Integer, y::Arb)
     m >= 0 || throw(ArgumentError("only supports m >= 0"))
 
     m == 0 &&
-    return Arblib.contains_zero(z) ? abspow(abs(z), y) * exp(Acb(0, Base.angle(z))) :
+        return Arblib.contains_zero(z) ? abspow(abs(z), y) * exp(Acb(0, Base.angle(z))) :
                z^y
 
     if Arblib.contains_zero(z)
