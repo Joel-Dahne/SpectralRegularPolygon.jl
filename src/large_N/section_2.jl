@@ -32,7 +32,8 @@ Note that this takes as input `inv(N)` and not `N`.
 """
     λ_app(inv_N::Union{Arb,ArbSeries})
 
-Compute an enclosure of
+Compute an enclosure `λ_app` from Equation REF(8) in the paper, given
+by
 ```
 λ * (1 + 4zeta(3) / N^3 + (12 - 2λ) * zeta(5) / N^5)
 ```
@@ -43,7 +44,8 @@ Note that this takes as input `inv(N)` and not `N`.
 """
     c_N(inv_N::Union{Arb,ArbSeries})
 
-Compute an enclosure of `c_N`, given by
+Compute an enclosure of `c_N` from Equation REF(6) in the paper, given
+by
 ```
 sqrt((gamma(1 - 1 / N)^2 * gamma(1 + 2 / N)) / (gamma(1 + 1 / N)^2 * gamma(1 - 2 / N)))
 ```
@@ -70,7 +72,6 @@ function c_N(inv_N::Union{Arb,ArbSeries})
         inv_N_0 = inv_N[0]
         # Bisect the constant part recursively 10 times
         inv_N_0_parts = ArbExtras.bisect_interval_recursive(getinterval(inv_N_0)..., 10)
-
 
         c_N_parts = map(inv_N_0_parts) do inv_N_0_part
             # Set the expansion
@@ -238,9 +239,9 @@ end
 """
     F_N_model(N₀::Int, z::Acb)
 
-Compute an [`AcbTaylorModel`](@ref) of [`F_N`](@ref) in `inv(N)` that
-is valid for all `inv(N)` in the interval ``[0, inv(N₀)]``. The Taylor
-model is computed to degree `5`.
+Compute an [`AcbTaylorModel`](@ref) of [`F_N`](@ref) from Equation
+REF(7) in the paper. The Taylor model to degree 5 in terms of `inv(N)`
+and is valid for all `inv(N)` in the interval ``[0, inv(N₀)]``.
 """
 function F_N_model(N₀::Int, z::Acb)
     return AcbTaylorModel(
