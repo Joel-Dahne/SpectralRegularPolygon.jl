@@ -1,4 +1,20 @@
 @testset "RegularPolygon" begin
+    for N = 3:12
+        domain = SRP.RegularPolygon{Arb}(N)
+
+        # Run a number of sanity checks on some of the basic methods
+
+        # Verify that all angles are the same and sum to (N - 2) * π
+        @test allequal([SRP.angle(domain, i) for i = 1:N])
+        @test Arblib.overlaps(sum([SRP.angle(domain, i) for i = 1:N]), (N - 2) * Arb(π))
+
+        # Verify that the sum of all the vertices is the origin
+        @test all(Arblib.overlaps.(sum(SRP.vertices(domain)), SRP.Point2{Arb}(0, 0)))
+
+        # Verify that the area is π
+        @test Arblib.overlaps(SRP.area(domain), Arb(π))
+    end
+
     @testset "polar_vertex" begin
         for N = 3:12
             domain = SRP.RegularPolygon{Arb}(N)

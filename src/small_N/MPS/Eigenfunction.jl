@@ -1,16 +1,37 @@
 abstract type AbstractVertexExpansion{T} end
 abstract type AbstractInteriorExpansion{T} end
 
+"""
+    VertexExpansion{T}(θ::T, coefficients::Vector{T})
+
+Represents a vertex expansion corresponding to Equation (24) in the
+paper.
+"""
 struct VertexExpansion{T} <: AbstractVertexExpansion{T}
     θ::T
     coefficients::Vector{T}
 end
 
+"""
+    InteriorExpansion{T}(coefficients::Vector{T}, symmetry::Int)
+
+Represents an interior expansion corresponding to Equation (25) in the
+paper. The `symmetry` argument forces the eigenfunction to have a
+`symmetry` fold symmetry around the point at which it is centered.
+"""
 struct InteriorExpansion{T} <: AbstractInteriorExpansion{T}
     coefficients::Vector{T}
     symmetry::Int
 end
 
+"""
+    Eigenfunction(domain::RegularPolygon{T})
+
+Represents a symmetric approximate eigenfunction of a regular polygon.
+The eigenfunction consists of a [`VertexExpansion`](@ref) around each
+vertex of the polygon and an [`InteriorExpansion`](@ref) at the
+center.
+"""
 struct Eigenfunction{T,U<:AbstractVertexExpansion{T},V<:AbstractInteriorExpansion{T}}
     domain::RegularPolygon{T}
     vertex_expansion::U

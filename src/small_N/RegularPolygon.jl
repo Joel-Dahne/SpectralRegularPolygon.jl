@@ -1,14 +1,21 @@
-struct RegularPolygon{T}
+"""
+    RegularPolygon{T<:Real}(N)
+
+Represents a regular polygon of area `π` with `N` vertices.
+
+Computations with the polygon return values of type `T`.
+"""
+struct RegularPolygon{T<:Real}
     N::Int
 
-    function RegularPolygon{T}(n) where {T}
-        n >= 3 || throw(DomainError(n, "n must be at least 3"))
+    function RegularPolygon{T}(N) where {T}
+        N >= 3 || throw(DomainError(n, "n must be at least 3"))
 
-        return new{T}(n)
+        return new{T}(N)
     end
 end
 
-RegularPolygon(n) = RegularPolygon{Float64}(n)
+RegularPolygon(N) = RegularPolygon{Float64}(N)
 
 angle(domain::RegularPolygon{T}, i::Integer) where {T} = π * T((domain.N - 2) // domain.N)
 
@@ -29,6 +36,14 @@ center(domain::RegularPolygon{T}) where {T} = Point(zero(T), zero(T))
 area(domain::RegularPolygon{T}) where {T} =
     domain.N // 4 * (2vertex(domain, 1)[2])^2 * cot(π / T(domain.N))
 
+"""
+    BoundaryPoint2{T}(position; boundary)
+
+Represents a point `p` on a specified boundary of a [`RegularPolygon`](@ref).
+
+The location of the point is at position `p.position` and it lies
+along boundary `p.boundary` of the polygon.
+"""
 const BoundaryPoint2{T} = GeometryBasics.PointMeta{2,T,Point2{T},(:boundary,),Tuple{Int64}}
 
 """
@@ -82,6 +97,9 @@ end
 
 Return `n` points from the boundary, taken in a way that takes into
 account the symmetries.
+
+For a regular polygon this means we take points along the upper part
+of the boundary between the first and last vertices.
 """
 boundary_points_symmetry(domain::RegularPolygon, n::Integer) =
     boundary_points(domain, domain.N, 2n - 1)[n:(2n-1)]
@@ -189,7 +207,7 @@ end
     polar_vertex(domain::RegularPolygon, xy::Point2, i::Integer)
 
 Convert from Cartesian coordinates to polar coordinates around vertex
-`i` of the domain with the angle taken to be zero along the edge
+`i` of the domain, with the angle taken to be zero along the edge
 between vertex `i` and `i + 1`.
 """
 function polar_vertex(domain::RegularPolygon{T}, xy::Point2, i::Integer) where {T}
@@ -202,33 +220,10 @@ function polar_vertex(domain::RegularPolygon{T}, xy::Point2, i::Integer) where {
 end
 
 """
-    cartesian_vertex(domain::RegularPolygon, xy::Point2, i::Integer)
-
-Convert from original Cartesian coordinates to Cartesian coordinates
-where vertex `i` is at the origin and the positive x-axis goes through
-the middle of the angle. The orientation is preserved, meaning that
-the edge between vertex `i` and `i + 1` is below the x-axis.
-"""
-function cartesian_vertex(domain::RegularPolygon{T}, xy::Point2, i::Integer) where {T}
-    # Place vertex at origin
-    xy = xy - vertex(domain, i)
-
-    # Compute required rotation as a rational multiple of π
-    angle = (domain.N - 2) // domain.N
-    rotation = mod((2 - 1 // 2 - angle) + (i - 1) * (1 - angle) + angle / 2, 2)
-
-    s, c = sincospi(T(-rotation))
-    x = c * xy[1] - s * xy[2]
-    y = s * xy[1] + c * xy[2]
-
-    return Point2(x, y)
-end
-
-"""
     polar_center(domain::RegularPolygon, xy::Point2)
 
 Convert from Cartesian coordinates to polar coordinates around
-`center(domain)` with the angle taken to be zero in the direction of
+`center(domain)`, with the angle taken to be zero in the direction of
 the positive x-axis.
 """
 polar_center(domain::RegularPolygon, xy::Point2) = Polar(xy - center(domain))

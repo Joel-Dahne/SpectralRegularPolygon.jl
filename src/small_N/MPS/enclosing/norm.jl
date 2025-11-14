@@ -16,8 +16,8 @@ Compute an estimate of a lower bound of the norm of `u`.
 
 The lower bound is given by considering the norm of `u` in a scaled
 down version of the original domain. A lower bound of the norm in that
-subdomain is computed by lower bounding `abs(u)` on its boundary and
-using the maximum principle.
+subdomain is computed by lower bounding `abs(u)` on its boundary by
+evaluating it on sample points and then using the maximum principle.
 
 For the maximum principle to be applicable we need `u` to be non-zero
 on the boundary as well as in the subdomain. If the lower bound of

@@ -1,3 +1,15 @@
+"""
+    Polar{T}(r::T, φ::T)
+    Polar(r::T, φ::T)
+    Polar(xy::Point2)
+    Polar(xy::Point2, rotation)
+
+Represents a point in polar coordinates.
+
+The constructor taking `rotation` as an argument gives the polar
+coordinates of the point `xy` rotated by `rotation` in the positive
+direction.
+"""
 struct Polar{T}
     r::T
     φ::T
