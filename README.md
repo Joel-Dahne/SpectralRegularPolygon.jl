@@ -23,7 +23,7 @@ the paper:
 - Lemma 2.22 (`lemma_2_22.jl`)
 - Proposition 3.1 (`proposition_3_1.jl`)
 - Lemma C.1 (`lemma_C_1.jl`)
-- Lemma C.3(`lemma_C_3.jl`)
+- Lemma C.3 (`lemma_C_3.jl`)
 
 For some of the shorted proofs (for example Lemma 2.7) most of the
 implementation is given directly in the notebook. For other ones most
