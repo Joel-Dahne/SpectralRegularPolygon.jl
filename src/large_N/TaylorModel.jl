@@ -122,6 +122,7 @@ Base.zero(M::TaylorModel) = typeof(M)(zero(M.p), M.I, M.x0)
 Base.one(M::TaylorModel) = typeof(M)(one(M.p), M.I, M.x0)
 Base.iszero(M::TaylorModel) = iszero(M.p)
 Base.isone(M::TaylorModel) = isone(M.p)
+Base.isfinite(M::TaylorModel) = isfinite(M.p)
 
 function Base.show(io::IO, ::MIME"text/plain", M::ArbTaylorModel)
     println(io, "Arb Taylor model of degree $(Arblib.degree(M)) centered at x0 = $(M.x0)")

@@ -482,9 +482,6 @@ This gives us the formula
 ```
 K(z, t) = hypgeom0f1_regularized(1, -ρ * abs(z)^(2 / N) * F_N(conj(z)) * (F_N(z) - (t / z)^(1 / N) * F_N(t)) / 4)
 ```
-
-TODO: Write about the above in the paper.
-TODO: Should we use that `abs(z) = 1`?
 """
 function K_model(N₀::Int, z::Acb)
     inv_N = Arb((0, 1 // N₀))
@@ -503,7 +500,14 @@ function K_model(N₀::Int, z::Acb)
     F_N_z_model = F_N_model(N₀, z)
     F_N_conj_z_model = F_N_model(N₀, conj(z))
 
-    return t::Acb -> begin
+    finite =
+        isfinite(ρ_model) &&
+        isfinite(abs_z_pow_2inv_N_model) &&
+        isfinite(F_N_z_model) &&
+        isfinite(F_N_conj_z_model)
+
+    return finite,
+    t::Acb -> begin
         t_div_z_pow_inv_N_model = AcbTaylorModel(inv_N, Arb(0), degree = 5) do inv_N
             (t / z)^inv_N
         end
@@ -522,9 +526,10 @@ end
 
 function K_4(N₀::Int, z::Acb)
     inv_N = Arb((0, 1 // N₀))
-    K = K_model(N₀, z)
+    finite, K = K_model(N₀, z)
 
-    return (t::Arblib.AcbOrRef; analytic::Bool = false) -> begin
+    return finite,
+    (t::Arblib.AcbOrRef; analytic::Bool = false) -> begin
         if analytic
             # Check if t overlaps the branch cut. The branch cut is
             # for either t / z lying on the negative real axis or for
@@ -579,7 +584,9 @@ function integral_K_4_bound(N₀::Int, z::Acb, a::Arb)
 end
 
 function integral_K_4_V_1(N₀::Int, z::Acb)
-    K4 = K_4(N₀, z)
+    finite_K4, K4 = K_4(N₀, z)
+
+    finite_K4 || return indeterminate(z)
 
     a = Arb(1e-4)
     b = Arblib.contains(z, Acb(1)) ? Arb(1) - 1e-6 : Arb(1)
