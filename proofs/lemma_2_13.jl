@@ -9,10 +9,7 @@ begin
     using Pkg
     Pkg.activate("..", io = devnull)
     using SpectralRegularPolygons
-    using CairoMakie
     using Arblib
-    using ArbExtras
-    using PlutoUI
     using SpecialFunctions
 
     import SpectralRegularPolygons as SRP
@@ -23,7 +20,6 @@ end
 # ╔═╡ ec091e68-4e03-4985-829e-fc1941f10e0c
 md"""
 # Proof of Lemma 2.13
-This notebook contains the computer-assisted part of the proof of Lemma 2.13.
 """
 
 # ╔═╡ 862a900f-4179-41d7-b4fc-95517effcf76
@@ -65,7 +61,7 @@ Finally, we verify that the required bound holds:
 """
 
 # ╔═╡ 876cbdd3-b42f-4962-bb1d-137cbd2d0f0e
-a_0_bound <= Arb(C_a_0)
+@assert_proof a_0_bound <= Arb(C_a_0)
 
 # ╔═╡ Cell order:
 # ╟─ec091e68-4e03-4985-829e-fc1941f10e0c
