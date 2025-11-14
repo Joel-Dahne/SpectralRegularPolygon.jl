@@ -69,8 +69,45 @@ corresponding to Section 3 in the paper. The code for the large $N$
 parts is found in [`src/large_N`](src/large_N) and for the small $N$
 in [`src/small_N`](src/small_N).
 
-### Large $N$
+**TODO:** Update all references to equation numbers in the paper.
+These are marked by `REF`, e.g. `REF(18)`.
 
+### Large $N$
+The code for this part handles computing estimates related to the
+approximate eigenfunction used in Section 2. The implementation
+consists of the following files:
+
+**TODO:** Write about how the code use `inv_N` in many cases.
+
+- [`src/large_N/constants.jl`](src/large_N/constants.jl): Contains all
+  of the explicit constants in the paper which we want to prove are
+  bounding different functions.
+- [`src/large_N/special_functions.jl`](src/large_N/special_functions.jl):
+  Contains implementations of some common special functions. They are
+  mostly direct wrappers of corresponding functions in FLINT.
+- [`src/large_N/basic_functions.jl`](src/large_N/basic_functions.jl):
+  Contains implementation of some basic functions, primarily related
+  to handling powers and logarithms of arguments overlapping zero.
+- [`src/large_N/basic_integrals.jl`](src/large_N/basic_integrals.jl):
+  Contains implementation of integrals of some basic functions.
+- [`src/large_N/fx_div_x.jl`](src/large_N/fx_div_x.jl): Contains code
+  for computing enclosures of functions around removable singularities.
+- [`src/large_N/TaylorModel.jl`](src/large_N/TaylorModel.jl): Contains
+  an implementation of Taylor models that are used in the paper.
+- [`src/large_N/polylog.jl`](src/large_N/polylog.jl): Contains
+  implementation of different versions of polylogarithms, including
+  standard polylogarithms $\mathrm{Li}_s$, Nielsen generalized
+  polylogarithms $S_n$ and multiple certain polylogarithms appearing
+  in the paper.
+- [`src/large_N/section_2.jl`](src/large_N/section_2.jl): Contains
+  implementations of various functions that appear in Section 2 of the
+  paper.
+- [`src/large_N/section_2.jl`](src/large_N/section_2.jl): Contains
+  implementation related to evaluating and bounding the functions
+  $V_l$ in the paper.
+- [`src/large_N/lemma_2_10.jl`](src/large_N/lemma_2_10.jl): Contains
+  implementation related to computing the integrals that appear in
+  Lemma 2.10.
 
 ### Small $N$
 The code for this part computes enclosures of the first eigenvalue of
