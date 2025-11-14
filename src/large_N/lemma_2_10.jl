@@ -130,6 +130,17 @@ V(l::Int, z::Arblib.AcbOrRef; analytic::Bool = false) =
         V_4(z; analytic)
     end
 
+"""
+    V_div_z_bound(l::Int, zᵤ::Arb)
+
+Return a constant `D` such that
+```
+abs(V(l, z)) <= D * z
+```
+for all `|z| < zᵤ < 1`.
+
+This is based on Lemma A.2 in the paper.
+"""
 V_div_z_bound(l::Int, zᵤ::Arb) =
     if l == 1
         V_1_div_z_bound(zᵤ)
