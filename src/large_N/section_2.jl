@@ -90,6 +90,152 @@ function c_N(inv_N::Union{Arb,ArbSeries})
 end
 
 """
+    F_N_model_remainder(N₀::Int, z::Acb)
+
+Function for computing the remainder term used in [`F_N_model`](@ref).
+
+It is an enclosure of the sixth derivative of `F_N(z)` in terms of
+`inv(N)` on the interval ``[0, 1 / N₀]``, divided by `factorial(6)`.
+The derivative is computed by moving it inside the integral expression
+for `F_N(z)` and then enclosing the resulting integral.
+"""
+function F_N_model_remainder(N₀::Int, z::Acb)
+    inv_N = Arb((0, 1 // N₀))
+
+    a = Arb(1e-8)
+    b = Arblib.contains(z, Acb(1)) ? Arb(1) - 1e-8 : Arb(1)
+
+    # Integrate from 0 to a
+    remainder_0_a = let t = Arb((0, a))
+        # Enclosure of log(1 - t * z) / t
+        log_1mtz_div_t = fx_div_x(Acb(t)) do t
+            log(1 - t * z)
+        end
+        # Enclosure of ((1 - t * z)^(-2inv_N) - 1) / t
+        powm1_div_t = fx_div_x(Acb(t)) do t
+            (1 - t * z)^(-2inv_N) - 1
+        end
+
+        # This enclosure is computed by explicitly computing the
+        # derivative and writing it as a polynomial in log(t). The
+        # integral is then split into terms, where all the factors
+        # for the log(t) terms are bounded and can be factored out
+        # from the integral.
+        Arb((0, 1)) * (
+            inv_N * powm1_div_t * integral_log(6, a) -
+            6(2inv_N * (1 - t * z)^(-2inv_N) * log_1mtz_div_t - powm1_div_t) *
+            integral_log(5, a) +
+            60(1 - t * z)^(-2inv_N) *
+            log_1mtz_div_t *
+            (inv_N * log(1 - t * z) - 1) *
+            integral_log(4, a) -
+            80(2inv_N * log(1 - t * z) - 3) *
+            log(1 - t * z) *
+            (1 - t * z)^(-2inv_N) *
+            log_1mtz_div_t *
+            integral_log(3, a) +
+            240(inv_N * log(1 - t * z) - 2) *
+            log(1 - t * z)^2 *
+            (1 - t * z)^(-2inv_N) *
+            log_1mtz_div_t *
+            integral_log(2, a) -
+            96(2inv_N * log(1 - t * z) - 5) *
+            log(1 - t * z)^3 *
+            (1 - t * z)^(-2inv_N) *
+            log_1mtz_div_t *
+            integral_log(1, a) +
+            64(inv_N * log(1 - t * z) - 3) *
+            log(1 - t * z)^4 *
+            (1 - t * z)^(-2inv_N) *
+            log_1mtz_div_t *
+            integral_log(0, a)
+        )
+    end
+
+    # Integrate from a to b
+    function integrand(t; analytic::Bool)
+        if analytic
+            # Check if t overlaps the branch cut. The branch cut
+            # is for either t or 1 - tz lying on the negative real
+            # axis. For the special case that n = 2 there is no
+            # branch cut for t on the negative real axis.
+
+            if Arblib.contains_nonpositive(Arblib.realref(t)) &&
+               Arblib.contains_zero(Arblib.imagref(t))
+                return indeterminate(t)
+            end
+
+            # Check if 1 - t * z overlaps the non-positive real axis.
+            one_m_tz = 1 - t * z
+            if Arblib.contains_nonpositive(Arblib.realref(one_m_tz)) &&
+               Arblib.contains_zero(Arblib.imagref(one_m_tz))
+                return indeterminate(t)
+            end
+        end
+
+        ArbExtras.derivative_function(6) do inv_N
+            inv_N * t^inv_N * ((1 - t * z)^-2inv_N - 1)
+        end(inv_N) / t
+    end
+
+    remainder_a_b = Arblib.integrate(
+        integrand,
+        a,
+        b,
+        check_analytic = true,
+        atol = radius(abs(remainder_0_a)) / 2,
+        warn_on_no_convergence = false,
+    )
+
+    # Integrate from b to 1
+    remainder_b_1 = if isone(b)
+        zero(remainder_a_b) # Nothing to integrate
+    else
+        # Factor out bounds for log(t) as well as t^(inv_N - 1)
+        # from the explicit integrands. The resulting integrals
+        # can then be computed explicitly using
+        # integral_logpow_1mtz.
+
+        # Verify that the real and imaginary parts of log(1 - t *
+        # z)^m * (1 - t * z)^-2inv_N don't change sign on the
+        # interval, for 1 <= m <= 6.
+        let t = Arb((b, 1))
+            C = Arblib.abs_ubound(Arb, 1 - t * z)
+            C < 1 || return indeterminate(z)
+
+            # We are now ensured that log(1 - t * z) lies inside a
+            # strip with real part (-∞, log(C)) and imaginary part (0,
+            # π), (-π, 0) or [0, π] depending on weather imag(z) is
+            # positive, negative or zero.
+
+            # From the paper we then have that log(1 - t * z)^m *
+            # (1 - t * z)^-2inv_N is contained in a single
+            # quadrant if m * θ + 2inv_N * π <= π / 2. Where
+            θ = atan(Arb(π), abs(log(C)))
+            6θ + 2inv_N * π <= Arb(π) / 2 || return indeterminate(z)
+        end
+
+        let t = Arb((b, 1))
+            t^(inv_N - 1) * (
+                64inv_N * integral_logpow_1mtz(z, 6, -2inv_N, b) -
+                192(inv_N * log(t) + 1) * integral_logpow_1mtz(z, 5, -2inv_N, b) +
+                240(inv_N * log(t) + 2) * log(t) * integral_logpow_1mtz(z, 4, -2inv_N, b) -
+                160(inv_N * log(t) + 3) *
+                log(t)^2 *
+                integral_logpow_1mtz(z, 3, -2inv_N, b) +
+                60(inv_N * log(t) + 4) * log(t)^3 * integral_logpow_1mtz(z, 2, -2inv_N, b) -
+                12(inv_N * log(t) + 5) * log(t)^4 * integral_logpow_1mtz(z, 1, -2inv_N, b) +
+                (6 + inv_N * log(t)) *
+                log(t)^5 *
+                (integral_logpow_1mtz(z, 0, -2inv_N, b) - (1 - b))
+            )
+        end
+    end
+
+    (remainder_0_a + remainder_a_b + remainder_b_1) / factorial(6)
+end
+
+"""
     F_N_model(N₀::Int, z::Acb)
 
 Compute an [`AcbTaylorModel`](@ref) of [`F_N`](@ref) in `inv(N)` that
@@ -97,156 +243,9 @@ is valid for all `inv(N)` in the interval ``[0, inv(N₀)]``. The Taylor
 model is computed to degree `5`.
 """
 function F_N_model(N₀::Int, z::Acb)
-    inv_N = Arb((0, 1 // N₀))
-
-    # Compute bound on remainder term, which is an enclosure of the
-    # sixth derivative of F_N(z) in inv(N). The derivative is computed
-    # by moving it inside the integral expression for F_N(z) and then
-    # enclosing the resulting integral.
-    F_N_remainder = let
-        a = Arb(1e-8)
-        b = Arblib.contains(z, Acb(1)) ? Arb(1) - 1e-8 : Arb(1)
-
-        # Integrate from 0 to a
-        remainder_0_a = let t = Arb((0, a))
-            # Enclosure of log(1 - t * z) / t
-            log_1mtz_div_t = fx_div_x(Acb(t)) do t
-                log(1 - t * z)
-            end
-            # Enclosure of ((1 - t * z)^(-2inv_N) - 1) / t
-            powm1_div_t = fx_div_x(Acb(t)) do t
-                (1 - t * z)^(-2inv_N) - 1
-            end
-
-            # This enclosure is computed by explicitly computing the
-            # derivative and writing it as a polynomial in log(t). The
-            # integral is then split into terms, where all the factors
-            # for the log(t) terms are bounded and can be factored out
-            # from the integral.
-            Arb((0, 1)) * (
-                inv_N * powm1_div_t * integral_log(6, a) -
-                6(2inv_N * (1 - t * z)^(-2inv_N) * log_1mtz_div_t - powm1_div_t) *
-                integral_log(5, a) +
-                60(1 - t * z)^(-2inv_N) *
-                log_1mtz_div_t *
-                (inv_N * log(1 - t * z) - 1) *
-                integral_log(4, a) -
-                80(2inv_N * log(1 - t * z) - 3) *
-                log(1 - t * z) *
-                (1 - t * z)^(-2inv_N) *
-                log_1mtz_div_t *
-                integral_log(3, a) +
-                240(inv_N * log(1 - t * z) - 2) *
-                log(1 - t * z)^2 *
-                (1 - t * z)^(-2inv_N) *
-                log_1mtz_div_t *
-                integral_log(2, a) -
-                96(2inv_N * log(1 - t * z) - 5) *
-                log(1 - t * z)^3 *
-                (1 - t * z)^(-2inv_N) *
-                log_1mtz_div_t *
-                integral_log(1, a) +
-                64(inv_N * log(1 - t * z) - 3) *
-                log(1 - t * z)^4 *
-                (1 - t * z)^(-2inv_N) *
-                log_1mtz_div_t *
-                integral_log(0, a)
-            )
-        end
-
-        # Integrate from a to b
-        function integrand(t; analytic::Bool)
-            if analytic
-                # Check if t overlaps the branch cut. The branch cut
-                # is for either t or 1 - tz lying on the negative real
-                # axis. For the special case that n = 2 there is no
-                # branch cut for t on the negative real axis.
-
-                if Arblib.contains_nonpositive(Arblib.realref(t)) &&
-                   Arblib.contains_zero(Arblib.imagref(t))
-                    return indeterminate(t)
-                end
-
-                # Check if 1 - t * z overlaps the non-positive real axis.
-                one_m_tz = 1 - t * z
-                if Arblib.contains_nonpositive(Arblib.realref(one_m_tz)) &&
-                   Arblib.contains_zero(Arblib.imagref(one_m_tz))
-                    return indeterminate(t)
-                end
-            end
-
-            ArbExtras.derivative_function(6) do inv_N
-                inv_N * t^inv_N * ((1 - t * z)^-2inv_N - 1)
-            end(inv_N) / t
-        end
-
-        remainder_a_b = Arblib.integrate(
-            integrand,
-            a,
-            b,
-            check_analytic = true,
-            atol = radius(abs(remainder_0_a)) / 2,
-            warn_on_no_convergence = false,
-        )
-
-        # Integrate from b to 1
-        remainder_b_1 = if isone(b)
-            zero(remainder_a_b) # Nothing to integrate
-        else
-            # Factor out bounds for log(t) as well as t^(inv_N - 1)
-            # from the explicit integrands. The resulting integrals
-            # can then be computed explicitly using
-            # integral_logpow_1mtz.
-
-            # Verify that the real and imaginary parts of log(1 - t *
-            # z)^m * (1 - t * z)^-2inv_N don't change sign on the
-            # interval, for 1 <= m <= 6.
-            let t = Arb((b, 1))
-                C = Arblib.abs_ubound(Arb, 1 - t * z)
-                C < 1 || return indeterminate(z)
-
-                # We are now ensured that log(1 - t * z) lies inside a
-                # strip with real part (-∞, log(C)) and imaginary part (0,
-                # π), (-π, 0) or [0, π] depending on weather imag(z) is
-                # positive, negative or zero.
-
-                # From the paper we then have that log(1 - t * z)^m *
-                # (1 - t * z)^-2inv_N is contained in a single
-                # quadrant if m * θ + 2inv_N * π <= π / 2. Where
-                θ = atan(Arb(π), abs(log(C)))
-
-                6θ + 2inv_N * π <= Arb(π) / 2 || return indeterminate(z)
-            end
-
-            let t = Arb((b, 1))
-                t^(inv_N - 1) * (
-                    64inv_N * integral_logpow_1mtz(z, 6, -2inv_N, b) -
-                    192(inv_N * log(t) + 1) * integral_logpow_1mtz(z, 5, -2inv_N, b) +
-                    240(inv_N * log(t) + 2) *
-                    log(t) *
-                    integral_logpow_1mtz(z, 4, -2inv_N, b) -
-                    160(inv_N * log(t) + 3) *
-                    log(t)^2 *
-                    integral_logpow_1mtz(z, 3, -2inv_N, b) +
-                    60(inv_N * log(t) + 4) *
-                    log(t)^3 *
-                    integral_logpow_1mtz(z, 2, -2inv_N, b) -
-                    12(inv_N * log(t) + 5) *
-                    log(t)^4 *
-                    integral_logpow_1mtz(z, 1, -2inv_N, b) +
-                    (6 + inv_N * log(t)) *
-                    log(t)^5 *
-                    (integral_logpow_1mtz(z, 0, -2inv_N, b) - (1 - b))
-                )
-            end
-        end
-
-        (remainder_0_a + remainder_a_b + remainder_b_1) / factorial(6)
-    end
-
     return AcbTaylorModel(
-        AcbSeries([1, 0, S(2, z), S(3, z), S(4, z), S(5, z), F_N_remainder]),
-        inv_N,
+        AcbSeries([1, 0, S(2, z), S(3, z), S(4, z), S(5, z), F_N_model_remainder(N₀, z)]),
+        Arb((0, 1 // N₀)),
         Arb(0),
     )
 end
