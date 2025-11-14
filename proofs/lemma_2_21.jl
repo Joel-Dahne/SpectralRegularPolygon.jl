@@ -9,10 +9,8 @@ begin
     using Pkg
     Pkg.activate("..", io = devnull)
     using SpectralRegularPolygons
-    using CairoMakie
     using Arblib
     using ArbExtras
-    using PlutoUI
     using SpecialFunctions
 
     import SpectralRegularPolygons as SRP
@@ -22,8 +20,7 @@ end
 
 # ╔═╡ 9047fbda-85bb-11f0-3c79-517d4f9a6381
 md"""
-# Proof of Lemma 2.19
-This notebook contains the computer-assisted part of the proof of Lemma 2.19.
+# Proof of Lemma 2.21
 """
 
 # ╔═╡ a8e5d438-7f29-43c5-8576-eccff74668d9
@@ -83,11 +80,19 @@ length(flags) == 1 && flags[1]
 
 # ╔═╡ 07199fe9-c599-4a9e-8066-538d9c56b95c
 md"""
-We refine the enclosure of the root and square it, to get an enclosure of the eigenvalue for $\mathbb{D}$:
+We refine the enclosure of the root, giving an enclosure for $j_{1,1}$:
+"""
+
+# ╔═╡ 0aaaf5f1-8728-4648-b09d-250376784390
+j_1_1 = ArbExtras.refine_root(besselj1, Arb(roots[1]))
+
+# ╔═╡ 2943ea8e-626d-43c1-ad8b-3c704b7328b0
+md"""
+We square it, to get an enclosure of the eigenvalue for $\mathbb{D}$:
 """
 
 # ╔═╡ 9ff56c39-723d-4206-8895-b11bb19ab4f7
-λ₂ = ArbExtras.refine_root(besselj1, Arb(roots[1]))^2
+λ₂ = j_1_1^2
 
 # ╔═╡ 4550ca4a-557a-4508-991b-d9150d6bf4f2
 md"""
@@ -96,6 +101,11 @@ Finally we scale the result to get an enclosure of $\lambda_2(\mathbb{D}_{R_{\te
 
 # ╔═╡ dc6c68cb-2624-449d-b396-de0c01a29275
 λ₂_R_outer = λ₂ / Arb(R_outer)^2
+
+# ╔═╡ 150348d3-840b-4dd0-abcf-d9e4459610b0
+md"""
+We print a version with fewer digits for inclusion in the paper.
+"""
 
 # ╔═╡ 1863ce44-3b91-46e5-be48-00696a001688
 string(λ₂_R_outer, digits = 5)
@@ -135,11 +145,11 @@ Finally, we just verify the inequality:
 """
 
 # ╔═╡ 840d2b7b-8e6d-44ce-a8d5-dfa45095be07
-λ_app / (1 - ε_hat) < λ₂_R_outer
+@assert_proof λ_app / (1 - ε_hat) < λ₂_R_outer
 
 # ╔═╡ Cell order:
 # ╟─9047fbda-85bb-11f0-3c79-517d4f9a6381
-# ╟─5ccffc41-fd3b-439c-86bb-ec92e86fa30a
+# ╠═5ccffc41-fd3b-439c-86bb-ec92e86fa30a
 # ╟─a8e5d438-7f29-43c5-8576-eccff74668d9
 # ╠═6a32743d-ec5d-44be-9b84-20c55481446f
 # ╠═8c1beb93-8fba-4269-9001-204575c784f1
@@ -150,10 +160,13 @@ Finally, we just verify the inequality:
 # ╠═ccb58a39-cdf1-45d3-9dc0-8eabe65021b8
 # ╟─fc8afe74-e745-487b-9303-98b9341e665c
 # ╠═6b68bc60-829d-4a32-8bc7-33644b6b1edc
-# ╟─07199fe9-c599-4a9e-8066-538d9c56b95c
+# ╠═07199fe9-c599-4a9e-8066-538d9c56b95c
+# ╠═0aaaf5f1-8728-4648-b09d-250376784390
+# ╠═2943ea8e-626d-43c1-ad8b-3c704b7328b0
 # ╠═9ff56c39-723d-4206-8895-b11bb19ab4f7
 # ╟─4550ca4a-557a-4508-991b-d9150d6bf4f2
 # ╠═dc6c68cb-2624-449d-b396-de0c01a29275
+# ╟─150348d3-840b-4dd0-abcf-d9e4459610b0
 # ╠═1863ce44-3b91-46e5-be48-00696a001688
 # ╟─f225159f-9f55-46c0-a25c-f079eb69fe51
 # ╠═ea12574f-90c9-43d1-93f4-847f5b52351a
