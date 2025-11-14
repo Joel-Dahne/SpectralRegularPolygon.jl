@@ -9,7 +9,6 @@ begin
     using Pkg
     Pkg.activate("..", io = devnull)
     using SpectralRegularPolygons
-    using CairoMakie
     using Arblib
     using PlutoUI
 
@@ -21,7 +20,6 @@ end
 # ╔═╡ 33a8bf7d-e4d2-4051-ba4a-16977a14d443
 md"""
 # Proof of Lemma 2.15
-This notebook contains the computer-assisted part of the proof of Lemma 2.15.
 """
 
 # ╔═╡ 5fc3ce43-cfcc-4111-aff2-ce878397f097
@@ -79,10 +77,10 @@ Finally, we verify that the required bounds hold:
 """
 
 # ╔═╡ 2bbfb9e5-db35-4248-b3e9-1db3aaaf88c9
-I_N_0 >= Arb(R_inner)
+@assert_proof I_N_0 >= Arb(R_inner)
 
 # ╔═╡ 789a0a04-5aa5-48de-84a0-277631076b87
-C_N_0 <= Arb(R_outer)
+@assert_proof C_N_0 <= Arb(R_outer)
 
 # ╔═╡ Cell order:
 # ╟─33a8bf7d-e4d2-4051-ba4a-16977a14d443
