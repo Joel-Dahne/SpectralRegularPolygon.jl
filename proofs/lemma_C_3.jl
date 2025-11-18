@@ -9,12 +9,7 @@ begin
     using Pkg
     Pkg.activate("..", io = devnull)
     using SpectralRegularPolygons
-    using CairoMakie
     using Arblib
-    using ArbExtras
-    using OhMyThreads
-    using PlutoUI
-    using SpecialFunctions
 
     import SpectralRegularPolygons as SRP
 
@@ -33,7 +28,7 @@ We want to prove that for $N \geq N_0$, the $L_j$'s from Lemma C.2 have the boun
 """
 
 # ╔═╡ ab492e70-f2bb-462a-9a06-830421e78c13
-N₀ = 64
+N₀ = SRP.N₀
 
 # ╔═╡ f83262d6-3d38-418c-b771-0efab558b2a9
 C_L_0 = SRP.C_L_0
@@ -225,22 +220,22 @@ Finally we verify that they satisfy the proposed bounds.
 """
 
 # ╔═╡ 914a0f47-1383-4508-a09e-219db4f0093a
-L_0 < Arb(C_L_0)
+@assert_proof L_0 < Arb(C_L_0)
 
 # ╔═╡ f6cbd151-c8b9-4db0-9d3c-55253b4145c8
-L_1 < Arb(C_L_1)
+@assert_proof L_1 < Arb(C_L_1)
 
 # ╔═╡ bfec4b1c-2331-4758-996c-c20b994fe295
-L_2 < Arb(C_L_2)
+@assert_proof L_2 < Arb(C_L_2)
 
 # ╔═╡ a92f2e6a-0509-47f0-9909-7c311863f6d9
-L_3 < Arb(C_L_3)
+@assert_proof L_3 < Arb(C_L_3)
 
 # ╔═╡ 1a5f79b7-7381-434b-ae9f-573f26989e0b
-L_4 < Arb(C_L_4)
+@assert_proof L_4 < Arb(C_L_4)
 
 # ╔═╡ 7f7f7b23-ac11-4d40-9600-b64f8be6b8bf
-L_6 < Arb(C_L_6)
+@assert_proof L_6 < Arb(C_L_6)
 
 # ╔═╡ Cell order:
 # ╟─fd460f81-546d-4dcc-b175-477c711faecd
