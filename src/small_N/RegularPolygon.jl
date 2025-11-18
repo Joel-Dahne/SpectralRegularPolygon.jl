@@ -193,7 +193,8 @@ function interior_points_grid(domain::RegularPolygon{T}, n::Integer; dr = 2 / n)
                 x_min + (i - 1) // (n - 1) * (x_max - x_min),
                 y_min + (j - 1) // (n - 1) * (y_max - y_min),
             )
-            # IMPROVE: Properly check if inside or not
+            # IMPROVE: Properly check if inside or not. Since this is
+            # only used for plotting it is not essential to fix.
             inside[idx] = LinearAlgebra.norm(points[idx]) < max_norm
 
             idx += 1

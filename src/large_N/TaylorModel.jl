@@ -143,7 +143,7 @@ Return `true` if `M1` and `M2` have the same degree, center and
 interval.
 
 **IMPROVE:** At the moment the midpoints have to be exactly equal,
-meaning that only point-intervals are allowed. This seems to be enough
+meaning that only point-intervals are allowed. This is however enough
 for what we need.
 """
 checkcompatible(::Type{Bool}, M1::TaylorModel, M2::TaylorModel) =

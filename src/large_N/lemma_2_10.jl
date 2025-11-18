@@ -194,8 +194,6 @@ function integral_d_k_V_l(k::Int, l::Int, z::Acb)
         # bound of it and integrate only d(k, z, t).
 
         # Compute bound of V(l, t) / t for t in [0, a * z]
-        # IMPROVE: Improving this enclosure would allow us to take a
-        # larger a, which should make the integration much faster.
         azᵤ = abs_ubound(Arb, az)
         D_l_a = V_div_z_bound(l, azᵤ)
 
@@ -425,8 +423,6 @@ function integral_K_4_V_1(N₀::Int, z::Acb)
 
 
         # Compute bound of V(l, t) / t for t in [0, a * z]
-        # IMPROVE: Improving this enclosure would allow us to take a
-        # larger a, which should make the integration much faster.
         azᵤ = abs_ubound(Arb, az)
         D_1_a = V_div_z_bound(1, azᵤ)
 
@@ -457,8 +453,6 @@ function integral_K_4_V_1(N₀::Int, z::Acb)
         if iswide(z)
             # Add enclosures of integral from az to az_thin and from
             # z_thin to z.
-            # IMPROVE: Get better enclosures of this using mean value
-            # theorem?
             (res_az_thin_bz_thin) +
             (az_thin - az) * K4(az) * V(1, az) / az +
             (bz - bz_thin) * K4(bz) * V(1, bz) / bz
