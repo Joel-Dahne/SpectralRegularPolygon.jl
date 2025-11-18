@@ -72,7 +72,8 @@ md"""
 ## Construct approximations
 We start by computing approximations of $\lambda_{1}(\mathcal{P}_N)$ as well as the associated eigenfunction for $5 \leq N \leq N_0 + 1$.
 
-For $N \geq 12$ we use precomputed approximations, for $5 \leq N \leq 11$ we compute an approximation on the fly.
+For $N \geq 12$ we use precomputed approximations from [the
+  repository](https://github.com/David-Berghaus/master-thesis-data) associated with[Computation of Laplacian eigenvalues of two-dimensional shapes with dihedral symmetry](http://dx.doi.org/10.1007/s10444-024-10138-3), for $5 \leq N \leq 11$ we compute an approximation on the fly.
 """
 
 # ╔═╡ 674a8185-fe50-4f70-a0a5-e4cbe95460c4
@@ -85,7 +86,7 @@ domains = RegularPolygon{Arb}.(Ns)
 us, λs_approx = let
     us = Eigenfunction.(domains)
 
-    M = 4
+    M = 4 # Number of terms to use in the approximations
 
     λs_approx = tmap(us, SRP.get_eigenvalue_approximation.(Arb, Ns)) do u, λ
         if !isfinite(λ)
@@ -140,7 +141,7 @@ With the enclosures computed, the next step is to check that they satisfy the re
 """
 
 # ╔═╡ d5b9ea36-fee2-4b8b-a090-16c2ecf308f3
-all(isfinite, λs)
+@assert_proof all(isfinite, λs)
 
 # ╔═╡ fac49c09-f365-4fe7-a05a-7b6bfa306e50
 md"""
@@ -159,7 +160,7 @@ Next we verify that the inequality $\lambda_{1}(\mathcal{P}_{N}) > \lambda_{1}(\
 """
 
 # ╔═╡ 827a5af8-ac00-414c-b79b-e8f98a907969
-all(eachindex(λs_full)[1:(end-1)]) do i
+@assert_proof all(eachindex(λs_full)[1:(end-1)]) do i
     λs_full[i] > λs_full[i+1]
 end
 
@@ -172,7 +173,7 @@ Finally we compute the values for $q_N$ for $3 \leq N \leq N_0$, and verify that
 qs_full = λs_full[1:(end-1)] ./ λs_full[2:end]
 
 # ╔═╡ bcbd6354-5212-4efc-a42c-0f70a1e49bc2
-all(eachindex(qs_full)[1:(end-1)]) do i
+@assert_proof all(eachindex(qs_full)[1:(end-1)]) do i
     qs_full[i] > qs_full[i+1]
 end
 
@@ -187,18 +188,6 @@ md"""
 Check this box to set the code to save the figures.
 - Save figures $(@bind save_figures CheckBox(default = false))
 """
-
-# ╔═╡ e771c0f7-9e80-4c92-ab37-fc8f3e9866df
-let
-    fig = Figure()
-    ax = Axis(fig[1, 1], xlabel = L"N", ylabel = L"\lambda")
-
-    scatterlines!(ax, Ns, λs)
-
-    save_figures && save("figures/eigenvalues-small-N.pdf", fig)
-
-    fig
-end
 
 # ╔═╡ 1190007b-9b1a-4063-ba96-f98b93137b10
 let
@@ -289,6 +278,21 @@ md"""
 ### Figures not appearing the in the paper
 """
 
+# ╔═╡ fcbbc9b1-1bee-4616-9b12-754227f1402a
+md"""
+This figures shows the eigenvalues as a function of $N$.
+"""
+
+# ╔═╡ e771c0f7-9e80-4c92-ab37-fc8f3e9866df
+let
+    fig = Figure()
+    ax = Axis(fig[1, 1], xlabel = L"N", ylabel = L"\lambda_1(\mathbb{P}_N)")
+
+    scatterlines!(ax, Ns, λs)
+
+    fig
+end
+
 # ╔═╡ 01fce4da-8495-4de0-809a-272171c66357
 md"""
 This figure shows the distance between the eigenvalue of the polygon and the disc, as well as the radius of the enclosure for the eigenvalue.
@@ -363,12 +367,13 @@ end
 # ╠═bcbd6354-5212-4efc-a42c-0f70a1e49bc2
 # ╟─d4143768-2eb4-4d52-9321-7daf30823c90
 # ╟─8b6b7d10-467d-4dcd-a800-2bbe0e9573a0
-# ╟─e771c0f7-9e80-4c92-ab37-fc8f3e9866df
 # ╟─1190007b-9b1a-4063-ba96-f98b93137b10
 # ╟─ea84defb-8199-41c9-a427-486eb67c881a
 # ╟─bda98e53-cb8d-4a8d-a3c9-f521dae9a187
 # ╟─f594e504-9527-4c43-8e15-96713c15f9de
 # ╟─ea97c15b-b03f-4b6b-8e80-73ff12eaa215
+# ╟─fcbbc9b1-1bee-4616-9b12-754227f1402a
+# ╟─e771c0f7-9e80-4c92-ab37-fc8f3e9866df
 # ╟─01fce4da-8495-4de0-809a-272171c66357
 # ╟─8e96f457-c878-441e-b70b-c47980439963
 # ╟─511e9aa5-2322-4f6c-8278-f8db03a213ec
