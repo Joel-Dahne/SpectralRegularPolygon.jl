@@ -9,11 +9,8 @@ begin
     using Pkg
     Pkg.activate("..", io = devnull)
     using SpectralRegularPolygons
-    using CairoMakie
     using Arblib
     using ArbExtras
-    using OhMyThreads
-    using PlutoUI
     using SpecialFunctions
 
     import SpectralRegularPolygons as SRP
@@ -29,7 +26,7 @@ md"""
 # ╔═╡ 8c455525-a5ec-43d1-9afb-b31c8668a15e
 md"""
 ## Goal
-We want to establish a number of bounds related to the expressions in Lemma C.2. In general these bound should hold for $N \geq N_0$ and $|t| \leq 1$, with $N_0$ given by
+We want to establish a number of bounds related to expressions in Lemma C.2. In general these bound should hold for $N \geq N_0$ and $|t| \leq 1$, with $N_0$ given by
 """
 
 # ╔═╡ 9362bb77-b3d5-463f-9962-229f832b3497
@@ -59,13 +56,13 @@ Recall that
 
 $$\rho = \rho(N) = c_N^2 \lambda_{\text{app}}(N).$$
 
-As discussed in the paper it suffices to enclose the fifth derivative of $1 - \frac{\rho^{1/2}}{\lambda^{1/2}}$ in $N^{-1}$ on the interval $[0, 1 / N_0]$ divided by $5!$.
+As discussed in the paper it suffices to enclose the fifth derivative of $1 - \frac{\rho^{1/2}}{\lambda^{1/2}}$ in $\nu = N^{-1}$ on the interval $[0, 1 / N_0]$ divided by $5!$.
 """
 
 # ╔═╡ 626e33ce-ece6-4066-af07-98bcb6c053c8
 # Function for computing fifth derivative divided by 5!
-sqrt_1_m_ρ_div_λ_d5_function = ArbExtras.derivative_function(5) do inv_N
-    1 - SRP.c_N(inv_N) * sqrt(SRP.λ_app_div_λ(inv_N)) / factorial(5)
+sqrt_1_m_ρ_div_λ_d5_function = ArbExtras.derivative_function(5) do ν
+    1 - SRP.c_N(ν) * sqrt(SRP.λ_app_div_λ(ν)) / factorial(5)
 end
 
 # ╔═╡ a57c2ae1-85f3-4940-8d9b-2f4680fd79ef
@@ -83,10 +80,10 @@ We verify that the enclosure is positive and bounded by $C_{\rho,\lambda}$:
 """
 
 # ╔═╡ 409e2ea0-fa41-4472-9d5f-50a883d96d9a
-Arblib.ispositive(sqrt_1_m_ρ_div_λ_5)
+@assert_proof Arblib.ispositive(sqrt_1_m_ρ_div_λ_5)
 
 # ╔═╡ c3c77e89-9059-45d6-a1e4-ab5f4a06d584
-abs(sqrt_1_m_ρ_div_λ_5) <= Arb(C_ρ_λ)
+@assert_proof abs(sqrt_1_m_ρ_div_λ_5) <= Arb(C_ρ_λ)
 
 # ╔═╡ c3264d17-3129-4cb7-a4d9-5e7acca2c2f8
 md"""
@@ -142,10 +139,10 @@ We can now verify that the bound holds:
 """
 
 # ╔═╡ 429393fe-79c2-41c2-9f03-5e1b60f7c194
-S_2_bound <= Arb(C_S_2)
+@assert_proof S_2_bound <= Arb(C_S_2)
 
 # ╔═╡ b845f335-a2ca-4d9a-b904-e054ef4b556e
-S_3_bound <= Arb(C_S_3)
+@assert_proof S_3_bound <= Arb(C_S_3)
 
 # ╔═╡ 624ba6af-d903-4722-8da4-46e17c7ebcdd
 md"""
@@ -215,6 +212,7 @@ end
     ubound_tol = Arb(C_F_N_4),
     abs_value = true,
     threaded = true,
+    depth = 30,
     verbose = true,
 ) do θ_div_π
     abs(F_N_4(SRP.exppii(θ_div_π)))
@@ -226,7 +224,7 @@ We can now verify the bound:
 """
 
 # ╔═╡ 0839f91c-80a7-41f6-b239-5e79d26642d3
-F_N_4_bound <= Arb(C_F_N_4)
+@assert_proof F_N_4_bound <= Arb(C_F_N_4)
 
 # ╔═╡ bed41f2f-4e9c-4e37-8a56-34cfe6617c95
 md"""
@@ -264,13 +262,13 @@ We can now verify that these satisfy the required bounds:
 """
 
 # ╔═╡ 4e37eb1b-0b60-4e38-a846-3604de33ec47
-F_N_0_bound <= Arb(C_F_N_0)
+@assert_proof F_N_0_bound <= Arb(C_F_N_0)
 
 # ╔═╡ 7e0502bc-cafd-41b3-a9ad-cb74c8b621d2
-F_N_2_bound <= Arb(C_F_N_2)
+@assert_proof F_N_2_bound <= Arb(C_F_N_2)
 
 # ╔═╡ bd593615-c270-4a5c-94af-920b4fc5494a
-F_N_3_bound <= Arb(C_F_N_3)
+@assert_proof F_N_3_bound <= Arb(C_F_N_3)
 
 # ╔═╡ 95276755-a29b-4365-8304-7e96b6f6c4b6
 md"""
@@ -337,10 +335,10 @@ It is then straight forward to verify that the bounds on $[0, 50]$ and $(50, \in
 """
 
 # ╔═╡ e3caeba0-2d71-4bdd-adb3-c78b563eb2fa
-besselj0_d8_bound_0_50 < Arb(C_J0_8)
+@assert_proof besselj0_d8_bound_0_50 < Arb(C_J0_8)
 
 # ╔═╡ 8379e925-599e-4881-8c8a-7614d7727f97
-besselj0_d8_bound_50_inf < Arb(C_J0_8)
+@assert_proof besselj0_d8_bound_50_inf < Arb(C_J0_8)
 
 # ╔═╡ Cell order:
 # ╟─0823e7e3-1b4d-409e-9668-150149d8aa1e
@@ -385,12 +383,12 @@ besselj0_d8_bound_50_inf < Arb(C_J0_8)
 # ╠═4e37eb1b-0b60-4e38-a846-3604de33ec47
 # ╠═7e0502bc-cafd-41b3-a9ad-cb74c8b621d2
 # ╠═bd593615-c270-4a5c-94af-920b4fc5494a
-# ╠═95276755-a29b-4365-8304-7e96b6f6c4b6
+# ╟─95276755-a29b-4365-8304-7e96b6f6c4b6
 # ╠═3f99488f-9f7b-49e9-abcc-b2f073a44fdf
 # ╟─88114f6f-e358-4cfc-8e7a-8a2cdc93a3ad
 # ╠═365321b4-1967-4c97-9107-a48b9e60d863
 # ╟─5e777044-d76f-4c62-881c-e6cf2fe753ca
-# ╟─1f51b5f9-03b0-4a4e-83e3-12afa82e6b31
+# ╠═1f51b5f9-03b0-4a4e-83e3-12afa82e6b31
 # ╟─5bb90dc5-85b2-44ad-864d-e14581b5fd9d
 # ╠═7ef0bb2f-fc90-41bd-8387-b08508c194f0
 # ╟─b4c88e16-2ee9-4dca-9a15-b7d8b5578458
