@@ -31,9 +31,9 @@ of the implementation is given in the [`src`](src) directory.
 
 ## Reproducing the proof
 The proofs were generated with Julia version 1.11.7. This repository
-contains the same `Manifest.toml` file as was used when running the
-proofs, this allows installing exactly the same versions of the Julia
-packages.
+contains the same `Manifest-v1.11.toml` file as was used when running
+the proofs, this allows installing exactly the same versions of the
+Julia packages.
 
 You can see if the package is working properly by running the tests.
 You can do this by starting Julia from this directory and running
@@ -77,8 +77,6 @@ The code for this part handles computing estimates related to the
 approximate eigenfunction used in Section 2. The implementation
 consists of the following files:
 
-**TODO:** Write about how the code use `inv_N` in many cases.
-
 - [`src/large_N/constants.jl`](src/large_N/constants.jl): Contains all
   of the explicit constants in the paper which we want to prove are
   bounding different functions.
@@ -102,12 +100,35 @@ consists of the following files:
 - [`src/large_N/section_2.jl`](src/large_N/section_2.jl): Contains
   implementations of various functions that appear in Section 2 of the
   paper.
-- [`src/large_N/section_2.jl`](src/large_N/section_2.jl): Contains
-  implementation related to evaluating and bounding the functions
-  $V_l$ in the paper.
+- [`src/large_N/V.jl`](src/large_N/V.jl): Contains implementations
+  related to evaluating and bounding the functions $V_l$ in the paper.
 - [`src/large_N/lemma_2_10.jl`](src/large_N/lemma_2_10.jl): Contains
   implementation related to computing the integrals that appear in
   Lemma 2.10.
+
+In general the code follows a similar notation as in the paper and it
+should hopefully be relatively straightforward to understand the
+correspondence between the code and the paper. One important place
+where the code differs is in how the parameter $N$ is handled. In the
+paper most of the expressions and expansions are written in terms of
+$N$, typically with $N$ occurring in the numerator. For example we have
+
+$$\lambda_{app} = \lambda \left(1 + \frac{4\zeta(3)}{N^3} + \frac{(12 - 2\lambda)\zeta(5)}{N^5}\right),$$
+
+with $N$ taking values in $[N_0, \infty)$. On the computer it is
+generally more difficult to handle intervals where one endpoint is
+infinite. For that reason we in the code typically write the
+expressions in terms of $N^{-1}$ (which we in the code call `inv_N`)
+instead of $N$. So $\lambda_{app}$ is then instead written as
+
+$$\lambda_{app} = \lambda \left(1 + 4\zeta(3)(N^{-1})^3 + (12 - 2\lambda)\zeta(5)(N^{-1})^5\right),$$
+
+with $N^{-1}$ taking values in $[0, N_0^{-1}]$. In code this would be
+written as
+
+``` julia
+λ * (1 + 4zeta(3) * inv_N^3 + (12 - 2λ) * zeta(5) * inv_N^5)
+```
 
 ### Small $N$
 The code for this part computes enclosures of the first eigenvalue of
