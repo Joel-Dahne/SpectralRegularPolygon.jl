@@ -199,6 +199,17 @@ end
     real(SRP.integral_K_4_V_1(N₀, SRP.exppii(θ_div_π)))
 end
 
+# ╔═╡ 2ff324b1-da1d-446f-89f5-580aad93681d
+md"""
+For $I_{2,3}$ and $I_K$ the bounds are faily wide and printing them as balls is not optimal. We therefore print them as intervals with lower and upper bounds.
+"""
+
+# ╔═╡ 4b598e95-0b9b-4d45-863f-b4841959664c
+string.(getinterval(Arb, I_d_2_V_3_bound), digits = 10)
+
+# ╔═╡ f632c4a3-6216-49e5-a49d-0c92e9048309
+string.(getinterval(Arb, I_K_4_V_1_bound), digits = 10)
+
 # ╔═╡ c73dbe22-cacf-42c7-96b0-017682087acc
 md"""
 Finally we verify that the required bounds are satisfied.
@@ -242,6 +253,9 @@ Finally we verify that the required bounds are satisfied.
 # ╠═0cfdcd21-461a-4626-b7c8-f6257b9ff3e6
 # ╠═3d283f17-149d-4e1d-a6d3-0ed64a449490
 # ╠═67c63d90-496a-4fca-9146-b2ba24ebb4be
+# ╟─2ff324b1-da1d-446f-89f5-580aad93681d
+# ╠═4b598e95-0b9b-4d45-863f-b4841959664c
+# ╠═f632c4a3-6216-49e5-a49d-0c92e9048309
 # ╟─c73dbe22-cacf-42c7-96b0-017682087acc
 # ╠═2588eeda-711f-4acd-91bf-24349dcd90ba
 # ╠═9d1c43d5-3c18-4c78-94c9-df9f6e0912c5
