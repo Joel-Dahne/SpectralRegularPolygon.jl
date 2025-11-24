@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.20.13
+# v0.20.21
 
 using Markdown
 using InteractiveUtils
@@ -92,7 +92,7 @@ end
 # ╔═╡ ecdfb51c-bd88-4d2b-86fd-d6c46340bf28
 md"""
 ### Part 1
-Let us start by proving that $p_1(\nu) > 0$. 
+Let us start by proving that $p_1(\nu) > 0$.
 
 From the proof in the paper we have that the first four terms in the expansion at $\nu = 0$ vanish. It therefore suffices to show that the fourth derivative of $p_1$ is positive on $[0, 1 / N_0]$ to ensure that $p_1$ is also positive.
 """

@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.20.13
+# v0.20.21
 
 using Markdown
 using InteractiveUtils
@@ -102,7 +102,7 @@ us, λs_approx = let
 
     tforeach(us, λs_approx, scheduler = :greedy) do u, λ_approx
         if u.domain.N <= 12
-            # For these values of N using Float64 instead of BigFloat for the 
+            # For these values of N using Float64 instead of BigFloat for the
             # computations seems to be more stable
             SRP.sigma!(u, λ_approx, M, qr_eltype = Float64)
         else
@@ -120,7 +120,7 @@ md"""
 
 # ╔═╡ b8b858a8-b6f0-4780-8d38-6fce97c28d43
 md"""
-Next we compute rigorous enclosures of $\lambda_{1}(\mathcal{P}_N)$ for $5 \leq N \leq N_0 + 1$. 
+Next we compute rigorous enclosures of $\lambda_{1}(\mathcal{P}_N)$ for $5 \leq N \leq N_0 + 1$.
 """
 
 # ╔═╡ b35d0bfa-2f2b-43e9-b59a-e94e0e23e2cb
