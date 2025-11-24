@@ -42,8 +42,8 @@ const C_J0_8 = "0.2734376"
 
 # Lemma C.3
 const C_L_0 = "92"
-const C_L_1 = "17"
-const C_L_2 = "13"
-const C_L_3 = "6"
+const C_L_1 = "18"
+const C_L_2 = "18"
+const C_L_3 = "2"
 const C_L_4 = "0.6"
 const C_L_6 = "3e-6"
