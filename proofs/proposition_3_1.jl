@@ -154,6 +154,20 @@ Ns_full = 3:Ns[end]
 # ╔═╡ 468dccc1-36f7-4441-a410-7d5c99341d63
 λs_full = [4Arb(π) / sqrt(Arb(3)); 2Arb(π); λs]
 
+# ╔═╡ 9cf9fd3b-0bae-41d9-89f9-7dc96480bce9
+md"""
+The paper gives the enclosures for $\lambda_5$, $\lambda_6$ and $\lambda_{64}$ as examples:
+"""
+
+# ╔═╡ 92fc1da8-41af-4181-b8e0-3e34d1146fbf
+λs_full[3] # λ_5
+
+# ╔═╡ d65b3d76-9472-4319-ae4d-622a8053f2e4
+λs_full[4] # λ_6
+
+# ╔═╡ 830bc2dc-869f-454d-aa35-b8e866903eba
+λs_full[end-1] # λ_64
+
 # ╔═╡ e44b149a-6c13-4464-a39c-17317e9a4ff5
 md"""
 Next we verify that the inequality $\lambda_{1}(\mathcal{P}_{N}) > \lambda_{1}(\mathcal{P}_{N + 1})$ holds.
@@ -363,6 +377,10 @@ end
 # ╟─fac49c09-f365-4fe7-a05a-7b6bfa306e50
 # ╠═c115ab1e-cd48-4c95-aebf-3c04715c28fa
 # ╠═468dccc1-36f7-4441-a410-7d5c99341d63
+# ╟─9cf9fd3b-0bae-41d9-89f9-7dc96480bce9
+# ╠═92fc1da8-41af-4181-b8e0-3e34d1146fbf
+# ╠═d65b3d76-9472-4319-ae4d-622a8053f2e4
+# ╠═830bc2dc-869f-454d-aa35-b8e866903eba
 # ╟─e44b149a-6c13-4464-a39c-17317e9a4ff5
 # ╠═827a5af8-ac00-414c-b79b-e8f98a907969
 # ╟─99bd9807-92c7-4723-be12-a66700e04587
