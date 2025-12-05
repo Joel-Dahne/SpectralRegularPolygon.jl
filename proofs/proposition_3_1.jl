@@ -189,12 +189,15 @@ Check this box to set the code to save the figures.
 - Save figures $(@bind save_figures CheckBox(default = false))
 """
 
+# ╔═╡ 8790f867-b866-4f7f-96dd-2e00419b5f3c
+fontsize = 22
+
 # ╔═╡ 1190007b-9b1a-4063-ba96-f98b93137b10
 let
     a2s = map(u -> u.interior_expansion.coefficients[2], us)
     a2s_scaling = besselj.(Arb.(Ns), Arb(1))
 
-    fig = Figure()
+    fig = Figure(; fontsize)
     ax = Axis(fig[1, 1], xlabel = L"N", yscale = log10)
 
     scatterlines!(ax, Ns, abs.(a2s) .* a2s_scaling, label = L"|a_2| J_N(1)")
@@ -210,7 +213,7 @@ let
     b1s = map(u -> u.vertex_expansion.coefficients[1], us)
     b2s = map(u -> u.vertex_expansion.coefficients[2], us)
 
-    fig = Figure()
+    fig = Figure(; fontsize)
     ax = Axis(fig[1, 1], xlabel = L"N")
 
     scatterlines!(ax, Ns, b1s, label = L"b_1", marker = :circle)
@@ -224,7 +227,7 @@ end
 
 # ╔═╡ bda98e53-cb8d-4a8d-a3c9-f521dae9a187
 let
-    fig = Figure()
+    fig = Figure(; fontsize)
     ax = Axis(fig[1, 1], xlabel = L"N", yscale = log10)
 
     λs_diff = λs_full[1:(end-1)] - λs_full[2:end]
@@ -252,7 +255,7 @@ end
 
 # ╔═╡ f594e504-9527-4c43-8e15-96713c15f9de
 let
-    fig = Figure()
+    fig = Figure(; fontsize)
     ax = Axis(fig[1, 1], xlabel = L"N", yscale = log10)
 
     qs_diff = qs_full[1:(end-1)] - qs_full[2:end]
@@ -285,7 +288,7 @@ This figures shows the eigenvalues as a function of $N$.
 
 # ╔═╡ e771c0f7-9e80-4c92-ab37-fc8f3e9866df
 let
-    fig = Figure()
+    fig = Figure(; fontsize)
     ax = Axis(fig[1, 1], xlabel = L"N", ylabel = L"\lambda_1(\mathbb{P}_N)")
 
     scatterlines!(ax, Ns, λs)
@@ -302,7 +305,7 @@ This figure shows the distance between the eigenvalue of the polygon and the dis
 let
     λ_circle = ArbExtras.refine_root(besselj0, Arb((sqrt(Arf(5.7)), sqrt(Arf(5.8)))))^2
 
-    fig = Figure()
+    fig = Figure(; fontsize)
     ax = Axis(fig[1, 1], xlabel = L"N", yscale = log10)
 
     scatterlines!(
@@ -330,7 +333,7 @@ let
     u = us[i]
     λ_approx = λs_approx[i]
 
-    fig = Figure()
+    fig = Figure(; fontsize)
     ax = Axis(fig[1, 1], title = L"u_1(\mathcal{P}_%$N)")
 
     ts = range(Arb(0), 1, 100)[2:(end-1)]
@@ -367,6 +370,7 @@ end
 # ╠═bcbd6354-5212-4efc-a42c-0f70a1e49bc2
 # ╟─d4143768-2eb4-4d52-9321-7daf30823c90
 # ╟─8b6b7d10-467d-4dcd-a800-2bbe0e9573a0
+# ╠═8790f867-b866-4f7f-96dd-2e00419b5f3c
 # ╟─1190007b-9b1a-4063-ba96-f98b93137b10
 # ╟─ea84defb-8199-41c9-a427-486eb67c881a
 # ╟─bda98e53-cb8d-4a8d-a3c9-f521dae9a187
