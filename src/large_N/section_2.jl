@@ -276,12 +276,12 @@ function epsilon(inv_N::Union{Arb,ArbSeries})
 end
 
 """
-    k_inv_N(inv_N::Union{Arb,ArbSeries})
+    eta(inv_N::Union{Arb,ArbSeries})
 
-Compute `k(N)` coming from Equation REF(18) in the paper. Note that
+Compute `η(N)` coming from Equation REF(24) in the paper. Note that
 this takes as input `inv(N)` and not `N`.
 """
-function k_inv_N(inv_N::Union{Arb,ArbSeries})
+function eta(inv_N::Union{Arb,ArbSeries})
     λ = λ_disc()
     R = Arb(R_inner)
     E_I =
@@ -302,9 +302,9 @@ end
 """
     epsilon_hat(inv_N::Union{Arb,ArbSeries})
 
-Compute `hat{ε}` coming from Equation REF(19) in the paper. Note
-that this takes as input `inv(N)` and not `N`.
+Compute `hat{ε}` coming from Equation REF(19) in the paper. Note that
+this takes as input `inv(N)` and not `N`.
 """
 function epsilon_hat(inv_N::Union{Arb,ArbSeries})
-    return sqrt(Arb(π)) * epsilon(inv_N) / sqrt(k_inv_N(inv_N))
+    return sqrt(Arb(π)) * epsilon(inv_N) / sqrt(eta(inv_N))
 end
