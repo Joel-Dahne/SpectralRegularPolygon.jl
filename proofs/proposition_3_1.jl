@@ -101,7 +101,7 @@ us, λs_approx = let
     end
 
     tforeach(us, λs_approx, scheduler = :greedy) do u, λ_approx
-        if u.domain.N <= 12
+        if u.domain.N <= 11
             # For these values of N using Float64 instead of BigFloat for the
             # computations seems to be more stable
             SRP.sigma!(u, λ_approx, M, qr_eltype = Float64)
@@ -222,15 +222,15 @@ let
     fig
 end
 
-# ╔═╡ ea84defb-8199-41c9-a427-486eb67c881a
-let
+# ╔═╡ d3be2865-a6eb-48a5-b376-6802ac088a70
+let Ns = Ns[6:end], us = us[6:end] # Skip up to N = 10
     b1s = map(u -> u.vertex_expansion.coefficients[1], us)
     b2s = map(u -> u.vertex_expansion.coefficients[2], us)
 
     fig = Figure(; fontsize)
-    ax = Axis(fig[1, 1], xlabel = L"N")
+    ax = Axis(fig[1, 1], xlabel = L"N", xscale = log10, yscale = log10)
 
-    scatterlines!(ax, Ns, b1s, label = L"b_1", marker = :circle)
+    scatterlines!(ax, Ns, -b1s, label = L"-b_1", marker = :circle)
     scatterlines!(ax, Ns, b2s, label = L"b_2", marker = :cross)
     axislegend(ax)
 
@@ -306,6 +306,26 @@ let
     ax = Axis(fig[1, 1], xlabel = L"N", ylabel = L"\lambda_1(\mathbb{P}_N)")
 
     scatterlines!(ax, Ns, λs)
+
+    fig
+end
+
+# ╔═╡ 5d4315d4-335a-45e3-9d43-d024f2938a99
+md"""
+This figure shows all the coefficients $b_1$ and $b_2$, with no scaling of the axis.
+"""
+
+# ╔═╡ ea84defb-8199-41c9-a427-486eb67c881a
+let
+    b1s = map(u -> u.vertex_expansion.coefficients[1], us)
+    b2s = map(u -> u.vertex_expansion.coefficients[2], us)
+
+    fig = Figure(; fontsize)
+    ax = Axis(fig[1, 1], xlabel = L"N")
+
+    scatterlines!(ax, Ns, b1s, label = L"b_1", marker = :circle)
+    scatterlines!(ax, Ns, b2s, label = L"b_2", marker = :cross)
+    axislegend(ax)
 
     fig
 end
@@ -390,12 +410,14 @@ end
 # ╟─8b6b7d10-467d-4dcd-a800-2bbe0e9573a0
 # ╠═8790f867-b866-4f7f-96dd-2e00419b5f3c
 # ╟─1190007b-9b1a-4063-ba96-f98b93137b10
-# ╟─ea84defb-8199-41c9-a427-486eb67c881a
+# ╟─d3be2865-a6eb-48a5-b376-6802ac088a70
 # ╟─bda98e53-cb8d-4a8d-a3c9-f521dae9a187
 # ╟─f594e504-9527-4c43-8e15-96713c15f9de
 # ╟─ea97c15b-b03f-4b6b-8e80-73ff12eaa215
 # ╟─fcbbc9b1-1bee-4616-9b12-754227f1402a
 # ╟─e771c0f7-9e80-4c92-ab37-fc8f3e9866df
+# ╟─5d4315d4-335a-45e3-9d43-d024f2938a99
+# ╟─ea84defb-8199-41c9-a427-486eb67c881a
 # ╟─01fce4da-8495-4de0-809a-272171c66357
 # ╟─8e96f457-c878-441e-b70b-c47980439963
 # ╟─511e9aa5-2322-4f6c-8278-f8db03a213ec
