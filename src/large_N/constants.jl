@@ -14,8 +14,14 @@ const C_gd3 = "6.1"
 # Lemma 2.10
 const C_I_1_4 = "15"
 const C_I_2_3 = "10"
+const C_I_2_4 = "1000"
 const C_I_3_2 = "35"
-const C_I_K = "40"
+const C_I_3_3 = "500"
+const C_I_3_4 = "1000"
+const C_I_K_1 = "40"
+const C_I_K_2 = "500"
+const C_I_K_3 = "1000"
+const C_I_K_4 = "5000"
 
 # Corollary 2.13
 const C_a_0 = "0.801"
