@@ -32,7 +32,7 @@ Note that this takes as input `inv(N)` and not `N`.
 """
     λ_app(inv_N::Union{Arb,ArbSeries})
 
-Compute an enclosure `λ_app` from Equation REF(8) in the paper, given
+Compute an enclosure `λ_app` from Equation REF(11) in the paper, given
 by
 ```
 λ * (1 + 4zeta(3) / N^3 + (12 - 2λ) * zeta(5) / N^5)
@@ -240,8 +240,12 @@ end
     F_N_model(N₀::Int, z::Acb)
 
 Compute an [`AcbTaylorModel`](@ref) of [`F_N`](@ref) from Equation
-REF(7) in the paper. The Taylor model to degree 5 in terms of `inv(N)`
-and is valid for all `inv(N)` in the interval ``[0, inv(N₀)]``.
+REF(7) in the paper. The Taylor model is computed to degree 5 in terms
+of `inv(N)` and is valid for all `inv(N)` in the interval ``[0,
+inv(N₀)]``.
+
+The details for the implementation are discussed in Appendix
+REF(B.4.1) in the paper.
 """
 function F_N_model(N₀::Int, z::Acb)
     return AcbTaylorModel(
@@ -254,7 +258,7 @@ end
 """
     epsilon(inv_N::Union{Arb,ArbSeries})
 
-Compute `ε(N)` coming from Equation REF(16) in the paper. Note that
+Compute `ε(N)` coming from Equation REF(23) in the paper. Note that
 this takes as input `inv(N)` and not `N`.
 """
 function epsilon(inv_N::Union{Arb,ArbSeries})
@@ -272,13 +276,22 @@ function epsilon(inv_N::Union{Arb,ArbSeries})
                Arb(C_T_2)^3 * Arb(C_gd3) / 6 +
                inv_N * g_d2_1 * Arb(C_b_3) * Arb(C_T_4) +
                inv_N^2 * g_d2_1 / 2 * Arb(C_T_4)^2
-           ) + inv_N^6 * (Arb(C_I_1_4) + Arb(C_I_2_3) + Arb(C_I_3_2) + Arb(C_I_K))
+           ) +
+           inv_N^6 * (
+        Arb(C_I_1_4) +
+        Arb(C_I_2_3) +
+        Arb(C_I_3_2) +
+        Arb(C_I_K_1) +
+        inv_N * (Arb(C_I_2_4) + Arb(C_I_3_3) + Arb(C_I_K_2)) +
+        inv_N^2 * (Arb(C_I_3_4) + Arb(C_I_K_3)) +
+        inv_N^3 * Arb(C_I_K_4)
+    )
 end
 
 """
     eta(inv_N::Union{Arb,ArbSeries})
 
-Compute `η(N)` coming from Equation REF(24) in the paper. Note that
+Compute `η(N)` coming from Equation REF(26) in the paper. Note that
 this takes as input `inv(N)` and not `N`.
 """
 function eta(inv_N::Union{Arb,ArbSeries})
@@ -292,18 +305,20 @@ function eta(inv_N::Union{Arb,ArbSeries})
     a₀ = c_N(inv_N) / (sqrt(λ) * besselj1(sqrt(λ)))
 
     return (
-        2Arb(π) * a₀^2 * R^2 / 2 *
+        Arb(π) *
+        a₀^2 *
+        R^2 *
         (besselj0(R * sqrt(λ_app(inv_N)))^2 + besselj1(R * sqrt(λ_app(inv_N)))^2) -
-        4Arb(π) * a₀ * E_I * R^2 / 2 *
-        hypgeom0f1_regularized(Arb(2), -Arb(1 // 4) * R^2 * λ_app(inv_N)) - R^2 * E_I^2
+        4Arb(π) * a₀ * E_I * R / sqrt(λ_app(inv_N)) * besselj1(R * sqrt(λ_app(inv_N))) -
+        π * R^2 * E_I^2
     )
 end
 
 """
     epsilon_hat(inv_N::Union{Arb,ArbSeries})
 
-Compute `hat{ε}` coming from Equation REF(19) in the paper. Note that
-this takes as input `inv(N)` and not `N`.
+Compute `hat{ε}(N)` coming from Equation REF(27) in the paper. Note
+that this takes as input `inv(N)` and not `N`.
 """
 function epsilon_hat(inv_N::Union{Arb,ArbSeries})
     return sqrt(Arb(π)) * epsilon(inv_N) / sqrt(eta(inv_N))
