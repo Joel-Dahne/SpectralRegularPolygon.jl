@@ -449,13 +449,34 @@ function integral_K_4_bound(N₀::Int, z::Acb, a::Arb)
            Arb(C_L_6) * abs(integral_log(6, a))
 end
 
-function integral_K_4_V_1(N₀::Int, z::Acb)
+"""
+    integral_K_4_V_l(N₀::Int, l::Int, z::Acb)
+
+Compute an enclosure of the integral
+```
+∫ K_4(z, t) * V_l(t) dt
+```
+from `0` to `z`, which is bounded in Lemma REF(2.10) in the paper.
+
+It computes a bound which is valid for all `N >= N₀`.
+"""
+function integral_K_4_V_l(N₀::Int, l::Int, z::Acb)
     finite_K4, K4 = K_4(N₀, z)
 
     finite_K4 || return indeterminate(z)
 
-    a = Arb(1e-4)
-    b = Arblib.contains(z, Acb(1)) ? Arb(1) - 1e-6 : Arb(1)
+    if l > 1
+        # We compute MUCH rougher bounds in this case, since we
+        # eventually divide these terms by N₀ they play a less
+        # important role.
+        atol = 10.0
+        a = Arb(0.25)
+        b = Arblib.contains(z, Acb(1)) ? Arb(1) - 1e-6 : Arb(1)
+    else
+        atol = 1e-2
+        a = Arb(1e-4)
+        b = Arblib.contains(z, Acb(1)) ? Arb(1) - 1e-6 : Arb(1)
+    end
     az = a * z
     bz = b * z
 
@@ -464,12 +485,11 @@ function integral_K_4_V_1(N₀::Int, z::Acb)
         # V(l, t) / t is bounded near t = 0, hence we can factor out a
         # bound of it and integrate only K_4(z, t).
 
-
         # Compute bound of V(l, t) / t for t in [0, a * z]
         azᵤ = abs_ubound(Arb, az)
-        D_1_a = V_div_z_bound(1, azᵤ)
+        D_l_a = V_div_z_bound(l, azᵤ)
 
-        add_error(Acb(0), D_1_a * integral_K_4_bound(N₀, z, a))
+        add_error(Acb(0), D_l_a * integral_K_4_bound(N₀, z, a))
     end
 
     # Integrate from a * z to b * z
@@ -484,21 +504,21 @@ function integral_K_4_V_1(N₀::Int, z::Acb)
         end
 
         res_az_thin_bz_thin = Arblib.integrate(
-            (t; analytic) -> K4(t; analytic) * V(1, t; analytic) / t,
+            (t; analytic) -> K4(t; analytic) * V(l, t; analytic) / t,
             az_thin,
             bz_thin,
             check_analytic = true,
-            atol = 1e-6,
             opts = Arblib.calc_integrate_opt_struct(0, 4_000, 0, 1, 0),
-            warn_on_no_convergence = false,
+            warn_on_no_convergence = false;
+            atol,
         )
 
         if iswide(z)
             # Add enclosures of integral from az to az_thin and from
             # z_thin to z.
             (res_az_thin_bz_thin) +
-            (az_thin - az) * K4(az) * V(1, az) / az +
-            (bz - bz_thin) * K4(bz) * V(1, bz) / bz
+            (az_thin - az) * K4(az) * V(l, az) / az +
+            (bz - bz_thin) * K4(bz) * V(l, bz) / bz
         else
             res_az_thin_bz_thin # We integrated everything
         end
