@@ -38,7 +38,7 @@ $$|b_2(z)| \leq C_{b,2},\ |b_3(z)| \leq C_{b,3},\ |b_4(z)| \leq C_{b,4},\ |b_5(z
 
 and for $N \geq N_0$ have
 
-$$|T_2(z)| \leq C_{T,2},\ |T_4(z)| \leq C_{T,4},\ |T_6(z)| \leq C_{T,6}.$$
+$$|T_2(N, z)| \leq C_{T,2},\ |T_4(N, z)| \leq C_{T,4},\ |T_6(N, z)| \leq C_{T,6}.$$
 
 Here $N_0$, $C_{b,k}$ and $C_{T,l}$ are given by:
 """
@@ -206,7 +206,7 @@ end
 # ╔═╡ 1f4ebea3-1b83-49d4-aabc-cc57b0bba1af
 let
     fig = Figure()
-    ax = Axis(fig[1, 1], xlabel = L"\theta", ylabel = L"T_6(e^{i\theta})")
+    ax = Axis(fig[1, 1], xlabel = L"\theta", ylabel = L"T_6(N, e^{i\theta})")
     band!(ax, θs, lbound.(T6s), ubound.(T6s))
     scatterlines!(ax, θs, T6s)
     hlines!(ax, [-Arb(C_T_6), Arb(C_T_6)])
