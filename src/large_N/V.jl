@@ -28,7 +28,7 @@ abs(V(l, t)) <= sum(j -> C[j] * abs(log(1 - t))^j / factorial(j), 1:l)
 ```
 for `abs(z) < 1`.
 
-This is based on Lemma REF(A.4) in the paper.
+This is based on Lemma REF(A.2) in the paper.
 """
 V_log_bound_coefficients(l::Int) =
     if l == 1
@@ -50,7 +50,7 @@ abs(V(l, z) / z) <= D
 ```
 for all `|z| < a < 1`.
 
-TODO: This is based on Lemma REF(A.2) in the paper.
+This is based on Lemma REF(A.2) in the paper.
 """
 function V_div_z_bound(l::Int, a::Arb)
     C = V_log_bound_coefficients(l)

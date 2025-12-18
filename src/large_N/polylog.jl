@@ -250,7 +250,8 @@ function S(n::Int, z::Arblib.AcbOrRef)
 end
 
 # The expressions for the multiple polylogarithms below are given in
-# the Appendix REF(B.3) in the paper.
+# the Appendix REF(B.3) in the paper. The bounds near zero are based
+# on Lemma REF(A.1) in the paper.
 
 # All of these functions accept AcbSeries as input. This is only used
 # in the tests to check if they expressions are correct by check that
