@@ -307,12 +307,12 @@ function integral_d_k_V_l(k::Int, l::Int, z::Acb)
             # To bound ∫ V(l, t) dt from t = b * z to z we use
             # V_log_bound_coefficients to get a bound in terms of
             # logarithms, that are then explicitly integrated.
-            Cs = V_log_bound_coefficients(l)
-            integral_V_bound = sum(1:l) do j
-                Cs[j] / factorial(j) * abs(integral_log_1mtz(Acb(1), j, b))
+            C = V_log_bound_coefficients(l)
+            integral_V_l_bound = sum(1:l) do j
+                C[j] / factorial(j) * abs(integral_log_1mtz(Acb(1), j, b))
             end
 
-            add_error(Acb(0), d_k_div_t_bound * integral_V_bound)
+            add_error(Acb(0), d_k_div_t_bound * integral_V_l_bound)
         end
     end
 
@@ -505,14 +505,12 @@ function integral_K_4_V_1(N₀::Int, z::Acb)
             # To bound ∫ V(l, t) dt from t = b * z to z we use
             # V_log_bound_coefficients to get a bound in terms of
             # logarithms, that are then explicitly integrated.
-            Cs = V_log_bound_coefficients(1)
-            # This sum only has one term, but we write it like this to
-            # make the form clearer.
-            integral_V_bound = sum(1:1) do j
-                Cs[j] / factorial(j) * abs(integral_log_1mtz(Acb(1), j, b))
+            C = V_log_bound_coefficients(l)
+            integral_V_l_bound = sum(1:l) do j
+                C[j] / factorial(j) * abs(integral_log_1mtz(Acb(1), j, b))
             end
 
-            add_error(Acb(0), K_4_div_t_bound * integral_V_bound)
+            add_error(Acb(0), K_4_div_t_bound * integral_V_l_bound)
         end
     end
 
