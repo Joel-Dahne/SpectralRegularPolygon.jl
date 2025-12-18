@@ -1,5 +1,54 @@
 # This file contains the implementation the functions that are bounded
 # in Lemma 2.10.
+
+"""
+    d(k::Int, z::Arblib.AcbOrRef, t::Arblib.AcbOrRef; analytic::Bool = false)
+
+Compute an enclosure of `d_k(z, t)` from Equation REF(21) in the paper.
+
+If `analytic` is true, then return an indeterminate value if `t`
+overlaps a branch cut of the function.
+"""
+d(k::Int, z::Arblib.AcbOrRef, t::Arblib.AcbOrRef; analytic::Bool = false) =
+    if k == 0
+        d_0(z, t; analytic)
+    elseif k == 1
+        d_1(z, t; analytic)
+    elseif k == 2
+        d_2(z, t; analytic)
+    elseif k == 3
+        d_3(z, t; analytic)
+    end
+
+"""
+    d_z_part(k::Int, z::Arblib.AcbOrRef)
+
+Compute an enclosure of the terms of [`d`](@ref) which only depend on
+`z`.
+"""
+d_z_part(k::Int, z::Arblib.AcbOrRef) =
+    if k == 2
+        d_2_z_part(z)
+    elseif k == 3
+        d_3_z_part(z)
+    end
+
+"""
+    d_zt_part(k::Int, z::Arblib.AcbOrRef, t::Arblib.AcbOrRef; analytic::Bool = false)
+
+Compute an enclosure of the terms of [`d`](@ref) which depend on both
+`z` and `t`.
+
+If `analytic` is true, then return an indeterminate value if `t`
+overlaps a branch cut of the function.
+"""
+d_zt_part(k::Int, z::Arblib.AcbOrRef, t::Arblib.AcbOrRef; analytic::Bool = false) =
+    if k == 2
+        d_2_zt_part(z, t; analytic)
+    elseif k == 3
+        d_3_zt_part(z, t; analytic)
+    end
+
 d_0(z, t; analytic::Bool = false) = one(z)
 
 function d_1(z, t; analytic::Bool = false)
@@ -109,6 +158,28 @@ function d_3_zt_part(z, t; analytic::Bool = false)
     )
 end
 
+"""
+    integral_d(k::Int, z::Acb, a::Arb)
+
+Compute a bound for the integral of
+```
+∫ abs(d(l, z, t)) abs(dt)
+```
+taken from `0` to `a * z`.
+
+This is based on Lemma REF(A.3) in the paper.
+"""
+integral_d(k::Int, z::Acb, a::Arb) =
+    if k == 0
+        integral_d_0(z, a)
+    elseif k == 1
+        integral_d_1(z, a)
+    elseif k == 2
+        integral_d_2(z, a)
+    elseif k == 3
+        integral_d_3(z, a)
+    end
+
 function integral_d_0(z::Acb, a::Arb)
     return a * abs(z)
 end
@@ -135,53 +206,15 @@ function integral_d_3(z::Acb, a::Arb)
            λ / 4 * abs(S(3, t) - S(3, z)) * a * abs(z)
 end
 
-d(k::Int, z::Arblib.AcbOrRef, t::Arblib.AcbOrRef; analytic::Bool = false) =
-    if k == 0
-        d_0(z, t; analytic)
-    elseif k == 1
-        d_1(z, t; analytic)
-    elseif k == 2
-        d_2(z, t; analytic)
-    elseif k == 3
-        d_3(z, t; analytic)
-    end
-
-# Part of d only depending on z
-d_z_part(k::Int, z) =
-    if k == 2
-        d_2_z_part(z)
-    elseif k == 3
-        d_3_z_part(z)
-    end
-
-# Part of d only depending on z and t
-d_zt_part(k::Int, z, t; analytic::Bool = false) =
-    if k == 2
-        d_2_zt_part(z, t; analytic)
-    elseif k == 3
-        d_3_zt_part(z, t; analytic)
-    end
-
 """
-integral_d(k::Int, z::Acb, a::Arb)
+    integral_d_k_V_l(k::Int, l::Int, z::Acb)
 
-Compute a bound for the integral of
+Compute an enclosure of the integral
 ```
-∫ abs(d(l, z, t)) abs(dt)
+∫ d_k(z, t) * V_l(t) dt
 ```
-taken from `0` to `a * z`.
+from `0` to `z`, which is bounded in Lemma REF(2.10) in the paper.
 """
-integral_d(k::Int, z::Acb, a::Arb) =
-    if k == 0
-        integral_d_0(z, a)
-    elseif k == 1
-        integral_d_1(z, a)
-    elseif k == 2
-        integral_d_2(z, a)
-    elseif k == 3
-        integral_d_3(z, a)
-    end
-
 function integral_d_k_V_l(k::Int, l::Int, z::Acb)
     a = Arb(1e-4)
     b = Arblib.contains(z, Acb(1)) ? Arb(0.999) : Arb(1)
