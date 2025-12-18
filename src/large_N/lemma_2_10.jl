@@ -216,8 +216,18 @@ Compute an enclosure of the integral
 from `0` to `z`, which is bounded in Lemma REF(2.10) in the paper.
 """
 function integral_d_k_V_l(k::Int, l::Int, z::Acb)
-    a = Arb(1e-4)
-    b = Arblib.contains(z, Acb(1)) ? Arb(0.999) : Arb(1)
+    if k + l > 5
+        # We compute MUCH rougher bounds in this case, since we
+        # eventually divide these terms by N₀ they play a less
+        # important role.
+        atol = 10.0
+        a = Arb(0.5)
+        b = Arblib.contains(z, Acb(1)) ? Arb(0.99) : Arb(1)
+    else
+        atol = 1e-4
+        a = Arb(1e-3)
+        b = Arblib.contains(z, Acb(1)) ? Arb(0.999) : Arb(1)
+    end
     az = a * z
     bz = b * z
 
@@ -250,9 +260,9 @@ function integral_d_k_V_l(k::Int, l::Int, z::Acb)
                 az_thin,
                 bz_thin,
                 check_analytic = true,
-                atol = 1e-6,
                 opts = Arblib.calc_integrate_opt_struct(0, 4_000, 0, 1, 0),
-                warn_on_no_convergence = false,
+                warn_on_no_convergence = false;
+                atol,
             )
         else
             # Split d into two terms, one depending only on z and one
@@ -266,9 +276,9 @@ function integral_d_k_V_l(k::Int, l::Int, z::Acb)
                     az_thin,
                     bz_thin,
                     check_analytic = true,
-                    atol = 1e-6,
                     opts = Arblib.calc_integrate_opt_struct(0, 4_000, 0, 1, 0),
-                    warn_on_no_convergence = false,
+                    warn_on_no_convergence = false;
+                    atol,
                 )
 
             # Part of d(k, z, t) depending on both z and t.
@@ -277,9 +287,9 @@ function integral_d_k_V_l(k::Int, l::Int, z::Acb)
                 az_thin,
                 bz_thin,
                 check_analytic = true,
-                atol = 1e-6,
                 opts = Arblib.calc_integrate_opt_struct(0, 4_000, 0, 1, 0),
-                warn_on_no_convergence = false,
+                warn_on_no_convergence = false;
+                atol,
             )
 
             res_az_thin_bz_thin_part_1 + res_az_thin_bz_thin_part_2
