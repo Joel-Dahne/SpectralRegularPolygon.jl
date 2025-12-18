@@ -5,10 +5,10 @@ function polylog(s::Int, z::Union{Arblib.ArbOrRef,Arblib.AcbOrRef})
         return -log(1 - z)
     elseif Arblib.contains_zero(z) && 0.25 < abs_ubound(Arb, z) < 1
         # The Flint implementation fails when abs_ubound(Arb, z) is
-        # too large. For that reason we use the direct bound when it
-        # is a bit larger.
+        # too large. For that reason we use that it is bounded by
+        # polylog(1, z) in that case
         zᵤ = abs_ubound(Arb, z)
-        return add_error(zero(z), polylog_r_div_z_bound(1, zᵤ) * zᵤ)
+        return add_error(zero(z), polylog(1, zᵤ))
     elseif iswide(z) && !Arblib.contains_zero(z)
         # For wide values of z the Flint implementation gives very
         # poor bounds. We make use of the mean value theorem to get
@@ -249,34 +249,22 @@ function S(n::Int, z::Arblib.AcbOrRef)
     return (res_0_a + res_a_b + res_b_1) / factorial(n)
 end
 
-"""
-    polylog_r_div_z_bound(r::Int, a::Arb)
-
-For `0 < a < 1`, return `C` such that for any multiple polylogarithm
-with `r` parameters (with are required to be positive integers) and
-complex `z` with `abs(z) <= a`, the absolute value is bounded by `C *
-z`.
-"""
-function polylog_r_div_z_bound(r::Int, a::Arb)
-    0 < a < 1 || return indeterminate(a)
-    return 1 / (1 - a)^r
-end
-
 # The expressions for the multiple polylogarithms below are given in
-# the Appendix of the paper.
+# the Appendix REF(B.3) in the paper.
 
 # All of these functions accept AcbSeries as input. This is only used
 # in the tests to check if they expressions are correct by check that
-# they satisfy the expected rules for derivatives.
+# they satisfy the expected rules for derivatives. It is never used in
+# the proofs.
 
-function polylog_1_1(z::Union{Arblib.AcbOrRef,AcbSeries})
+function polylog_1_1(z::Union{Arblib.ArbOrRef,Arblib.AcbOrRef,AcbSeries})
     return log(1 - z)^2 / 2
 end
 
 function polylog_1_2(z::Union{Arblib.AcbOrRef,AcbSeries})
     if z isa Arblib.AcbOrRef && Arblib.contains_zero(z) && abs(z) < 1
         zᵤ = abs_ubound(Arb, z)
-        return add_error(zero(z), polylog_r_div_z_bound(2, zᵤ) * zᵤ)
+        return add_error(zero(z), polylog_1_1(zᵤ))
     else
         return 1 // 2 * log(1 - z)^2 * log(z) + log(1 - z) * polylog(2, 1 - z) -
                polylog(3, 1 - z) + zeta(Arb(3))
@@ -286,7 +274,7 @@ end
 function polylog_1_3(z::Union{Arblib.AcbOrRef,AcbSeries})
     if z isa Arblib.AcbOrRef && Arblib.contains_zero(z) && abs(z) < 1
         zᵤ = abs_ubound(Arb, z)
-        return add_error(zero(z), polylog_r_div_z_bound(2, zᵤ) * zᵤ)
+        return add_error(zero(z), polylog_1_1(zᵤ))
     else
         # NOTE: This is not the same formula as in the paper. It comes
         # from a recurrence relationship.
@@ -302,7 +290,7 @@ end
 function polylog_2_1(z::Union{Arblib.AcbOrRef,AcbSeries})
     if z isa Arblib.AcbOrRef && Arblib.contains_zero(z) && abs(z) < 1
         zᵤ = abs_ubound(Arb, z)
-        return add_error(zero(z), polylog_r_div_z_bound(2, zᵤ) * zᵤ)
+        return add_error(zero(z), polylog_1_1(zᵤ))
     else
         return -1 // 6 * log(1 - z) * (Arb(π)^2 + 6polylog(2, 1 - z)) + 2polylog(3, 1 - z) -
                2zeta(Arb(3))
@@ -312,7 +300,7 @@ end
 function polylog_2_2(z::Union{Arblib.AcbOrRef,AcbSeries})
     if z isa Arblib.AcbOrRef && Arblib.contains_zero(z) && abs(z) < 1
         zᵤ = abs_ubound(Arb, z)
-        return add_error(zero(z), polylog_r_div_z_bound(2, zᵤ) * zᵤ)
+        return add_error(zero(z), polylog_1_1(zᵤ))
     else
         return -log(1 - z)^3 * log(z) + 1 // 6 * log(1 - z)^2 * (Arb(π)^2 + 9 * log(z)^2) -
                1 // 6 * log(1 - z) * (Arb(π)^2 * log(z) + 6log(z)^3) +
@@ -333,14 +321,14 @@ function polylog_3_1(z::Union{Arblib.AcbOrRef,AcbSeries})
     return -log(1 - z) * polylog(3, z) - 1 // 2 * polylog(2, z)^2
 end
 
-function polylog_1_1_1(z::Union{Arblib.AcbOrRef,AcbSeries})
+function polylog_1_1_1(z::Union{Arblib.ArbOrRef,Arblib.AcbOrRef,AcbSeries})
     return -log(1 - z)^3 / 6
 end
 
 function polylog_1_1_2(z::Union{Arblib.AcbOrRef,AcbSeries})
     if z isa Arblib.AcbOrRef && Arblib.contains_zero(z) && abs(z) < 1
         zᵤ = abs_ubound(Arb, z)
-        return add_error(zero(z), polylog_r_div_z_bound(3, zᵤ) * zᵤ)
+        return add_error(zero(z), polylog_1_1_1(zᵤ))
     else
         return -1 // 6 * log(1 - z)^3 * log(z) - 1 // 2 * log(1 - z)^2 * polylog(2, 1 - z) +
                log(1 - z) * polylog(3, 1 - z) - polylog(4, 1 - z) + Arb(π)^4 / 90
@@ -350,7 +338,7 @@ end
 function polylog_1_2_1(z::Union{Arblib.AcbOrRef,AcbSeries})
     if z isa Arblib.AcbOrRef && Arblib.contains_zero(z) && abs(z) < 1
         zᵤ = abs_ubound(Arb, z)
-        return add_error(zero(z), polylog_r_div_z_bound(3, zᵤ) * zᵤ)
+        return add_error(zero(z), polylog_1_1_1(zᵤ))
     else
         return 1 // 2 * log(1 - z)^2 * polylog(2, 1 - z) -
                log(1 - z) * (2polylog(3, 1 - z) + zeta(Arb(3))) + 3polylog(4, 1 - z) -
@@ -361,7 +349,7 @@ end
 function polylog_2_1_1(z::Union{Arblib.AcbOrRef,AcbSeries})
     if z isa Arblib.AcbOrRef && Arblib.contains_zero(z) && abs(z) < 1
         zᵤ = abs_ubound(Arb, z)
-        return add_error(zero(z), polylog_r_div_z_bound(3, zᵤ) * zᵤ)
+        return add_error(zero(z), polylog_1_1_1(zᵤ))
     else
         return Arb(π)^2 / 12 * log(1 - z)^2 +
                log(1 - z) * (polylog(3, 1 - z) + 2zeta(Arb(3))) - 3polylog(4, 1 - z) +
@@ -369,6 +357,6 @@ function polylog_2_1_1(z::Union{Arblib.AcbOrRef,AcbSeries})
     end
 end
 
-function polylog_1_1_1_1(z::Union{Arblib.AcbOrRef,AcbSeries})
+function polylog_1_1_1_1(z::Union{Arblib.ArbOrRef,Arblib.AcbOrRef,AcbSeries})
     return log(1 - z)^4 / 24
 end
