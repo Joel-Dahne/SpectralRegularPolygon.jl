@@ -239,13 +239,13 @@ end
 """
     F_N_model(N₀::Int, z::Acb)
 
-Compute an [`AcbTaylorModel`](@ref) of [`F_N`](@ref) from Equation
-REF(7) in the paper. The Taylor model is computed to degree 5 in terms
-of `inv(N)` and is valid for all `inv(N)` in the interval ``[0,
+Compute an [`AcbTaylorModel`](@ref) of `F_N(z)` from Equation REF(7) in
+the paper. The Taylor model is computed to degree 5 in terms of
+`inv(N)` and is valid for all `inv(N)` in the interval ``[0,
 inv(N₀)]``.
 
-The details for the implementation are discussed in Appendix
-REF(B.4.1) in the paper.
+The details for the implementation are discussed in Appendix REF(B.4)
+in the paper.
 """
 function F_N_model(N₀::Int, z::Acb)
     return AcbTaylorModel(
