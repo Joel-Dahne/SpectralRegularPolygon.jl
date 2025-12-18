@@ -332,9 +332,14 @@ end
 """
     K_model(N₀::Int, z::Acb)
 
-Compute an [`ArbTaylorModel`](@ref) of [`K`](@ref) in `inv(N)` that
-is valid for all `N >= N₀`. It is computed with a remainder term of
-degree 5.
+Return a function which given `t` computes an [`ArbTaylorModel`](@ref)
+of `K(z, t)` from Equation REF(15) in the paper. The Taylor model is
+computed to degree 5 in terms of `inv(N)` and is valid for all
+`inv(N)` in the interval ``[0, inv(N₀)]``.
+
+The reason this function doesn't take `t` directly as an argument is
+to allow for precomputing all the parts of the function that don't
+depend on `t`.
 
 The paper uses the formula
 ```
@@ -348,6 +353,9 @@ This gives us the formula
 ```
 K(z, t) = hypgeom0f1_regularized(1, -ρ * abs(z)^(2 / N) * F_N(conj(z)) * (F_N(z) - (t / z)^(1 / N) * F_N(t)) / 4)
 ```
+
+The details for the implementation are discussed in Appendix REF(B.4)
+in the paper.
 """
 function K_model(N₀::Int, z::Acb)
     inv_N = Arb((0, 1 // N₀))
@@ -390,6 +398,19 @@ function K_model(N₀::Int, z::Acb)
     end
 end
 
+"""
+    K_4(N₀::Int, z::Acb)
+
+Return a function which given `t` computes an enclosure of of `K_4(N,
+z, t)` from Lemma REF(2.9) in the paper.
+
+The reason this function doesn't take `t` directly as an argument is
+to allow for precomputing all the parts of the function that don't
+depend on `t`.
+
+The details for the implementation are discussed in Appendix
+REF(B.4.2) in the paper.
+"""
 function K_4(N₀::Int, z::Acb)
     inv_N = Arb((0, 1 // N₀))
     finite, K = K_model(N₀, z)
