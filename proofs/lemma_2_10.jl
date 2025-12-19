@@ -42,9 +42,9 @@ $$\left|\operatorname{Re}\int_0^z \frac{1}{t} K_4(z, t)V_l(t)\ dt\right| \leq C_
 
 for $l = 1, 2, 3, 4$.
 
-For the cases when $k + l > 5$ in the first case and $l > 1$ in the second case we we only need very rough bounds. These constants are eventually divided by some power of $N_0$ and therefore do not to be as precise. 
+For the cases when $k + l > 5$ in the first case and $l > 1$ in the second case we we only need very rough bounds. These constants are eventually divided by some power of $N_0$ and therefore do not need to be as precise. 
 
-Here $N_0$$, $C_{I,k,l}$ and $C_{K,l}$ are given by
+Here $N_0$, $C_{I,k,l}$ and $C_{K,l}$ are given by
 """
 
 # ╔═╡ d22dc5aa-bac2-4f8a-968b-ece39e295129
@@ -245,7 +245,6 @@ md"""
 """
 
 # ╔═╡ f293357f-b59f-46e8-9b68-a83f1a7cbe42
-#=╠═╡
 @time I_d_1_V_4_bound = ArbExtras.maximum_enclosure(
     Arf(0),
     Arf(1),
@@ -260,7 +259,6 @@ md"""
 ) do θ_div_π
     real(SRP.integral_d_k_V_l(1, 4, SRP.exppii(θ_div_π)))
 end
-  ╠═╡ =#
 
 # ╔═╡ 0cfdcd21-461a-4626-b7c8-f6257b9ff3e6
 @time I_d_2_V_3_bound = ArbExtras.maximum_enclosure(
