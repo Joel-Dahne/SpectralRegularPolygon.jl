@@ -156,7 +156,7 @@ Ns_full = 3:Ns[end]
 
 # ╔═╡ 9cf9fd3b-0bae-41d9-89f9-7dc96480bce9
 md"""
-The paper gives the enclosures for $\lambda_5$, $\lambda_6$ and $\lambda_{64}$ as examples:
+The paper gives the enclosures for $\lambda_5$, $\lambda_6$, $\lambda_{63}$ and $\lambda_{64}$ as examples:
 """
 
 # ╔═╡ 92fc1da8-41af-4181-b8e0-3e34d1146fbf
@@ -165,8 +165,11 @@ The paper gives the enclosures for $\lambda_5$, $\lambda_6$ and $\lambda_{64}$ a
 # ╔═╡ d65b3d76-9472-4319-ae4d-622a8053f2e4
 λs_full[4] # λ_6
 
+# ╔═╡ cbdf8d4c-0a93-41a7-9ad1-740f6fc70414
+λs_full[61] # λ_63
+
 # ╔═╡ 830bc2dc-869f-454d-aa35-b8e866903eba
-λs_full[end-1] # λ_64
+λs_full[62] # λ_64
 
 # ╔═╡ e44b149a-6c13-4464-a39c-17317e9a4ff5
 md"""
@@ -400,6 +403,7 @@ end
 # ╟─9cf9fd3b-0bae-41d9-89f9-7dc96480bce9
 # ╠═92fc1da8-41af-4181-b8e0-3e34d1146fbf
 # ╠═d65b3d76-9472-4319-ae4d-622a8053f2e4
+# ╠═cbdf8d4c-0a93-41a7-9ad1-740f6fc70414
 # ╠═830bc2dc-869f-454d-aa35-b8e866903eba
 # ╟─e44b149a-6c13-4464-a39c-17317e9a4ff5
 # ╠═827a5af8-ac00-414c-b79b-e8f98a907969
