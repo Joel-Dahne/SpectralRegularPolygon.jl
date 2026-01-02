@@ -9,6 +9,8 @@ It uses that the integral is given by
     (-1)^n * factorial(m) / factorial(n) * log(a)^n
 end
 ```
+
+See Lemma REF(A.4) in the paper.
 """
 function integral_log(m::Int, a::Arb)
     0 < a < 1 || throw(ArgumentError("only supports 0 < a < 1"))
@@ -39,6 +41,8 @@ Which we can also write as
 )
 ```
 and use [`logpow`](@ref) to evaluate `log(1 - t * z)^n * (1 - t * z)`.
+
+See Lemma REF(A.4) in the paper.
 """
 function integral_log_1mtz(z::Arblib.AcbOrRef, m::Integer, b::Arb)
     0 < b < 1 || throw(ArgumentError("only supports 0 < b < 1"))
@@ -73,6 +77,8 @@ Which we can also write as
 end
 ```
 and use [`logpow`](@ref) to evaluate `log(1 - t * z)^n * (1 - t * z)^(1 + y)`.
+
+See Lemma REF(A.4) in the paper.
 """
 function integral_logpow_1mtz(z::Acb, m::Int, y::Arb, b::Arb)
     0 < b < 1 || throw(ArgumentError("only supports 0 < b < 1"))

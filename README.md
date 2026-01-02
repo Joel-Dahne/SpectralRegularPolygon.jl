@@ -19,18 +19,20 @@ the paper:
 - Lemma 2.13 (`lemma_2_13.jl`)
 - Lemma 2.15 (`lemma_2_15.jl`)
 - Lemma 2.16 (`lemma_2_16.jl`)
+- Corollary 2.18 (`corollary_2_18.jl`)
 - Lemma 2.21 (`lemma_2_21.jl`)
 - Lemma 2.22 (`lemma_2_22.jl`)
 - Proposition 3.1 (`proposition_3_1.jl`)
 - Lemma C.1 (`lemma_C_1.jl`)
 - Lemma C.3 (`lemma_C_3.jl`)
 
-For some of the shorted proofs (for example Lemma 2.7) most of the
-implementation is given directly in the notebook. For other ones most
-of the implementation is given in the [`src`](src) directory.
+For some of the shorted proofs, for example Lemma 2.7, most of the
+implementation is given directly in the notebook. For other ones, for
+example Lemma 2.10, most of the implementation is given in the
+[`src`](src) directory.
 
 ## Reproducing the proof
-The proofs were generated with Julia version 1.11.7. This repository
+The proofs were generated with Julia version 1.11.8. This repository
 contains the same `Manifest-v1.11.toml` file as was used when running
 the proofs, this allows installing exactly the same versions of the
 Julia packages.
@@ -59,18 +61,27 @@ Pluto.run()
 ```
 
 which should open a Pluto tab in your browser. Now you can open the
-notebooks inside the `proof` directory through this and it should run
-the proof.
+notebooks inside the `proof` directory through this and it should
+allow you to run the proof.
 
 ## Notes about implementation
-The implementation is split into two parts, one for large $N$
-corresponding to Section 2 in the paper and one for small $N$
+The implementation is split into two parts, one for large $N$,
+corresponding to Section 2, in the paper and one for small $N$,
 corresponding to Section 3 in the paper. The code for the large $N$
 parts is found in [`src/large_N`](src/large_N) and for the small $N$
 in [`src/small_N`](src/small_N).
 
-**TODO:** Update all references to equation numbers in the paper.
-These are marked by `REF`, e.g. `REF(18)`.
+Some good information to have:
+- The code and the notebooks with the proofs are written to be as
+  readable as possible, but in general they assume that the reader is
+  familiar with the associated paper.
+- Many of the implemented functions contain documentation that
+  explains what they do. These occasionally refer to equations or
+  lemmas in the paper. For these references we use the notation "REF",
+  e.g. "Equation REF(18)" refers to Equation 18 in the paper.
+- Many of the functions have associated tests in [`test`](test) that
+  serve to increase the confidence in the implementation. All of these
+  tests can be run with `Pkg.test()` as discussed above.
 
 ### Large $N$
 The code for this part handles computing estimates related to the
@@ -81,30 +92,38 @@ consists of the following files:
   of the explicit constants in the paper which we want to prove are
   bounding different functions.
 - [`src/large_N/special_functions.jl`](src/large_N/special_functions.jl):
-  Contains implementations of some common special functions. They are
-  mostly direct wrappers of corresponding functions in FLINT.
+  Contains implementations of some common special functions, such as
+  the hypergeometric ${}_{2}F_{1}$ function. They are mostly direct
+  wrappers of corresponding functions in FLINT.
 - [`src/large_N/basic_functions.jl`](src/large_N/basic_functions.jl):
   Contains implementation of some basic functions, primarily related
-  to handling powers and logarithms of arguments overlapping zero.
+  to handling powers and logarithms of arguments overlapping zero. For
+  example it contains the function `logabspow(x, m, y)` for computing
+  $\log^m(|x|)|x|^y$ in a way that works when the interval for $x$
+  overlaps zero.
 - [`src/large_N/basic_integrals.jl`](src/large_N/basic_integrals.jl):
-  Contains implementation of integrals of some basic functions.
+  Contains implementation of integrals from Lemma REF(A.4) in the
+  paper.
 - [`src/large_N/fx_div_x.jl`](src/large_N/fx_div_x.jl): Contains code
   for computing enclosures of functions around removable singularities.
 - [`src/large_N/TaylorModel.jl`](src/large_N/TaylorModel.jl): Contains
-  an implementation of Taylor models that are used in the paper.
+  an implementation of Taylor models that are discussed in Appendix
+  REF(B.4) in the paper.
 - [`src/large_N/polylog.jl`](src/large_N/polylog.jl): Contains
   implementation of different versions of polylogarithms, including
   standard polylogarithms $\mathrm{Li}_s$, Nielsen generalized
   polylogarithms $S_n$ and multiple certain polylogarithms appearing
+  in the paper. Most of the details are discussed in Appendix REF(B.3)
   in the paper.
 - [`src/large_N/section_2.jl`](src/large_N/section_2.jl): Contains
   implementations of various functions that appear in Section 2 of the
   paper.
 - [`src/large_N/V.jl`](src/large_N/V.jl): Contains implementations
-  related to evaluating and bounding the functions $V_l$ in the paper.
+  related to evaluating and bounding the functions $V_l$ from Equation
+  REF(13) in the paper.
 - [`src/large_N/lemma_2_10.jl`](src/large_N/lemma_2_10.jl): Contains
   implementation related to computing the integrals that appear in
-  Lemma 2.10.
+  Lemma REF(2.10).
 
 In general the code follows a similar notation as in the paper and it
 should hopefully be relatively straightforward to understand the
@@ -115,11 +134,11 @@ $N$, typically with $N$ occurring in the numerator. For example we have
 
 $$\lambda_{app} = \lambda \left(1 + \frac{4\zeta(3)}{N^3} + \frac{(12 - 2\lambda)\zeta(5)}{N^5}\right),$$
 
-with $N$ taking values in $[N_0, \infty)$. On the computer it is
-generally more difficult to handle intervals where one endpoint is
-infinite. For that reason we in the code typically write the
-expressions in terms of $N^{-1}$ (which we in the code call `inv_N`)
-instead of $N$. So $\lambda_{app}$ is then instead written as
+with $N$ taking values in $[N_0, \infty)$. On the computer it is in
+general easier to handle intervals where both endpoints are finite.
+For that reason we in the code typically write the expressions in
+terms of $N^{-1}$ (which we in the code call `inv_N`) instead of $N$.
+So $\lambda_{app}$ is then instead written as
 
 $$\lambda_{app} = \lambda \left(1 + 4\zeta(3)(N^{-1})^3 + (12 - 2\lambda)\zeta(5)(N^{-1})^5\right),$$
 
@@ -147,10 +166,12 @@ implementation consists of the following files:
   Contains code for representing the approximate eigenfunction of a
   regular polygon. The main type is `Eigenfunction`, which internally
   consists of a `VertexExpansion` representing the expansions at the
-  vertices of the polygon and an `InteriorExpansion` representing the
-  expansion at the center of the polygon.
+  vertices of the polygon (see Equation REF(30) in the paper) and an
+  `InteriorExpansion` representing the expansion at the center of the
+  polygon (see Equation REF(31) in the paper).
 - [`src/small_N/MPS/sigma.jl`](src/small_N/MPS/sigma.jl): Contains
-  code for computing the $\sigma(\lambda)$ function that is in the MPS.
+  code for computing the $\sigma(\lambda)$ function that is used in
+  the MPS.
 - [`src/small_N/MPS/mps.jl`](src/small_N/MPS/mps.jl): Contains code
   for applying the MPS, in practice code for minimizing
   $\sigma(\lambda)$.
@@ -162,9 +183,10 @@ implementation consists of the following files:
   eigenfunction on its domain.
 - [`src/small_N/MPS/enclosing/eigenvalue.jl`](src/small_N/MPS/enclosing/eigenvalue.jl):
   Contains code for computing an enclosure of an eigenvalue given an
-  approximate eigenvalue and eigenfunction.
+  approximate eigenvalue and eigenfunction. It is based on Lemma
+  REF(2.2) in the paper.
 - [`src/small_N/precomputed_eigenvalues.jl`](src/small_N/precomputed_eigenvalues.jl):
-  Contains utility functions for loaded precomputed approximate
+  Contains utility functions for loading precomputed approximate
   eigenvalues taken from [the
   repository](https://github.com/David-Berghaus/master-thesis-data)
   associated to [Computation of Laplacian eigenvalues of
