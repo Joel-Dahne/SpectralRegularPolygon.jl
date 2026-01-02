@@ -258,7 +258,7 @@ end
 """
     epsilon(inv_N::Union{Arb,ArbSeries})
 
-Compute `ε(N)` coming from Equation REF(23) in the paper. Note that
+Compute `ε(N)` coming from Equation REF(24) in the paper. Note that
 this takes as input `inv(N)` and not `N`.
 """
 function epsilon(inv_N::Union{Arb,ArbSeries})
@@ -291,7 +291,7 @@ end
 """
     eta(inv_N::Union{Arb,ArbSeries})
 
-Compute `η(N)` coming from Equation REF(26) in the paper. Note that
+Compute `η(N)` coming from Equation REF(27) in the paper. Note that
 this takes as input `inv(N)` and not `N`.
 """
 function eta(inv_N::Union{Arb,ArbSeries})
@@ -317,7 +317,7 @@ end
 """
     epsilon_hat(inv_N::Union{Arb,ArbSeries})
 
-Compute `hat{ε}(N)` coming from Equation REF(27) in the paper. Note
+Compute `hat{ε}(N)` coming from Equation REF(28) in the paper. Note
 that this takes as input `inv(N)` and not `N`.
 """
 function epsilon_hat(inv_N::Union{Arb,ArbSeries})

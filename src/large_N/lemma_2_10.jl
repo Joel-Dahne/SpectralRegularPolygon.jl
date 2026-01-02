@@ -341,19 +341,6 @@ The reason this function doesn't take `t` directly as an argument is
 to allow for precomputing all the parts of the function that don't
 depend on `t`.
 
-The paper uses the formula
-```
-K(z, t) = besselj0(sqrt(ρ) * abs(z)^(1 / N) * sqrt(F_N(conj(z)) * (F_N(z) - (t / z)^(1 / N) * F_N(t))))
-```
-To avoid the square root we use that
-```
-besselj0(x) = hypgeom0f1_regularized(1, -x^2 / 4)
-```
-This gives us the formula
-```
-K(z, t) = hypgeom0f1_regularized(1, -ρ * abs(z)^(2 / N) * F_N(conj(z)) * (F_N(z) - (t / z)^(1 / N) * F_N(t)) / 4)
-```
-
 The details for the implementation are discussed in Appendix REF(B.4)
 in the paper.
 """
