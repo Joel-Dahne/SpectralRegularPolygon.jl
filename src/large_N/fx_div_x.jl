@@ -86,7 +86,6 @@ end
 
 """
     fx_div_x(f, x::Union{Arb,Acb}[, order::Integer]; extra_degree::Integer = 0, enclosure_degree::Integer = 0, force = false)
-    fx_div_x(f, x::ArbSeries[, order::Integer]; extra_degree::Integer = 0, enclosure_degree::Integer = 0, force = false)
 
 Compute an enclosure of `f(x) / x` for a function `f` with a zero at
 the origin.
@@ -104,7 +103,8 @@ exactly zero. If `f` is known to be exactly zero at zero but the
 enclosure might be wider it can be forced to be zero by setting `force
 = true`
 
-This function is based on [`lemma_removable_singularities`](@ref).
+This function is based on Appendix A in [Highest cusped waves for the
+fractional KdV equations](https://doi.org/10.1016/j.jde.2024.05.016).
 
 **IMPROVE:** For complex argument it would likely be better to compute
 a bound of the remainder term using Cauchy's integral formula instead
