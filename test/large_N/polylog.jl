@@ -7,6 +7,7 @@
             SRP.exppii(Arb(1 // 4)),
             SRP.exppii(Arb(1 // 2)),
             SRP.exppii(Arb(3 // 4)),
+            Acb(-1 // 2),
         ]
 
         # For n = 2, S(2, z) is explicitly given by polylog(2, z) and
@@ -61,12 +62,21 @@
         # zero. We instead compute them close to zero and check that
         # this is small.
 
-        let z = Acb(1e-10, 2e-10)
+        for z in [Acb(-1e-10), Acb(1e-10, 2e-10), Acb(-1e-10)]
             @test abs(SRP.polylog_1_1(z)) <= 2abs(z)^2
             @test abs(SRP.polylog_1_2(z)) <= 2abs(z)^2
             @test abs(SRP.polylog_1_3(z)) <= 2abs(z)^2
             @test abs(SRP.polylog_2_1(z)) <= 2abs(z)^2
-            @test abs(SRP.polylog_2_2(z)) <= 2abs(z)^2
+            if real(z) < 0 && Arblib.contains_zero(imag(z))
+                # The way we handle z overlapping the negative real
+                # axis means that the enclosures we are very poor. We
+                # therefore just check that it is not larger than the
+                # upper bound we expect.
+                @test !(abs(SRP.polylog_2_2(z)) > 2abs(z)^2)
+            else
+                @test abs(SRP.polylog_2_2(z)) <= 2abs(z)^2
+            end
+
             @test abs(SRP.polylog_3_1(z)) <= 2abs(z)^2
             @test abs(SRP.polylog_1_1_1(z)) <= 2abs(z)^3
             @test abs(SRP.polylog_1_1_2(z)) <= 2abs(z)^3
@@ -75,7 +85,7 @@
             @test abs(SRP.polylog_1_1_1_1(z)) <= 2abs(z)^4
         end
 
-        for z in [SRP.exppii(Arb(1 // 4)), Acb(0.5, 0.6), Acb(-0.3, -0.4)]
+        for z in [Acb(-0.5, 0), SRP.exppii(Arb(1 // 4)), Acb(0.5, 0.6), Acb(-0.3, -0.4)]
             @test Arblib.overlaps(
                 (1 - z) * ArbExtras.derivative_function(SRP.polylog_1_1)(z),
                 SRP.polylog(1, z),

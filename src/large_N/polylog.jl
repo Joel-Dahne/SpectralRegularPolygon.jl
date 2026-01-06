@@ -303,6 +303,31 @@ function polylog_2_2(z::Union{Arblib.AcbOrRef,AcbSeries})
         zᵤ = abs_ubound(Arb, z)
         return add_error(zero(z), polylog_1_1(zᵤ))
     else
+        # In general the branch cuts of the different functions are
+        # compatible and give the right combined value. The exception
+        # is exactly on the negative real axis, where some of them
+        # have different conventions for which branch is taken on the
+        # branch cut. To handle this we check if the negative real
+        # axis is contained in the input, if it is we make sure to
+        # extend it so that it includes values on both sides of the
+        # axis. This gives large overestimations, but guarantees that
+        # the correct value is included in the enclosure.
+        overlaps_negative_real(w::Arblib.AcbOrRef) =
+            Arblib.contains_negative(real(w)) && Arblib.contains_zero(imag(w))
+        overlaps_negative_real(w::AcbSeries) = overlaps_negative_real(w[0])
+
+        if overlaps_negative_real(z)
+            # Extend the imaginary part slightly to include both
+            # positive and negative values.
+            if z isa Arblib.AcbOrRef
+                z = Acb(real(z), Arblib.union(imag(z), Arblib.setball(Arb, 0, 1e-15)))
+            else
+                z = copy(z)
+                z[0] =
+                    Acb(real(z[0]), Arblib.union(imag(z[0]), Arblib.setball(Arb, 0, 1e-15)))
+            end
+        end
+
         return -log(1 - z)^3 * log(z) + 1 // 6 * log(1 - z)^2 * (Arb(π)^2 + 9 * log(z)^2) -
                1 // 6 * log(1 - z) * (Arb(π)^2 * log(z) + 6log(z)^3) +
                1 // 4 * log(z)^4 +
