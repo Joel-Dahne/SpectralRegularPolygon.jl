@@ -73,14 +73,14 @@ function logabspow(x::Arb, m::Integer, y::Arb)
             # evaluate on it
             # First critical point
             critical_point = exp(-m / y)
-            if Arblib.overlaps(x, critical_point)
+            if Arblib.overlaps(abs(x), critical_point)
                 res = Arblib.union(res, (-m / y)^m * exp(Arb(-m)))
             end
             # Second critical point
             if Arblib.contains(x, 1)
                 # If m > 0 then the value is zero, which is already
                 # included in res. Otherwise the value is non-finite.
-                m < 0 && indeterminate!(res)
+                m < 0 && Arblib.indeterminate!(res)
             end
 
             return res
@@ -93,7 +93,7 @@ function logabspow(x::Arb, m::Integer, y::Arb)
             xᵤ < 1 || return indeterminate(x)
 
             # Monotone for 0 < x < 1, evaluate on endpoints
-            return Arblib.union(zero(x), log(xᵤ)^i)
+            return Arblib.union(zero(x), log(xᵤ)^m)
         else
             # Non-finite at x = 0
             return indeterminate(x)

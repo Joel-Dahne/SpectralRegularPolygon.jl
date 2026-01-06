@@ -10,6 +10,7 @@ import SpectralRegularPolygons as SRP
     include("small_N/enclosure.jl")
 
     # Tests for large N
+    include("large_N/basic_functions.jl")
     include("large_N/basic_integrals.jl")
     include("large_N/fx_div_x.jl")
     include("large_N/TaylorModel.jl")
