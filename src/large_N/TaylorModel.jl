@@ -267,7 +267,8 @@ function compose(f, M::TaylorModel)
     # Compute remainder term
     J = M(M.I) # Interval to compute remainder on
     if isfinite(J)
-        remainder_term = ArbExtras.derivative_function(f, degree + 1)(J)
+        remainder_term =
+            ArbExtras.derivative_function(f, degree + 1)(J) / factorial(degree + 1)
     else
         remainder_term = indeterminate(J)
     end
@@ -331,7 +332,7 @@ Base.:-(c::Union{Arb,Integer}, M::TaylorModel) = typeof(M)(c - M.p, M.I, M.x0)
 Base.:*(c::Union{Arb,Integer}, M::TaylorModel) = M * c
 Base.:/(c::Union{Arb,Integer}, M::TaylorModel) = c * compose(inv, M)
 
-Base.:-(M::TaylorModel) = typef(M)(-M.p, M.I, M.x0)
+Base.:-(M::TaylorModel) = typeof(M)(-M.p, M.I, M.x0)
 
 """
     <<(p::TaylorModel, n::Integer)
