@@ -48,7 +48,7 @@ Return a constant `D` such that
 ```
 abs(V(l, z) / z) <= D
 ```
-for all `|z| < a < 1`.
+for all `|z| <= a < 1`.
 
 This is based on Lemma REF(A.2) in the paper.
 """

@@ -16,4 +16,5 @@ import SpectralRegularPolygons as SRP
     include("large_N/TaylorModel.jl")
     include("large_N/polylog.jl")
     include("large_N/section_2.jl")
+    include("large_N/V.jl")
 end
