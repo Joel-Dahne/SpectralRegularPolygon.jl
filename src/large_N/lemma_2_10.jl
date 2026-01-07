@@ -207,27 +207,39 @@ function integral_d_3(z::Acb, a::Arb)
 end
 
 """
-    integral_d_k_V_l(k::Int, l::Int, z::Acb)
+    integral_d_k_V_l(k::Int, l::Int, z::Acb; a, b, atol)
 
 Compute an enclosure of the integral
 ```
 ∫ d_k(z, t) * V_l(t) dt
 ```
 from `0` to `z`, which is bounded in Lemma REF(2.10) in the paper.
+
+The keyword arguments `a` and `b` determines how the interval of
+integration is split at the endpoints. Note that the value for `b` is
+only used if `z` overlaps one.
+
+The keyword argument `atol` determines the precision for the rigorous
+integration away from the endpoints.
+
+If `k + l > 5` we compute MUCH rougher bounds, since we eventually
+divide these terms by N₀ they play a less important role. This is done
+by taking adjusting the values for `a`, `b` and `atol` in this case.
+
+The proofs always uses the default values for `atol`, `a` and `b`, but
+they are given as arguments to allow easier testing of the function.
 """
-function integral_d_k_V_l(k::Int, l::Int, z::Acb)
-    if k + l > 5
-        # We compute MUCH rougher bounds in this case, since we
-        # eventually divide these terms by N₀ they play a less
-        # important role.
-        atol = 10.0
-        a = Arb(0.5)
-        b = Arblib.contains(z, Acb(1)) ? Arb(0.99) : Arb(1)
-    else
-        atol = 1e-4
-        a = Arb(1e-3)
-        b = Arblib.contains(z, Acb(1)) ? Arb(0.999) : Arb(1)
-    end
+function integral_d_k_V_l(
+    k::Int,
+    l::Int,
+    z::Acb;
+    atol::Float64 = ifelse(k + l > 5, 10.0, 1e-4),
+    a::Arb = ifelse(k + l > 5, Arb(0.5), Arb(1e-3)),
+    b::Arb = ifelse(k + l > 5, Arb(0.99), Arb(0.999)),
+)
+    # The b value should only be used if z overlaps one.
+    b = ifelse(Arblib.contains(z, Acb(1)), b, Arb(1))
+
     az = a * z
     bz = b * z
 

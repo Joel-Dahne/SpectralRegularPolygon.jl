@@ -17,4 +17,5 @@ import SpectralRegularPolygons as SRP
     include("large_N/polylog.jl")
     include("large_N/section_2.jl")
     include("large_N/V.jl")
+    include("large_N/lemma_2_10.jl")
 end
