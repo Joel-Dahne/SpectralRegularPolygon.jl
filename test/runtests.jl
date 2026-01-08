@@ -1,5 +1,6 @@
 using ArbExtras
 using Arblib
+using SpecialFunctions
 using Test
 
 import SpectralRegularPolygons as SRP
