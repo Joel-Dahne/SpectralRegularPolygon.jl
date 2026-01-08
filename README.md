@@ -6,25 +6,25 @@ of a regular polygon](TODO).
 
 The results of the paper are presented in different
 [Pluto.jl](https://plutojl.org/) notebooks, found in the
-[`proof`](proof) directory. These notebooks are responsible for
+[`proofs`](proofs) directory. These notebooks are responsible for
 generating all the numbers and figures that appear in the paper. It is
 possible to view the results of notebooks without running any code by
-opening the corresponding html-files found in the [`proof`](proof)
+opening the corresponding html-files found in the [`proofs`](proofs)
 directory, they can be opened in any browser such as Firefox. The
 notebooks contains proofs for the following lemmas and propositions in
 the paper:
-- Lemma 2.6 (`lemma_2_6.jl`)
-- Lemma 2.7 (`lemma_2_7.jl`)
-- Lemma 2.10 (`lemma_2_10.jl`)
-- Lemma 2.13 (`lemma_2_13.jl`)
-- Lemma 2.15 (`lemma_2_15.jl`)
-- Lemma 2.16 (`lemma_2_16.jl`)
-- Corollary 2.18 (`corollary_2_18.jl`)
-- Lemma 2.21 (`lemma_2_21.jl`)
-- Lemma 2.22 (`lemma_2_22.jl`)
-- Proposition 3.1 (`proposition_3_1.jl`)
-- Lemma C.1 (`lemma_C_1.jl`)
-- Lemma C.3 (`lemma_C_3.jl`)
+- [Lemma 2.6](proofs/lemma_2_6.jl)
+- [Lemma 2.7](proofs/lemma_2_7.jl)
+- [Lemma 2.10](proofs/lemma_2_10.jl)
+- [Lemma 2.13](proofs/lemma_2_13.jl)
+- [Lemma 2.15](proofs/lemma_2_15.jl)
+- [Lemma 2.16](proofs/lemma_2_16.jl)
+- [Corollary 2.18](proofs/corollary_2_18.jl)
+- [Lemma 2.21](proofs/lemma_2_21.jl)
+- [Lemma 2.22](proofs/lemma_2_22.jl)
+- [Proposition 3.1](proofs/proposition_3_1.jl)
+- [Lemma C.1](proofs/lemma_C_1.jl)
+- [Lemma C.3](proofs/lemma_C_3.jl)
 
 For some of the shorted proofs, for example Lemma 2.7, most of the
 implementation is given directly in the notebook. For other ones, for
@@ -61,7 +61,7 @@ Pluto.run()
 ```
 
 which should open a Pluto tab in your browser. Now you can open the
-notebooks inside the `proof` directory through this and it should
+notebooks inside the `proofs` directory through this and it should
 allow you to run the proof.
 
 ## Notes about implementation
