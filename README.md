@@ -11,7 +11,7 @@ generating all the numbers and figures that appear in the paper. It is
 possible to view the results of notebooks without running any code by
 opening the corresponding html-files found in the [`proofs`](proofs)
 directory, they can be opened in any browser such as Firefox. The
-notebooks contains proofs for the following lemmas and propositions in
+notebooks contain proofs for the following lemmas and propositions in
 the paper:
 - [Lemma 2.6](proofs/lemma_2_6.jl)
 - [Lemma 2.7](proofs/lemma_2_7.jl)
@@ -26,7 +26,7 @@ the paper:
 - [Lemma C.1](proofs/lemma_C_1.jl)
 - [Lemma C.3](proofs/lemma_C_3.jl)
 
-For some of the shorted proofs, for example Lemma 2.7, most of the
+For some of the shorter proofs, for example Lemma 2.7, most of the
 implementation is given directly in the notebook. For other ones, for
 example Lemma 2.10, most of the implementation is given in the
 [`src`](src) directory.
@@ -51,8 +51,9 @@ This will likely take some time the first time you run it since it has
 to download and compile all the packages. If the tests run
 successfully then you should be good to go!
 
-To run any of the notebooks you first need to start Pluto, starting Julia
-from this directory you can run
+To run any of the notebooks, you first need to start Pluto. Start
+Julia from this directory and run:
+
 ``` julia
 using Pkg
 Pkg.activate(".")
@@ -66,7 +67,7 @@ allow you to run the proof.
 
 ## Notes about implementation
 The implementation is split into two parts, one for large $N$,
-corresponding to Section 2, in the paper and one for small $N$,
+corresponding to Section 2 in the paper, and one for small $N$,
 corresponding to Section 3 in the paper. The code for the large $N$
 parts is found in [`src/large_N`](src/large_N) and for the small $N$
 in [`src/small_N`](src/small_N).
@@ -90,7 +91,7 @@ consists of the following files:
 
 - [`src/large_N/constants.jl`](src/large_N/constants.jl): Contains all
   of the explicit constants in the paper which we want to prove are
-  bounding different functions.
+  bounding the different functions.
 - [`src/large_N/special_functions.jl`](src/large_N/special_functions.jl):
   Contains implementations of some common special functions, such as
   the hypergeometric ${}_{2}F_{1}$ function. They are mostly direct
@@ -112,9 +113,9 @@ consists of the following files:
 - [`src/large_N/polylog.jl`](src/large_N/polylog.jl): Contains
   implementation of different versions of polylogarithms, including
   standard polylogarithms $\mathrm{Li}_s$, Nielsen generalized
-  polylogarithms $S_n$ and multiple certain polylogarithms appearing
-  in the paper. Most of the details are discussed in Appendix REF(B.3)
-  in the paper.
+  polylogarithms $S_n$ and certain multiple polylogarithms appearing
+  in the paper. Most details are discussed in Appendix REF(B.3) in the
+  paper.
 - [`src/large_N/section_2.jl`](src/large_N/section_2.jl): Contains
   implementations of various functions that appear in Section 2 of the
   paper.
@@ -130,7 +131,7 @@ should hopefully be relatively straightforward to understand the
 correspondence between the code and the paper. One important place
 where the code differs is in how the parameter $N$ is handled. In the
 paper most of the expressions and expansions are written in terms of
-$N$, typically with $N$ occurring in the numerator. For example we have
+$N$, typically with terms involving powers of 1/N. For example we have
 
 $$\lambda_{app} = \lambda \left(1 + \frac{4\zeta(3)}{N^3} + \frac{(12 - 2\lambda)\zeta(5)}{N^5}\right),$$
 
@@ -179,7 +180,7 @@ implementation consists of the following files:
   Contains code for enclosing the maximum of an approximate
   eigenfunction on the boundary of its domain.
 - [`src/small_N/MPS/enclosing/norm.jl`](src/small_N/MPS/enclosing/norm.jl):
-  Contains code for lower bounding the norm of an approximate
+  Contains code for lower-bounding the norm of an approximate
   eigenfunction on its domain.
 - [`src/small_N/MPS/enclosing/eigenvalue.jl`](src/small_N/MPS/enclosing/eigenvalue.jl):
   Contains code for computing an enclosure of an eigenvalue given an
