@@ -1,6 +1,6 @@
 # Monotonicity of the first Dirichlet eigenvalue of regular polygons
 
-This repository contains the code for the computer assisted parts of
+This repository contains the code for the computer-assisted parts of
 the proof in the paper [Monotonicity of the first Dirichlet eigenvalue
 of a regular polygon](TODO).
 
