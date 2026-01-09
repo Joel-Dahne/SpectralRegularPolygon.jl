@@ -32,9 +32,9 @@ const R_outer = "1.01"
 
 # Lemma 2.16
 const C_V_1 = "0.1"
-const C_V_2 = "0.25"
-const C_V_3 = "0.8"
-const C_V_4 = "4.1"
+const C_V_2 = "0.05"
+const C_V_3 = "0.08"
+const C_V_4 = "1"
 
 # Lemma C.1
 const C_ρ_λ = "7"
