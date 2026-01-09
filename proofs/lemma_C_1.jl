@@ -61,7 +61,7 @@ As discussed in the paper it suffices to enclose the fifth derivative of $1 - \f
 
 # ╔═╡ 626e33ce-ece6-4066-af07-98bcb6c053c8
 # Function for computing fifth derivative divided by 5!
-sqrt_1_m_ρ_div_λ_d5_function = ArbExtras.derivative_function(5) do ν
+one_m_sqrt_ρ_div_λ_d5_function = ArbExtras.derivative_function(5) do ν
     1 - SRP.c_N(ν) * sqrt(SRP.λ_app_div_λ(ν)) / factorial(5)
 end
 
@@ -71,8 +71,8 @@ For this we get the enclosure
 """
 
 # ╔═╡ 7c4055e6-60b9-4085-b9c8-7fe4da7c75d7
-sqrt_1_m_ρ_div_λ_5 =
-    ArbExtras.enclosure_series(sqrt_1_m_ρ_div_λ_d5_function, Arb((0, 1 // N₀)), degree = 4)
+one_m_sqrt_ρ_div_λ_5 =
+    ArbExtras.enclosure_series(one_m_sqrt_ρ_div_λ_d5_function, Arb((0, 1 // N₀)), degree = 4)
 
 # ╔═╡ a317e983-b641-4ca5-99a3-2b58fd0625c5
 md"""
@@ -80,10 +80,10 @@ We verify that the enclosure is positive and bounded by $C_{\rho,\lambda}$:
 """
 
 # ╔═╡ 409e2ea0-fa41-4472-9d5f-50a883d96d9a
-@assert_proof Arblib.ispositive(sqrt_1_m_ρ_div_λ_5)
+@assert_proof Arblib.ispositive(one_m_sqrt_ρ_div_λ_5)
 
 # ╔═╡ c3c77e89-9059-45d6-a1e4-ab5f4a06d584
-@assert_proof abs(sqrt_1_m_ρ_div_λ_5) <= Arb(C_ρ_λ)
+@assert_proof abs(one_m_sqrt_ρ_div_λ_5) <= Arb(C_ρ_λ)
 
 # ╔═╡ c3264d17-3129-4cb7-a4d9-5e7acca2c2f8
 md"""
