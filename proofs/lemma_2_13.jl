@@ -55,6 +55,9 @@ where we can enclose the left hand side directly:
 # ╔═╡ abc2f9f9-a622-4d50-85d9-2ffb5fc379b8
 a_0_bound = 1 / (sqrt(λ) * besselj1(sqrt(λ)))
 
+# ╔═╡ 81b93292-701b-44da-ba13-90c9453cc489
+string(a_0_bound, digits = 10) # Print an enclosure with fewer digits for paper
+
 # ╔═╡ d008caab-a6e9-4d57-902b-1d305bb4d030
 md"""
 Finally, we verify that the required bound holds:
@@ -71,5 +74,6 @@ Finally, we verify that the required bound holds:
 # ╟─311e1925-2f21-4bf2-82d8-3fb55875d968
 # ╠═de88b6f6-1e1d-40ec-aefa-65c4a6fa43ed
 # ╠═abc2f9f9-a622-4d50-85d9-2ffb5fc379b8
+# ╠═81b93292-701b-44da-ba13-90c9453cc489
 # ╟─d008caab-a6e9-4d57-902b-1d305bb4d030
 # ╠═876cbdd3-b42f-4962-bb1d-137cbd2d0f0e
