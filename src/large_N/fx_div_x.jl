@@ -69,7 +69,7 @@ function taylor_with_lagrange_remainder(
 
     if x0 == interval
         # In this case we can compute the full expansion directly
-        return f(ArbSeries((x0, 1); degree))
+        return f(AcbSeries((x0, 1); degree))
     end
 
     # Compute expansion without remainder term
