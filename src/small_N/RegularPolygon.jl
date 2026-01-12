@@ -9,7 +9,7 @@ struct RegularPolygon{T<:Real}
     N::Int
 
     function RegularPolygon{T}(N) where {T}
-        N >= 3 || throw(DomainError(n, "n must be at least 3"))
+        N >= 3 || throw(DomainError(N, "N must be at least 3"))
 
         return new{T}(N)
     end
