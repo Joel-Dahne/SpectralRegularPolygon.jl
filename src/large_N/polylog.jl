@@ -277,8 +277,6 @@ function polylog_1_3(z::Union{Arblib.AcbOrRef,AcbSeries})
         zᵤ = abs_ubound(Arb, z)
         return add_error(zero(z), polylog_1_1(zᵤ))
     else
-        # NOTE: This is not the same formula as in the paper. It comes
-        # from a recurrence relationship.
         return -polylog(4, 1 - z) + polylog(4, z) + polylog(4, inv(1 - 1 / z)) -
                polylog(3, z) * log(1 - z) + log(1 - z)^4 / factorial(4) -
                log(z) * log(1 - z)^3 / factorial(3) +
