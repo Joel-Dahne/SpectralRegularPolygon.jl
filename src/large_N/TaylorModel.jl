@@ -150,7 +150,7 @@ checkcompatible(::Type{Bool}, M1::TaylorModel, M2::TaylorModel) =
     Arblib.degree(M1) == Arblib.degree(M2) && isequal(M1.I, M2.I) && M1.x0 == M2.x0
 
 """
-    checkcompatible(::Type{Bool}, M1::TaylorModel, M2::TaylorModel)
+    checkcompatible(M1::TaylorModel, M2::TaylorModel)
 
 Throw an error if `M1` and `M2` are not compatible according to
 `checkcompatible(Bool, M1, M2)`.
