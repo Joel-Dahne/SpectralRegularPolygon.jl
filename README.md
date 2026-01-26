@@ -2,7 +2,7 @@
 
 This repository contains the code for the computer-assisted parts of
 the proof in the paper [Monotonicity of the first Dirichlet eigenvalue
-of a regular polygon](TODO).
+of regular polygons](https://doi.org/10.48550/arXiv.2601.16285).
 
 The results of the paper are presented in different
 [Pluto.jl](https://plutojl.org/) notebooks, found in the
