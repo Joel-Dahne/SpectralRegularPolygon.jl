@@ -90,7 +90,7 @@ us, λs_approx = let
 
     λs_approx = tmap(us, SRP.get_eigenvalue_approximation.(Arb, Ns)) do u, λ
         if !isfinite(λ)
-            # Comptue approximation on the fly
+            # Compute approximation on the fly
             @assert 5 <= u.domain.N <= 11
             λ_upper = SRP.get_eigenvalue_approximation(Arb, 4)
             λ_lower = SRP.get_eigenvalue_approximation(Arb, 12)
@@ -132,6 +132,112 @@ Next we compute rigorous enclosures of $\lambda_{1}(\mathcal{P}_N)$ for $5 \leq 
         @logprogress progress[] / length(Ns)
         λ
     end
+end
+
+# ╔═╡ c680f08d-7cef-4d51-80c6-720648fd32ec
+md"""
+## Validate that the enclosures correspond to the first eigenvalue
+
+### Goal
+We want to prove that for $5 \leq N \leq N_0 + 1$ we have
+
+$$\lambda_N < \lambda_2(\mathbb{D}_{C_5}) \leq \lambda_2(\mathcal{P}_N),$$
+
+where $\lambda_N$ denote the enclosure for an eigenvalue of the $N$-th polygon and $C_5$ is the circumradius of the pentagon $\mathcal{P}_5$.
+
+The circumradius is determined by the following formula:
+
+$$C_N = \sqrt{\frac{\pi}{\frac{N}{2} \sin\left(\frac{2\pi}{N}\right)}},$$
+
+which is a decreasing function in $N$. Thus, $\mathcal{P}_N \subset \mathbb{D}_{C_5}$ for all $5\leq N \leq N_0+1$. By monotonicity of eigenvalues with respect to the domain, $\lambda_2(\mathbb{D}_{C_5}) \leq \lambda_2(\mathcal{P}_N)$.
+
+"""
+
+# ╔═╡ 90e8ce74-1763-4e3f-926b-b251ed93608a
+function circumradius_area_pi(N::Integer)
+    θ = 2Arb(π) / Arb(N)
+    sqrt(2Arb(π) / (Arb(N) * sin(θ)))
+end
+
+# ╔═╡ f4c1d132-5615-4f11-aa51-d89ab1013c90
+C_5 = circumradius_area_pi(5)
+
+# ╔═╡ df0cb238-bd9c-4c28-b796-861ee1b46936
+md"""
+For the remaining inequality, we compute an enclosure of $\lambda_2(\mathbb{D}_{C_5})$. By scaling we get that
+
+$$\lambda_2(\mathbb{D}_{C_5}) = \frac{\lambda_2(\mathbb{D})}{C_5^2},$$
+
+with $\lambda_2(\mathbb{D})$ given by
+
+$$\lambda_2(\mathbb{D}) = j_{1,1}^2,$$
+
+where $j_{1,1}$ denotes the first positive zero of $J_1$.
+
+To compute $j_{1,1}$ we first verify that $J_1$ is strictly increasing on the interval $[0, 1]$, this ensures that the only zero on that interval is the one at zero.
+"""
+
+# ╔═╡ 2d911cb2-3c02-4a35-9ec0-0621ad48621c
+@assert_proof Arblib.ispositive(ArbExtras.derivative_function(besselj1)(Arb((0, 1))))
+
+# ╔═╡ 8413cc97-4bb7-427f-89ee-ce3e8eab8e5c
+md"""
+This proves that $j_{1,1} > 1$. Next we isolate all the roots on the interval $[1, 5]$:
+"""
+
+# ╔═╡ 5b402c2d-07ec-47d0-9bde-2f2f3eec3398
+roots, flags = ArbExtras.isolate_roots(besselj1, Arf(1), Arf(5), depth = 20)
+
+# ╔═╡ d857e5b3-0141-42b1-98d0-0116a06477ae
+md"""
+We verify that it only found one root and that it was proved to be unique:
+"""
+
+# ╔═╡ c5fc13bc-a4d2-4051-a3e3-4681ca65e65e
+@assert_proof length(flags) == 1 && flags[1]
+
+# ╔═╡ c87c6ab1-6eb3-44a7-a152-d177b9b25ac9
+md"""
+We refine the enclosure of the root, giving an enclosure for $j_{1,1}$:
+"""
+
+# ╔═╡ 98048380-de48-4314-874d-dd3da7dcd3c9
+j_1_1 = ArbExtras.refine_root(besselj1, Arb(roots[1]))
+
+# ╔═╡ 0605bb46-2e92-4aa8-a827-6a0ff3377f15
+md"""
+We square it, to get an enclosure of the eigenvalue for $\mathbb{D}$:
+"""
+
+# ╔═╡ f825dd1c-99dd-437a-8570-66aba12a13b1
+λ₂_D = j_1_1^2
+
+# ╔═╡ edbedc24-9326-46a9-8011-a3bea660b743
+md"""
+Finally we scale the result to get an enclosure of $\lambda_2(\mathbb{D}_{C_5})$:
+"""
+
+# ╔═╡ d67ccd63-a05d-4712-b088-8125100efeea
+λ₂_C_5 = λ₂_D / Arb(C_5)^2
+
+# ╔═╡ ae14b6b7-162d-4c89-8419-893e5c59fee0
+md"""
+We print a version with fewer digits for inclusion in the paper.
+"""
+
+# ╔═╡ 199720ce-e89b-4bac-8443-00a65e26338d
+string(λ₂_C_5, digits = 5)
+
+# ╔═╡ 6baa618a-3a2d-422c-946a-d82951015873
+md"""
+Finally, we just verify the following inequality for $5 \leq N \leq N_0 +1$ :
+
+$$\lambda_N < \lambda_2(\mathbb{D}_{C_5}).$$
+"""
+
+# ╔═╡ 44e44fae-721a-4567-baec-96b51374030c
+@assert_proof all(eachindex(λs)) do i
+    λs[i] < λ₂_C_5
 end
 
 # ╔═╡ 540eabb1-4dd7-4e80-890a-5577bb64cf36
@@ -395,6 +501,25 @@ end
 # ╟─c2150b3f-00d7-4400-9cd5-a12f21c9e469
 # ╟─b8b858a8-b6f0-4780-8d38-6fce97c28d43
 # ╠═b35d0bfa-2f2b-43e9-b59a-e94e0e23e2cb
+# ╟─c680f08d-7cef-4d51-80c6-720648fd32ec
+# ╠═90e8ce74-1763-4e3f-926b-b251ed93608a
+# ╠═f4c1d132-5615-4f11-aa51-d89ab1013c90
+# ╟─df0cb238-bd9c-4c28-b796-861ee1b46936
+# ╠═2d911cb2-3c02-4a35-9ec0-0621ad48621c
+# ╟─8413cc97-4bb7-427f-89ee-ce3e8eab8e5c
+# ╠═5b402c2d-07ec-47d0-9bde-2f2f3eec3398
+# ╟─d857e5b3-0141-42b1-98d0-0116a06477ae
+# ╠═c5fc13bc-a4d2-4051-a3e3-4681ca65e65e
+# ╟─c87c6ab1-6eb3-44a7-a152-d177b9b25ac9
+# ╠═98048380-de48-4314-874d-dd3da7dcd3c9
+# ╟─0605bb46-2e92-4aa8-a827-6a0ff3377f15
+# ╠═f825dd1c-99dd-437a-8570-66aba12a13b1
+# ╟─edbedc24-9326-46a9-8011-a3bea660b743
+# ╠═d67ccd63-a05d-4712-b088-8125100efeea
+# ╟─ae14b6b7-162d-4c89-8419-893e5c59fee0
+# ╠═199720ce-e89b-4bac-8443-00a65e26338d
+# ╟─6baa618a-3a2d-422c-946a-d82951015873
+# ╠═44e44fae-721a-4567-baec-96b51374030c
 # ╟─540eabb1-4dd7-4e80-890a-5577bb64cf36
 # ╠═d5b9ea36-fee2-4b8b-a090-16c2ecf308f3
 # ╟─fac49c09-f365-4fe7-a05a-7b6bfa306e50
