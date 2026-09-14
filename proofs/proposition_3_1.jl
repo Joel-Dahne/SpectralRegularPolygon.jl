@@ -141,13 +141,15 @@ md"""
 ### Goal
 We want to prove that for $5 \leq N \leq N_0 + 1$ we have
 
-$$\lambda_N < \lambda_2(\mathbb{D}_{C_5}) \leq \lambda_2(\mathcal{P}_N).$$
+$$\lambda_N < \lambda_2(\mathbb{D}_{C_5}) \leq \lambda_2(\mathcal{P}_N),$$
 
-The circumradius $C_5$ of the pentagon $\mathcal{P}_5$ is determined by the following formula:
+where $\lambda_N$ denote the enclosure for an eigenvalue of the $N$-th polygon and $C_5$ is the circumradius of the pentagon $\mathcal{P}_5$.
 
-$$C_N = \sqrt{\frac{\pi}{\frac{N}{2} \sin\left(\frac{2\pi}{N}\right)}}.$$
+The circumradius is determined by the following formula:
 
-It is a decreasing function in $N$, so $\mathcal{P}_N \subset \mathbb{D}_{C_5}$ for all $5\leq N \leq N_0+1$. By monotonicity of eigenvalues with respect to the domain, $\lambda_2(\mathbb{D}_{C_5}) \leq \lambda_2(\mathcal{P}_N)$.
+$$C_N = \sqrt{\frac{\pi}{\frac{N}{2} \sin\left(\frac{2\pi}{N}\right)}},$$
+
+which is a decreasing function in $N$. Thus, $\mathcal{P}_N \subset \mathbb{D}_{C_5}$ for all $5\leq N \leq N_0+1$. By monotonicity of eigenvalues with respect to the domain, $\lambda_2(\mathbb{D}_{C_5}) \leq \lambda_2(\mathcal{P}_N)$.
 
 """
 
@@ -208,7 +210,7 @@ We square it, to get an enclosure of the eigenvalue for $\mathbb{D}$:
 """
 
 # ╔═╡ f825dd1c-99dd-437a-8570-66aba12a13b1
-λ₂ = j_1_1^2
+λ₂_D = j_1_1^2
 
 # ╔═╡ edbedc24-9326-46a9-8011-a3bea660b743
 md"""
@@ -216,7 +218,7 @@ Finally we scale the result to get an enclosure of $\lambda_2(\mathbb{D}_{C_5})$
 """
 
 # ╔═╡ d67ccd63-a05d-4712-b088-8125100efeea
-λ₂_C_5 = λ₂ / Arb(C_5)^2
+λ₂_C_5 = λ₂_D / Arb(C_5)^2
 
 # ╔═╡ ae14b6b7-162d-4c89-8419-893e5c59fee0
 md"""
@@ -228,7 +230,9 @@ string(λ₂_C_5, digits = 5)
 
 # ╔═╡ 6baa618a-3a2d-422c-946a-d82951015873
 md"""
-Finally, we just verify the inequality:
+Finally, we just verify the following inequality for $5 \leq N \leq N_0 +1$ :
+
+$$\lambda_N < \lambda_2(\mathbb{D}_{C_5}).$$
 """
 
 # ╔═╡ 44e44fae-721a-4567-baec-96b51374030c
