@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.20.21
+# v1.0.3
 
 using Markdown
 using InteractiveUtils
@@ -22,6 +22,7 @@ begin
     Pkg.activate("..", io = devnull)
     using SpectralRegularPolygons
     using CairoMakie
+    using CSV
     using Arblib
     using ArbExtras
     using OhMyThreads
@@ -260,6 +261,17 @@ Ns_full = 3:Ns[end]
 # ╔═╡ 468dccc1-36f7-4441-a410-7d5c99341d63
 λs_full = [4Arb(π) / sqrt(Arb(3)); 2Arb(π); λs]
 
+# ╔═╡ 6dc31b4d-44fb-4160-a168-94927fe8bbe1
+md"""
+We store the computed enclosures in `data/eigenvalues.csv` for easier access without recomputations.
+"""
+
+# ╔═╡ cebd7c10-857f-473f-bfdb-16595843f38f
+CSV.write(
+    "data/eigenvalues.csv",
+    (N = Ns_full, λ_N_str = λs_full, λ_N_dump = Arblib.dump_string.(λs_full)),
+)
+
 # ╔═╡ 9cf9fd3b-0bae-41d9-89f9-7dc96480bce9
 md"""
 The paper gives the enclosures for $\lambda_5$, $\lambda_6$, $\lambda_{63}$ and $\lambda_{64}$ as examples:
@@ -289,11 +301,33 @@ end
 
 # ╔═╡ 99bd9807-92c7-4723-be12-a66700e04587
 md"""
-Finally we compute the values for $q_N$ for $3 \leq N \leq N_0$, and verify that $q_{N} > q_{N + 1}$ holds.
+Finally we compute the values for $q_N$ for $3 \leq N \leq N_0$.
 """
 
 # ╔═╡ a65680cb-6cc5-445d-9658-4cf94c79306a
 qs_full = λs_full[1:(end-1)] ./ λs_full[2:end]
+
+# ╔═╡ de6ceec6-a920-4a14-bfaf-4de0d78cdb6c
+md"""
+The paper gives the enclosures for $q_4$, $q_5$, $q_{63}$ and $q_{64}$ as examples:
+"""
+
+# ╔═╡ fbed59ea-c2c8-48d0-a354-2ca012a9b70e
+qs_full[2] # q_4
+
+# ╔═╡ c8ea209b-8426-48fc-8099-71dfea1ec0be
+qs_full[3] # q_5
+
+# ╔═╡ f58268e0-c5df-484d-a41c-13868b112333
+qs_full[61] # q_63
+
+# ╔═╡ 71cb6d57-1e75-467d-80b6-cc7ec06a0def
+qs_full[62] # q_64
+
+# ╔═╡ 307da4d7-282a-4e04-a49c-5f2bb6041f0e
+md"""
+We verify that $q_{N} > q_{N + 1}$ holds.
+"""
 
 # ╔═╡ bcbd6354-5212-4efc-a42c-0f70a1e49bc2
 @assert_proof all(eachindex(qs_full)[1:(end-1)]) do i
@@ -525,6 +559,8 @@ end
 # ╟─fac49c09-f365-4fe7-a05a-7b6bfa306e50
 # ╠═c115ab1e-cd48-4c95-aebf-3c04715c28fa
 # ╠═468dccc1-36f7-4441-a410-7d5c99341d63
+# ╟─6dc31b4d-44fb-4160-a168-94927fe8bbe1
+# ╠═cebd7c10-857f-473f-bfdb-16595843f38f
 # ╟─9cf9fd3b-0bae-41d9-89f9-7dc96480bce9
 # ╠═92fc1da8-41af-4181-b8e0-3e34d1146fbf
 # ╠═d65b3d76-9472-4319-ae4d-622a8053f2e4
@@ -534,6 +570,12 @@ end
 # ╠═827a5af8-ac00-414c-b79b-e8f98a907969
 # ╟─99bd9807-92c7-4723-be12-a66700e04587
 # ╠═a65680cb-6cc5-445d-9658-4cf94c79306a
+# ╟─de6ceec6-a920-4a14-bfaf-4de0d78cdb6c
+# ╠═fbed59ea-c2c8-48d0-a354-2ca012a9b70e
+# ╠═c8ea209b-8426-48fc-8099-71dfea1ec0be
+# ╠═f58268e0-c5df-484d-a41c-13868b112333
+# ╠═71cb6d57-1e75-467d-80b6-cc7ec06a0def
+# ╟─307da4d7-282a-4e04-a49c-5f2bb6041f0e
 # ╠═bcbd6354-5212-4efc-a42c-0f70a1e49bc2
 # ╟─d4143768-2eb4-4d52-9321-7daf30823c90
 # ╟─8b6b7d10-467d-4dcd-a800-2bbe0e9573a0

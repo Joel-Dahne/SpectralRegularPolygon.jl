@@ -31,6 +31,19 @@ implementation is given directly in the notebook. For other ones, for
 example Lemma 2.10, most of the implementation is given in the
 [`src`](src) directory.
 
+For most notebooks the only output is to the notebook itself. The only
+exception is [Proposition 3.1](proofs/proposition_3_1.jl) which
+generates the figures that appear in the paper and also stores the
+computed eigenvalues to <proofs/data/eigenvalues.csv>. The stored
+eigenvalues can be loaded with
+
+``` julia
+using Arblib, CSV
+data = CSV.File("proofs/data/eigenvalues.csv", types = [Int, String, String])
+Ns = data.N
+λs = Arblib.load_string.(Arb, data.λ_N_dump)
+```
+
 ## Reproducing the proof
 The proofs were generated with Julia version 1.11.8. This repository
 contains the same `Manifest-v1.11.toml` file as was used when running
