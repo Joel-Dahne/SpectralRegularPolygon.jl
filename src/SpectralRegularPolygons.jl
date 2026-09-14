@@ -3,7 +3,6 @@ module SpectralRegularPolygons
 import Arblib
 import ArbExtras
 import CSV
-import DataFrames
 import GenericLinearAlgebra
 import GeometryBasics
 import LaTeXStrings

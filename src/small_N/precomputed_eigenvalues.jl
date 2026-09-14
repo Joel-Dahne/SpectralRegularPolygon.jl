@@ -16,13 +16,13 @@ function load_precomputed_eigenvalue(T, N::Integer)
     filename = joinpath(dirname(pathof(@__MODULE__)), "../", "lowest_eigenvalues.txt")
     types = [Int, Int, Int, String]
 
-    df = CSV.read(filename, DataFrames.DataFrame; types)
+    data = CSV.File(filename; types)
 
-    row_index = searchsortedfirst(df[:, 1], N)
+    row_index = searchsortedfirst(data.n, N)
 
     if T == Arb
-        return Arb(df.lambda[row_index])
+        return Arb(data.lambda[row_index])
     else
-        return parse(T, df.lambda[row_index])
+        return parse(T, data.lambda[row_index])
     end
 end
