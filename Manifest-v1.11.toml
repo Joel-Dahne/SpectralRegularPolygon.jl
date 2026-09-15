@@ -67,9 +67,9 @@ version = "0.1.45"
 
 [[deps.Adapt]]
 deps = ["LinearAlgebra"]
-git-tree-sha1 = "daa72978cd7a624246e894a4f4f067706d4e17e2"
+git-tree-sha1 = "7c2c19b5a26e601634bf718490b89d59685f122e"
 uuid = "79e6a3ab-5dfb-504d-930d-738a2a938a0e"
-version = "4.7.0"
+version = "4.7.1"
 weakdeps = ["SparseArrays", "StaticArrays"]
 
     [deps.Adapt.extensions]
@@ -95,9 +95,9 @@ version = "0.4.2"
 
 [[deps.ArbExtras]]
 deps = ["Arblib", "SpecialFunctions"]
-git-tree-sha1 = "206ebc1d94367dd43c0a7cbac3f20087d8263380"
+git-tree-sha1 = "993808713936ed761907f6e5b398b7ea834b13bd"
 uuid = "c87f5d39-a852-4149-8a88-e3a13a25afc6"
-version = "1.2.2"
+version = "1.2.3"
 
 [[deps.Arblib]]
 deps = ["FLINT_jll", "LinearAlgebra", "Random", "ScopedValues", "Serialization", "SpecialFunctions"]
@@ -117,9 +117,9 @@ version = "1.1.2"
 
 [[deps.ArrayInterface]]
 deps = ["Adapt", "LinearAlgebra"]
-git-tree-sha1 = "daf5b2aab5b1c1fdcb65b05883cdb4b18abac1b9"
+git-tree-sha1 = "1aec1ff0dcaa83a484e7f72097562fa3102c6722"
 uuid = "4fba245c-0d91-5ea0-9b3e-6abc04ee57a9"
-version = "7.30.1"
+version = "7.30.2"
 
     [deps.ArrayInterface.extensions]
     ArrayInterfaceAMDGPUExt = "AMDGPU"
@@ -1094,9 +1094,9 @@ version = "2.42.0+0"
 
 [[deps.LineSearches]]
 deps = ["LinearAlgebra", "NLSolversBase", "NaNMath", "Printf"]
-git-tree-sha1 = "b4f9762e3ad693626ffd51ae4be359c0a7b08469"
+git-tree-sha1 = "a09a85e94e681def2446752cddaf9401a4d82b6d"
 uuid = "d3d80556-e9d4-5f37-9878-2ab0fcc64255"
-version = "7.8.1"
+version = "7.8.2"
 
 [[deps.LinearAlgebra]]
 deps = ["Libdl", "OpenBLAS_jll", "libblastrampoline_jll"]
@@ -1328,9 +1328,9 @@ version = "0.5.6+0"
 
 [[deps.Optim]]
 deps = ["ADTypes", "EnumX", "FillArrays", "LineSearches", "LinearAlgebra", "NLSolversBase", "NaNMath", "PositiveFactorizations", "Printf", "SparseArrays", "Statistics"]
-git-tree-sha1 = "ece78ffe4fcee487b858ecaf184b8d7c2a79e015"
+git-tree-sha1 = "81f338ad984b25bc82471db4d235e7b8bf21b8d6"
 uuid = "429524aa-4258-5aef-a3af-852621145aeb"
-version = "2.3.1"
+version = "2.3.2"
 
     [deps.Optim.extensions]
     OptimMOIExt = "MathOptInterface"
@@ -1469,9 +1469,9 @@ version = "1.2.1"
 
 [[deps.Preferences]]
 deps = ["TOML"]
-git-tree-sha1 = "8b770b60760d4451834fe79dd483e318eee709c4"
+git-tree-sha1 = "5005266de4bfe50e53ff44a5cb5c540b6e47a254"
 uuid = "21216c6a-2e73-6563-6e65-726566657250"
-version = "1.5.2"
+version = "1.6.0"
 
 [[deps.Primes]]
 deps = ["IntegerMathUtils"]
