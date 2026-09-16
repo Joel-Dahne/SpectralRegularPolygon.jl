@@ -34,8 +34,9 @@ example Lemma 2.10, most of the implementation is given in the
 For most notebooks the only output is to the notebook itself. The only
 exception is [Proposition 3.1](proofs/proposition_3_1.jl) which
 generates the figures that appear in the paper and also stores the
-computed eigenvalues to <proofs/data/eigenvalues.csv>. The stored
-eigenvalues can be loaded with
+computed eigenvalues to
+[`proofs/data/eigenvalues.csv`](proofs/data/eigenvalues.csv). The
+stored eigenvalues can be loaded with
 
 ``` julia
 using Arblib, CSV

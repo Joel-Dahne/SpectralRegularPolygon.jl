@@ -400,7 +400,7 @@ end
 """
     K_4(N₀::Int, z::Acb)
 
-Return a function which given `t` computes an enclosure of of `K_4(N,
+Return a function which given `t` computes an enclosure of `K_4(N,
 z, t)` from Lemma REF(2.9) in the paper.
 
 The reason this function doesn't take `t` directly as an argument is

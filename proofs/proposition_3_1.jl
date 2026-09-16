@@ -144,7 +144,7 @@ We want to prove that for $5 \leq N \leq N_0 + 1$ we have
 
 $$\lambda_N < \lambda_2(\mathbb{D}_{C_5}) \leq \lambda_2(\mathcal{P}_N),$$
 
-where $\lambda_N$ denote the enclosure for an eigenvalue of the $N$-th polygon and $C_5$ is the circumradius of the pentagon $\mathcal{P}_5$.
+where $\lambda_N$ denotes the enclosure for an eigenvalue of the $N$-th polygon and $C_5$ is the circumradius of the pentagon $\mathcal{P}_5$.
 
 The circumradius is determined by the following formula:
 
@@ -175,7 +175,7 @@ $$\lambda_2(\mathbb{D}) = j_{1,1}^2,$$
 
 where $j_{1,1}$ denotes the first positive zero of $J_1$.
 
-To compute $j_{1,1}$ we first verify that $J_1$ is strictly increasing on the interval $[0, 1]$, this ensures that the only zero on that interval is the one at zero.
+To compute $j_{1,1}$ we first verify that $J_1$ is strictly increasing on the interval $[0, 1]$; this ensures that the only zero on that interval is the one at zero.
 """
 
 # ╔═╡ 2d911cb2-3c02-4a35-9ec0-0621ad48621c
@@ -207,7 +207,7 @@ j_1_1 = ArbExtras.refine_root(besselj1, Arb(roots[1]))
 
 # ╔═╡ 0605bb46-2e92-4aa8-a827-6a0ff3377f15
 md"""
-We square it, to get an enclosure of the eigenvalue for $\mathbb{D}$:
+We square it to get an enclosure of the second eigenvalue of $\mathbb{D}$:
 """
 
 # ╔═╡ f825dd1c-99dd-437a-8570-66aba12a13b1
@@ -231,7 +231,7 @@ string(λ₂_C_5, digits = 5)
 
 # ╔═╡ 6baa618a-3a2d-422c-946a-d82951015873
 md"""
-Finally, we just verify the following inequality for $5 \leq N \leq N_0 +1$ :
+Finally, we just verify the following inequality for $5 \leq N \leq N_0 + 1$:
 
 $$\lambda_N < \lambda_2(\mathbb{D}_{C_5}).$$
 """
@@ -244,7 +244,7 @@ end
 # ╔═╡ 540eabb1-4dd7-4e80-890a-5577bb64cf36
 md"""
 ## Verify proposition
-With the enclosures computed, the next step is to check that they satisfy the required conditions. First we check that all enclosures were succesfully computed.
+With the enclosures computed, the next step is to check that they satisfy the required conditions. First we check that all enclosures were successfully computed.
 """
 
 # ╔═╡ d5b9ea36-fee2-4b8b-a090-16c2ecf308f3
@@ -252,7 +252,7 @@ With the enclosures computed, the next step is to check that they satisfy the re
 
 # ╔═╡ fac49c09-f365-4fe7-a05a-7b6bfa306e50
 md"""
-The code above computeted the eigenvalues for $5 \leq N \leq N_0 + 1$. We also want to check the conditions for $N = 3$ and $N = 4$, so we create a vector with those two added.
+The code above computed the eigenvalues for $5 \leq N \leq N_0 + 1$. We also want to check the conditions for $N = 3$ and $N = 4$, so we create a vector with those two added.
 """
 
 # ╔═╡ c115ab1e-cd48-4c95-aebf-3c04715c28fa
@@ -263,7 +263,7 @@ Ns_full = 3:Ns[end]
 
 # ╔═╡ 6dc31b4d-44fb-4160-a168-94927fe8bbe1
 md"""
-We store the computed enclosures in `data/eigenvalues.csv` for easier access without recomputations.
+We store the computed enclosures in `data/eigenvalues.csv` for easier access without recomputation.
 """
 
 # ╔═╡ cebd7c10-857f-473f-bfdb-16595843f38f
@@ -435,7 +435,7 @@ end
 
 # ╔═╡ ea97c15b-b03f-4b6b-8e80-73ff12eaa215
 md"""
-### Figures not appearing the in the paper
+### Figures not appearing in the paper
 """
 
 # ╔═╡ fcbbc9b1-1bee-4616-9b12-754227f1402a

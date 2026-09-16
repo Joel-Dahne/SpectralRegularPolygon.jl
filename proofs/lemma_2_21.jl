@@ -88,7 +88,7 @@ j_1_1 = ArbExtras.refine_root(besselj1, Arb(roots[1]))
 
 # ╔═╡ 2943ea8e-626d-43c1-ad8b-3c704b7328b0
 md"""
-We square it, to get an enclosure of the eigenvalue for $\mathbb{D}$:
+We square it to get an enclosure of the second eigenvalue of $\mathbb{D}$:
 """
 
 # ╔═╡ 9ff56c39-723d-4206-8895-b11bb19ab4f7
