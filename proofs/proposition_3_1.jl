@@ -135,12 +135,19 @@ Next we compute rigorous enclosures of $\lambda_{1}(\mathcal{P}_N)$ for $5 \leq 
     end
 end
 
+# ╔═╡ 1c0394f1-1353-4c95-bcb9-bfb83ad78d31
+md"""
+We check that all enclosures were successfully computed.
+"""
+
+# ╔═╡ d5b9ea36-fee2-4b8b-a090-16c2ecf308f3
+@assert_proof all(isfinite, λs)
+
 # ╔═╡ c680f08d-7cef-4d51-80c6-720648fd32ec
 md"""
-## Validate that the enclosures correspond to the first eigenvalue
+## Validate that enclosures are for first eigenvalue
 
-### Goal
-We want to prove that for $5 \leq N \leq N_0 + 1$ we have
+We next verify that the computed enclosures indeed correspond to the first eigenvalue. For this we want to prove that for $5 \leq N \leq N_0 + 1$ we have
 
 $$\lambda_N < \lambda_2(\mathbb{D}_{C_5}) \leq \lambda_2(\mathcal{P}_N),$$
 
@@ -156,8 +163,8 @@ which is a decreasing function in $N$. Thus, $\mathcal{P}_N \subset \mathbb{D}_{
 
 # ╔═╡ 90e8ce74-1763-4e3f-926b-b251ed93608a
 function circumradius_area_pi(N::Integer)
-    θ = 2Arb(π) / Arb(N)
-    sqrt(2Arb(π) / (Arb(N) * sin(θ)))
+    θ = 2Arb(π) / N
+    sqrt(2Arb(π) / (N * sin(θ)))
 end
 
 # ╔═╡ f4c1d132-5615-4f11-aa51-d89ab1013c90
@@ -219,7 +226,7 @@ Finally we scale the result to get an enclosure of $\lambda_2(\mathbb{D}_{C_5})$
 """
 
 # ╔═╡ d67ccd63-a05d-4712-b088-8125100efeea
-λ₂_C_5 = λ₂_D / Arb(C_5)^2
+λ₂_C_5 = λ₂_D / C_5^2
 
 # ╔═╡ ae14b6b7-162d-4c89-8419-893e5c59fee0
 md"""
@@ -241,14 +248,16 @@ $$\lambda_N < \lambda_2(\mathbb{D}_{C_5}).$$
     λs[i] < λ₂_C_5
 end
 
+# ╔═╡ 9fd343f5-122e-423c-b8eb-8088d4d7033c
+md"""
+Since $\lambda_N$ encloses an eigenvalue of $\mathcal{P}_N$ that is strictly smaller than $\lambda_2(\mathcal{P}_N)$, it must enclose the first one. We conclude that $\lambda_N$ is an enclosure of $\lambda_1(\mathcal{P}_N)$ for $5 \leq N \leq N_0 + 1$.
+"""
+
 # ╔═╡ 540eabb1-4dd7-4e80-890a-5577bb64cf36
 md"""
 ## Verify proposition
-With the enclosures computed, the next step is to check that they satisfy the required conditions. First we check that all enclosures were successfully computed.
+With the enclosures computed, the next step is to check that they satisfy the required conditions.
 """
-
-# ╔═╡ d5b9ea36-fee2-4b8b-a090-16c2ecf308f3
-@assert_proof all(isfinite, λs)
 
 # ╔═╡ fac49c09-f365-4fe7-a05a-7b6bfa306e50
 md"""
@@ -535,6 +544,8 @@ end
 # ╟─c2150b3f-00d7-4400-9cd5-a12f21c9e469
 # ╟─b8b858a8-b6f0-4780-8d38-6fce97c28d43
 # ╠═b35d0bfa-2f2b-43e9-b59a-e94e0e23e2cb
+# ╟─1c0394f1-1353-4c95-bcb9-bfb83ad78d31
+# ╠═d5b9ea36-fee2-4b8b-a090-16c2ecf308f3
 # ╟─c680f08d-7cef-4d51-80c6-720648fd32ec
 # ╠═90e8ce74-1763-4e3f-926b-b251ed93608a
 # ╠═f4c1d132-5615-4f11-aa51-d89ab1013c90
@@ -554,8 +565,8 @@ end
 # ╠═199720ce-e89b-4bac-8443-00a65e26338d
 # ╟─6baa618a-3a2d-422c-946a-d82951015873
 # ╠═44e44fae-721a-4567-baec-96b51374030c
+# ╟─9fd343f5-122e-423c-b8eb-8088d4d7033c
 # ╟─540eabb1-4dd7-4e80-890a-5577bb64cf36
-# ╠═d5b9ea36-fee2-4b8b-a090-16c2ecf308f3
 # ╟─fac49c09-f365-4fe7-a05a-7b6bfa306e50
 # ╠═c115ab1e-cd48-4c95-aebf-3c04715c28fa
 # ╠═468dccc1-36f7-4441-a410-7d5c99341d63
