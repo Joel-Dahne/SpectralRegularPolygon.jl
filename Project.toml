@@ -1,7 +1,7 @@
 name = "SpectralRegularPolygons"
 uuid = "e7a28b93-dbb8-41b8-8604-9b5c415b6179"
 authors = ["Joel Dahne <joel@dahne.eu>"]
-version = "0.1.0"
+version = "1.0.0"
 
 [deps]
 ArbExtras = "c87f5d39-a852-4149-8a88-e3a13a25afc6"
