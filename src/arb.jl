@@ -100,3 +100,12 @@ function Base.:(>>)(p::T, n::Integer) where {T<:Union{ArbSeries,AcbSeries}}
     n >= 0 || throw(ArgumentError("n needs to be non-negative, got $n"))
     return Arblib.shift_left!(T(degree = Arblib.degree(p) + n, prec = precision(p)), p, n)
 end
+
+# In a recent version of FLINT they added support for series
+# evaluation to besselj, which is now the default implementation
+# instead of a previous version that was implemented in ArbExtras. In
+# general the new version is faster, but it does not allow evaluation
+# around z = 0 for second derivatives or higher. Since we do need that
+# we fall back to the old ArbExtras version, which supports derivative
+# up to order 4 around z = 0.
+besselj(ν::Arb, z::ArbSeries) = ArbExtras._besseljy(Arblib.hypgeom_bessel_j!, ν, z)
