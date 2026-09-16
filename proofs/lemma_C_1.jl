@@ -71,8 +71,11 @@ For this we get the enclosure
 """
 
 # ╔═╡ 7c4055e6-60b9-4085-b9c8-7fe4da7c75d7
-one_m_sqrt_ρ_div_λ_5 =
-    ArbExtras.enclosure_series(one_m_sqrt_ρ_div_λ_d5_function, Arb((0, 1 // N₀)), degree = 4)
+one_m_sqrt_ρ_div_λ_5 = ArbExtras.enclosure_series(
+    one_m_sqrt_ρ_div_λ_d5_function,
+    Arb((0, 1 // N₀)),
+    degree = 4,
+)
 
 # ╔═╡ a317e983-b641-4ca5-99a3-2b58fd0625c5
 md"""
