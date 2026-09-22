@@ -1,5 +1,5 @@
 # This file contains the implementation the functions that are bounded
-# in Lemma 2.10.
+# in Lemma 2.9.
 
 """
     d(k::Int, z::Arblib.AcbOrRef, t::Arblib.AcbOrRef; analytic::Bool = false)
@@ -213,7 +213,7 @@ Compute an enclosure of the integral
 ```
 ∫ d_k(z, t) * V_l(t) dt
 ```
-from `0` to `z`, which is bounded in Lemma REF(2.10) in the paper.
+from `0` to `z`, which is bounded in Lemma REF(2.9) in the paper.
 
 The keyword arguments `a` and `b` determines how the interval of
 integration is split at the endpoints. Note that the value for `b` is
@@ -401,7 +401,7 @@ end
     K_4(N₀::Int, z::Acb)
 
 Return a function which given `t` computes an enclosure of `K_4(N,
-z, t)` from Lemma REF(2.9) in the paper.
+z, t)` from Lemma REF(2.8) in the paper.
 
 The reason this function doesn't take `t` directly as an argument is
 to allow for precomputing all the parts of the function that don't
@@ -476,7 +476,7 @@ Compute an enclosure of the integral
 ```
 ∫ K_4(z, t) * V_l(t) dt
 ```
-from `0` to `z`, which is bounded in Lemma REF(2.10) in the paper.
+from `0` to `z`, which is bounded in Lemma REF(2.9) in the paper.
 
 It computes a bound which is valid for all `N >= N₀`.
 

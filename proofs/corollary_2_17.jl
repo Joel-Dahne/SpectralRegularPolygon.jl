@@ -20,7 +20,7 @@ end
 
 # ╔═╡ a5dca01c-dbb8-11f0-3370-f7e17998c69e
 md"""
-# Proof of Corollary 2.18
+# Proof of Corollary 2.17
 """
 
 # ╔═╡ b00fef7d-6a12-424e-94c4-434df25a7895

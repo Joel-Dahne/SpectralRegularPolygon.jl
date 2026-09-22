@@ -13,22 +13,22 @@ opening the corresponding html-files found in the [`proofs`](proofs)
 directory, they can be opened in any browser such as Firefox. The
 notebooks contain proofs for the following lemmas and propositions in
 the paper:
+- [Lemma 2.5](proofs/lemma_2_5.jl)
 - [Lemma 2.6](proofs/lemma_2_6.jl)
-- [Lemma 2.7](proofs/lemma_2_7.jl)
-- [Lemma 2.10](proofs/lemma_2_10.jl)
-- [Lemma 2.13](proofs/lemma_2_13.jl)
+- [Lemma 2.9](proofs/lemma_2_9.jl)
+- [Lemma 2.12](proofs/lemma_2_12.jl)
+- [Lemma 2.14](proofs/lemma_2_14.jl)
 - [Lemma 2.15](proofs/lemma_2_15.jl)
-- [Lemma 2.16](proofs/lemma_2_16.jl)
-- [Corollary 2.18](proofs/corollary_2_18.jl)
+- [Corollary 2.17](proofs/corollary_2_17.jl)
+- [Lemma 2.20](proofs/lemma_2_20.jl)
 - [Lemma 2.21](proofs/lemma_2_21.jl)
-- [Lemma 2.22](proofs/lemma_2_22.jl)
 - [Proposition 3.1](proofs/proposition_3_1.jl)
 - [Lemma C.1](proofs/lemma_C_1.jl)
 - [Lemma C.3](proofs/lemma_C_3.jl)
 
-For some of the shorter proofs, for example Lemma 2.7, most of the
+For some of the shorter proofs, for example Lemma 2.6, most of the
 implementation is given directly in the notebook. For other ones, for
-example Lemma 2.10, most of the implementation is given in the
+example Lemma 2.9, most of the implementation is given in the
 [`src`](src) directory.
 
 For most notebooks the only output is to the notebook itself. The only
@@ -136,9 +136,9 @@ consists of the following files:
 - [`src/large_N/V.jl`](src/large_N/V.jl): Contains implementations
   related to evaluating and bounding the functions $V_l$ from Equation
   REF(13) in the paper.
-- [`src/large_N/lemma_2_10.jl`](src/large_N/lemma_2_10.jl): Contains
+- [`src/large_N/lemma_2_9.jl`](src/large_N/lemma_2_9.jl): Contains
   implementation related to computing the integrals that appear in
-  Lemma REF(2.10).
+  Lemma REF(2.9).
 
 In general the code follows a similar notation as in the paper and it
 should hopefully be relatively straightforward to understand the
@@ -199,7 +199,7 @@ implementation consists of the following files:
 - [`src/small_N/MPS/enclosing/eigenvalue.jl`](src/small_N/MPS/enclosing/eigenvalue.jl):
   Contains code for computing an enclosure of an eigenvalue given an
   approximate eigenvalue and eigenfunction. It is based on Lemma
-  REF(2.2) in the paper.
+  REF(1.2) in the paper.
 - [`src/small_N/precomputed_eigenvalues.jl`](src/small_N/precomputed_eigenvalues.jl):
   Contains utility functions for loading precomputed approximate
   eigenvalues taken from [the

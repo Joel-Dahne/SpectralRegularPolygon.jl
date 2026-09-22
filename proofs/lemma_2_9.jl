@@ -23,7 +23,7 @@ end
 
 # ╔═╡ 18d792d6-8c0c-4214-bd98-670611da3e1e
 md"""
-# Proof of Lemma 2.10
+# Proof of Lemma 2.9
 """
 
 # ╔═╡ bdc6dcff-50a0-49d7-98a2-00b24f5ecfe6

@@ -4,176 +4,274 @@
 using Markdown
 using InteractiveUtils
 
-# ╔═╡ 5ccffc41-fd3b-439c-86bb-ec92e86fa30a
+# ╔═╡ a8ef131c-85bb-11f0-28cf-7b4c670ed13b
 begin
     using Pkg
     Pkg.activate("..", io = devnull)
     using SpectralRegularPolygons
     using Arblib
     using ArbExtras
-    using SpecialFunctions
 
     import SpectralRegularPolygons as SRP
 
     setprecision(Arb, 128)
 end
 
-# ╔═╡ 9047fbda-85bb-11f0-3c79-517d4f9a6381
+# ╔═╡ bfb90022-f09a-46a0-b0aa-5d1ffdd7a908
 md"""
 # Proof of Lemma 2.21
 """
 
-# ╔═╡ a8e5d438-7f29-43c5-8576-eccff74668d9
+# ╔═╡ d2d34a83-67a8-4d71-8b06-171fefb55487
 md"""
 ## Goal
 We want to prove that for $N \geq N_0$ we have
 
-$$\frac{\lambda_{\text{app}}}{1 - \hat{\varepsilon}(N)} < \lambda_2(\mathbb{D}_{R_{\text{outer}}}),$$
+$$\frac{\lambda_{\text{app}}(N)}{1 + \hat{\varepsilon}(N)} > \frac{\lambda_{\text{app}}(N+1)}{1 - \hat{\varepsilon}(N+1)}$$
 
-where $\lambda_2(\mathbb{D}_{R_{\text{outer}}})$ denotes the second eigenvalue of the $\mathbb{D}_{R_{\text{outer}}}$ and $N_0$ and $R_{\text{outer}}$ are given by:
+and
+
+$$\frac{\lambda_{\text{app}}(N)(1-\hat{\varepsilon}(N+1))}{(1+\hat{\varepsilon}(N))\lambda_{\text{app}}(N+1)} > \frac{\lambda_{\text{app}}(N+1)(1+\hat{\varepsilon}(N+2))}{(1-\hat{\varepsilon}(N+1))\lambda_{\text{app}}(N+2)},$$
+
+where $N_0$ is given by:
 """
 
-# ╔═╡ 6a32743d-ec5d-44be-9b84-20c55481446f
+# ╔═╡ 1e814a20-d22d-4c0d-9003-6712a0a5d205
 N₀ = SRP.N₀
 
-# ╔═╡ 8c1beb93-8fba-4269-9001-204575c784f1
-R_outer = SRP.R_outer
-
-# ╔═╡ 79db37ba-4245-47ee-95fb-3d9aa2a48e40
+# ╔═╡ 992bfff9-2fc8-4bf7-a3d7-3e5de4861881
 md"""
 ## Proof
-### Step 1 - Compute $\lambda_2(\mathbb{D}_{R_{\text{outer}}})$
-As a first step we compute an enclosure of $\lambda_2(\mathbb{D}_{R_{\text{outer}}})$. By scaling we get that
+Let $P_1(N)$ and $P_2(N)$ denote the difference between the left and right hand side of the two inequalities. Our goal is then to show that $P_1(N) > 0$ and $P_2(N) > 0$ for $N \geq N_0$.
 
-$$\lambda_2(\mathbb{D}_{R_{\text{outer}}}) = \frac{\lambda_2(\mathbb{D})}{R_{\text{outer}}^2}.$$
+For the computations it is easier to work with $\nu = 1 / N$ instead of $N$. For that reason we introduce the functions $p_1$ and $p_2$, which we define by $p_1(\nu) = P_1(1 / \nu)$ and $p_2(\nu) = P_2(1 / \nu)$.
 
-To compute $\lambda_2(\mathbb{D})$ we use that it is given by
-
-$$\lambda_2(\mathbb{D}) = j_{1,1}^2,$$
-
-where $j_{1,1}$ denotes the first positive zero of $J_1$.
+**Note:** In the package we mostly use the variable name `inv_N` to refer to `1 / N`, in this notebook we however use `ν` to more closely follow the notation of the proof in the paper.
 """
 
-# ╔═╡ f014ea10-6ce2-409c-aceb-8191e0debe4f
+# ╔═╡ 1259b964-c46b-49ed-93d4-828df69a6677
 md"""
-To compute $j_{1,1}$ we first verify that $J_1$ is strictly increasing on the interval $[0, 1]$, this ensures that the only zero on that interval is the one at zero.
+With the above notation we have
+
+$$p_1(\nu) = \frac{\lambda_{\text{app}}(1/\nu)}{1 + \hat{\varepsilon}(1/\nu)} - \frac{\lambda_{\text{app}}(1/\nu+1)}{1 - \hat{\varepsilon}(1/\nu+1)}$$
+
+from which we factor out $\lambda$ and use `SRP.λ_app_div_λ` to enclose $\lambda_\text{app}/ \lambda$. Note that $(1 / \nu + 1)^{-1} = \nu / (1 + \nu)$
 """
 
-# ╔═╡ fe4a5de7-8ba3-42f3-ae35-19de44b4ded3
-Arblib.ispositive(ArbExtras.derivative_function(besselj1)(Arb((0, 1))))
+# ╔═╡ 5dc8f540-22ee-4040-b91b-4810ca27627f
+function p_1(ν)
+    inv_inv_ν_p1 = ν / (1 + ν) # Enclosure of inv(inv(ν) + 1)
 
-# ╔═╡ 725399ac-9ed3-4e92-a38c-725668df4328
+    return SRP.λ_disc() * (
+        SRP.λ_app_div_λ(ν) / (1 + SRP.epsilon_hat(ν)) -
+        SRP.λ_app_div_λ(inv_inv_ν_p1) / (1 - SRP.epsilon_hat(inv_inv_ν_p1))
+    )
+end
+
+# ╔═╡ a38c6989-a3d7-4b72-9e97-aa4d53040dab
 md"""
-This proves that $j_{1,1} > 1$. Next we isolate all the roots on the interval $[1, 5]$:
+Furthermore we have
+
+$$p_2(\nu) =\frac{\lambda_{\text{app}}(1/\nu)(1-\hat{\varepsilon}(1/\nu+1))}{(1+\hat{\varepsilon}(1/\nu))\lambda_{\text{app}}(1/\nu+1)} > \frac{\lambda_{\text{app}}(1/\nu+1)(1+\hat{\varepsilon}(1\nu+2))}{(1-\hat{\varepsilon}(1/\nu+1))\lambda_{\text{app}}(1/\nu+2)}$$
+
+from which explicitly cancel a factor $\lambda$ between the numerator and denominator and use `SRP.λ_app_div_λ` to enclose $\lambda_\text{app}/ \lambda$. Note that $(1 / \nu + 1)^{-1} = \nu / (1 + \nu)$ and $(1 / \nu + 2)^{-1} = \nu / (1 + 2\nu)$
 """
 
-# ╔═╡ ccb58a39-cdf1-45d3-9dc0-8eabe65021b8
-roots, flags = ArbExtras.isolate_roots(besselj1, Arf(1), Arf(5), depth = 20)
+# ╔═╡ 24b69dd3-b353-4ed1-9ef6-ed79f8a9ad3d
+function p_2(ν)
+    inv_inv_ν_p1 = ν / (1 + ν) # Enclosure of inv(inv(ν) + 1)
+    inv_inv_ν_p2 = ν / (1 + 2ν) # Enclosure of inv(inv(ν) + 2)
 
-# ╔═╡ fc8afe74-e745-487b-9303-98b9341e665c
+    # Note that we use λ_app_div_λ since the λs cancel
+    return SRP.λ_app_div_λ(ν) * (1 - SRP.epsilon_hat(inv_inv_ν_p1)) /
+           ((1 + SRP.epsilon_hat(ν)) * SRP.λ_app_div_λ(inv_inv_ν_p1)) -
+           SRP.λ_app_div_λ(inv_inv_ν_p1) * (1 + SRP.epsilon_hat(inv_inv_ν_p2)) /
+           ((1 - SRP.epsilon_hat(inv_inv_ν_p1)) * SRP.λ_app_div_λ(inv_inv_ν_p2))
+end
+
+# ╔═╡ ecdfb51c-bd88-4d2b-86fd-d6c46340bf28
 md"""
-We verify that it only found one root and that it was proved to be unique:
+### Part 1
+Let us start by proving that $p_1(\nu) > 0$.
+
+From the proof in the paper we have that the first four terms in the expansion at $\nu = 0$ vanish. It therefore suffices to show that the fourth derivative of $p_1$ is positive on $[0, 1 / N_0]$ to ensure that $p_1$ is also positive.
 """
 
-# ╔═╡ 6b68bc60-829d-4a32-8bc7-33644b6b1edc
-length(flags) == 1 && flags[1]
-
-# ╔═╡ 07199fe9-c599-4a9e-8066-538d9c56b95c
+# ╔═╡ 8a2a6a79-ef3c-4efc-a75b-e3871c88a875
 md"""
-We refine the enclosure of the root, giving an enclosure for $j_{1,1}$:
+As a double check for that the first four terms in the expansion vanish we can verify that the expansion computed by the computer agrees with this. Computing the expansion we get:
 """
 
-# ╔═╡ 0aaaf5f1-8728-4648-b09d-250376784390
-j_1_1 = ArbExtras.refine_root(besselj1, Arb(roots[1]))
+# ╔═╡ 76af3933-de21-45f0-9310-028eaf31465f
+p_1_expansion = p_1(ArbSeries((0, 1), degree = 4))
 
-# ╔═╡ 2943ea8e-626d-43c1-ad8b-3c704b7328b0
+# ╔═╡ bb882554-bd78-4ab2-acfc-e7fb702e0024
 md"""
-We square it to get an enclosure of the second eigenvalue of $\mathbb{D}$:
+The first three terms in the expansion are computed to be exactly zero:
 """
 
-# ╔═╡ 9ff56c39-723d-4206-8895-b11bb19ab4f7
-λ₂ = j_1_1^2
+# ╔═╡ b20f3e75-b475-4cac-b69d-b6611ac82363
+iszero(p_1_expansion[0]) && iszero(p_1_expansion[1]) && iszero(p_1_expansion[2])
 
-# ╔═╡ 4550ca4a-557a-4508-991b-d9150d6bf4f2
+# ╔═╡ bfcf8109-a214-4460-b41a-35a714096f05
 md"""
-Finally we scale the result to get an enclosure of $\lambda_2(\mathbb{D}_{R_{\text{outer}}})$:
+For the fourth term the computations cannot directly prove that it cancels, but we can verify that the enclosure contains zero:
 """
 
-# ╔═╡ dc6c68cb-2624-449d-b396-de0c01a29275
-λ₂_R_outer = λ₂ / Arb(R_outer)^2
+# ╔═╡ 0d216fba-d53a-47ba-886f-dc8902b0b0c2
+Arblib.contains_zero(p_1_expansion[3])
 
-# ╔═╡ 150348d3-840b-4dd0-abcf-d9e4459610b0
+# ╔═╡ e03b99aa-2802-470e-adb3-dbf6a74da074
 md"""
-We print a version with fewer digits for inclusion in the paper.
+What remains is to prove that the fourth derivative is positive on the entire interval $[0, 1 / N_0]$. We therefore enclose the minimum value of $p^{(4)}$ on this interval:
 """
 
-# ╔═╡ 1863ce44-3b91-46e5-be48-00696a001688
-string(λ₂_R_outer, digits = 5)
+# ╔═╡ f7c11696-e359-48c6-bf29-b799b3a26957
+p_1_d4_minimum = ArbExtras.minimum_enclosure(
+    ArbExtras.derivative_function(p_1, 4),
+    Arf(0),
+    ubound(Arb(1 // N₀)),
+    verbose = true,
+)
 
-# ╔═╡ f225159f-9f55-46c0-a25c-f079eb69fe51
+# ╔═╡ 232ee031-d05d-44f7-8ce9-fca770b67428
+string(p_1_d4_minimum, digits = 5) # For inclusion in the paper
+
+# ╔═╡ b2b04733-b22f-4283-b657-013bd02864ac
 md"""
-### Step 2 - Compute $\lambda_{\text{app}}$ and $\hat{\varepsilon}(N)$
-The functions for computing $\lambda_{\text{app}}$ and $\hat{\varepsilon}(N)$ are implemented in the package. They take as input an enclosure of $N^{-1}$, so we start by computing an enclosure of this that is valid for all $N \geq N_0$:
+Finally we verify that the minimum is positive:
 """
 
-# ╔═╡ ea12574f-90c9-43d1-93f4-847f5b52351a
-inv_N = Arb((0, 1 // N₀))
+# ╔═╡ 1b5615d5-ff94-41c6-8123-d11bdae8af08
+@assert_proof Arblib.ispositive(p_1_d4_minimum)
 
-# ╔═╡ d709f4f2-8ca5-43b7-9087-45ec56b041bc
+# ╔═╡ 8184b4d2-7235-4cfe-8a34-a267ae170be7
 md"""
-The values can now be enclosed:
+### Part 2
 """
 
-# ╔═╡ 1c759096-6aa3-4e81-bd4b-4ab753bb73f8
-λ_app = SRP.λ_app(inv_N)
-
-# ╔═╡ 0566b7a3-f43d-4146-bc69-ac541e18ea2f
-ε_hat = SRP.epsilon_hat(inv_N)
-
-# ╔═╡ 27563f0b-4c28-408e-9db2-d3f756762d6b
+# ╔═╡ 4371e67c-6c2e-461c-bbb5-afcb8ad7f142
 md"""
-This gives us:
+Next we prove that $p_2(\nu) > 0$
+
+In this case we have from the proof in the paper that the first five terms in the expansion at $\nu = 0$ vanish. However, contrary to the situation for $p_1$, $p_2^{(5)}$ is not positive on the entire interval $[0, 1 / N_0]$. In particular it is negative at $1 / N_0$:
 """
 
-# ╔═╡ bd7280e8-d4d4-4230-8909-912c3f0ae084
-λ_app / (1 - ε_hat)
+# ╔═╡ 75b5d8f6-3f16-4ce0-965f-a9b8cee80196
+string(ArbExtras.derivative_function(p_2, 5)(Arb(1 // N₀)), digits = 10)
 
-# ╔═╡ a10e7f9e-33c5-4f8d-b28f-587dfd9063d7
+# ╔═╡ a4811176-133b-4559-84b7-022e473df33f
 md"""
-### Step 3 - Verify inequality
-Finally, we just verify the inequality:
+We therefore split $[0, 1 / N_0]$ into $[0, a]$ and $[a, 1 / N_0]$, with:
 """
 
-# ╔═╡ 840d2b7b-8e6d-44ce-a8d5-dfa45095be07
-@assert_proof λ_app / (1 - ε_hat) < λ₂_R_outer
+# ╔═╡ dbf0f411-344f-4d6c-b031-b5c61022cbd4
+a = Arf(1 // 1024)
+
+# ╔═╡ 0b7faaac-134f-4aa0-b880-b16de83083cf
+md"""
+On $[0, a]$ we want to prove that the fifth derivative is positive. We therefore enclose the minimum value of $p_2^{(5)}$ on this interval:
+"""
+
+# ╔═╡ a14c2a9a-4561-4420-b7aa-fe386bc84ea2
+p_2_d5_minimum_0_a = ArbExtras.minimum_enclosure(
+    ArbExtras.derivative_function(p_2, 5),
+    Arf(0),
+    a,
+    verbose = true,
+)
+
+# ╔═╡ 47efff6f-f2cf-4ba7-8892-36948ec2f645
+string(p_2_d5_minimum_0_a, digits = 5) # For inclusion in the paper
+
+# ╔═╡ b8208fd1-664a-49fd-9f62-6f132941e010
+md"""
+We can verify that the minimum is positive:
+"""
+
+# ╔═╡ 8b5219a8-f395-49f4-a279-84fd0f744c92
+@assert_proof Arblib.ispositive(p_2_d5_minimum_0_a)
+
+# ╔═╡ ccaf3416-57dc-4c31-825f-104c408faa79
+md"""
+On the interval $[a, 1 / N_0]$ we directly enclose the minimum value of $p_2$ and verify that it is positive.
+"""
+
+# ╔═╡ 94b731fb-019c-43e1-b0b3-519d0f801529
+p_2_minimum_a_inv_N₀ =
+    ArbExtras.minimum_enclosure(p_2, a, ubound(Arb(1 // N₀)), verbose = true)
+
+# ╔═╡ b90dddf4-2498-4015-9579-866d079a831b
+string(p_2_minimum_a_inv_N₀, digits = 5) # For inclusion in the paper
+
+# ╔═╡ cdeb73d6-600e-49b4-8dd9-2329d4b9dc9d
+@assert_proof Arblib.ispositive(p_2_minimum_a_inv_N₀)
+
+# ╔═╡ 2f58afa7-1597-4486-a14b-09128da921ff
+md"""
+This concludes the proof!
+
+Similar to for $p_1$ we can also double check that the computations agree with the first five terms in the expansion at $\nu = 0$ vanishing.
+"""
+
+# ╔═╡ c427a061-0bf9-4e40-947e-2bd093ad686a
+p_2_expansion = p_2(ArbSeries((0, 1), degree = 5))
+
+# ╔═╡ dced2ca8-b61c-4d2f-a3cb-f0302376fe09
+md"""
+The first three terms in the expansion are computed to be exactly zero:
+"""
+
+# ╔═╡ 8374aeda-b25a-4a9a-b392-47b423892b86
+iszero(p_2_expansion[0]) && iszero(p_2_expansion[1]) && iszero(p_2_expansion[2])
+
+# ╔═╡ dd0ceaef-7f67-4d0e-ac35-b88ea25d430c
+md"""
+For the fourth and fifth term the computations cannot directly prove that they cancel, but we can verify that the enclosures contain zero:
+"""
+
+# ╔═╡ 218d06e7-c755-41b3-bfaa-1dfd6a3ccded
+Arblib.contains_zero(p_2_expansion[3]) && Arblib.contains_zero(p_2_expansion[4])
 
 # ╔═╡ Cell order:
-# ╟─9047fbda-85bb-11f0-3c79-517d4f9a6381
-# ╠═5ccffc41-fd3b-439c-86bb-ec92e86fa30a
-# ╟─a8e5d438-7f29-43c5-8576-eccff74668d9
-# ╠═6a32743d-ec5d-44be-9b84-20c55481446f
-# ╠═8c1beb93-8fba-4269-9001-204575c784f1
-# ╟─79db37ba-4245-47ee-95fb-3d9aa2a48e40
-# ╟─f014ea10-6ce2-409c-aceb-8191e0debe4f
-# ╠═fe4a5de7-8ba3-42f3-ae35-19de44b4ded3
-# ╟─725399ac-9ed3-4e92-a38c-725668df4328
-# ╠═ccb58a39-cdf1-45d3-9dc0-8eabe65021b8
-# ╟─fc8afe74-e745-487b-9303-98b9341e665c
-# ╠═6b68bc60-829d-4a32-8bc7-33644b6b1edc
-# ╟─07199fe9-c599-4a9e-8066-538d9c56b95c
-# ╠═0aaaf5f1-8728-4648-b09d-250376784390
-# ╟─2943ea8e-626d-43c1-ad8b-3c704b7328b0
-# ╠═9ff56c39-723d-4206-8895-b11bb19ab4f7
-# ╟─4550ca4a-557a-4508-991b-d9150d6bf4f2
-# ╠═dc6c68cb-2624-449d-b396-de0c01a29275
-# ╟─150348d3-840b-4dd0-abcf-d9e4459610b0
-# ╠═1863ce44-3b91-46e5-be48-00696a001688
-# ╟─f225159f-9f55-46c0-a25c-f079eb69fe51
-# ╠═ea12574f-90c9-43d1-93f4-847f5b52351a
-# ╟─d709f4f2-8ca5-43b7-9087-45ec56b041bc
-# ╠═1c759096-6aa3-4e81-bd4b-4ab753bb73f8
-# ╠═0566b7a3-f43d-4146-bc69-ac541e18ea2f
-# ╟─27563f0b-4c28-408e-9db2-d3f756762d6b
-# ╠═bd7280e8-d4d4-4230-8909-912c3f0ae084
-# ╟─a10e7f9e-33c5-4f8d-b28f-587dfd9063d7
-# ╠═840d2b7b-8e6d-44ce-a8d5-dfa45095be07
+# ╟─bfb90022-f09a-46a0-b0aa-5d1ffdd7a908
+# ╠═a8ef131c-85bb-11f0-28cf-7b4c670ed13b
+# ╟─d2d34a83-67a8-4d71-8b06-171fefb55487
+# ╠═1e814a20-d22d-4c0d-9003-6712a0a5d205
+# ╟─992bfff9-2fc8-4bf7-a3d7-3e5de4861881
+# ╟─1259b964-c46b-49ed-93d4-828df69a6677
+# ╠═5dc8f540-22ee-4040-b91b-4810ca27627f
+# ╟─a38c6989-a3d7-4b72-9e97-aa4d53040dab
+# ╠═24b69dd3-b353-4ed1-9ef6-ed79f8a9ad3d
+# ╟─ecdfb51c-bd88-4d2b-86fd-d6c46340bf28
+# ╟─8a2a6a79-ef3c-4efc-a75b-e3871c88a875
+# ╠═76af3933-de21-45f0-9310-028eaf31465f
+# ╟─bb882554-bd78-4ab2-acfc-e7fb702e0024
+# ╠═b20f3e75-b475-4cac-b69d-b6611ac82363
+# ╟─bfcf8109-a214-4460-b41a-35a714096f05
+# ╠═0d216fba-d53a-47ba-886f-dc8902b0b0c2
+# ╟─e03b99aa-2802-470e-adb3-dbf6a74da074
+# ╠═f7c11696-e359-48c6-bf29-b799b3a26957
+# ╠═232ee031-d05d-44f7-8ce9-fca770b67428
+# ╟─b2b04733-b22f-4283-b657-013bd02864ac
+# ╠═1b5615d5-ff94-41c6-8123-d11bdae8af08
+# ╟─8184b4d2-7235-4cfe-8a34-a267ae170be7
+# ╟─4371e67c-6c2e-461c-bbb5-afcb8ad7f142
+# ╠═75b5d8f6-3f16-4ce0-965f-a9b8cee80196
+# ╟─a4811176-133b-4559-84b7-022e473df33f
+# ╠═dbf0f411-344f-4d6c-b031-b5c61022cbd4
+# ╟─0b7faaac-134f-4aa0-b880-b16de83083cf
+# ╠═a14c2a9a-4561-4420-b7aa-fe386bc84ea2
+# ╠═47efff6f-f2cf-4ba7-8892-36948ec2f645
+# ╟─b8208fd1-664a-49fd-9f62-6f132941e010
+# ╠═8b5219a8-f395-49f4-a279-84fd0f744c92
+# ╟─ccaf3416-57dc-4c31-825f-104c408faa79
+# ╠═94b731fb-019c-43e1-b0b3-519d0f801529
+# ╠═b90dddf4-2498-4015-9579-866d079a831b
+# ╠═cdeb73d6-600e-49b4-8dd9-2329d4b9dc9d
+# ╟─2f58afa7-1597-4486-a14b-09128da921ff
+# ╠═c427a061-0bf9-4e40-947e-2bd093ad686a
+# ╟─dced2ca8-b61c-4d2f-a3cb-f0302376fe09
+# ╠═8374aeda-b25a-4a9a-b392-47b423892b86
+# ╟─dd0ceaef-7f67-4d0e-ac35-b88ea25d430c
+# ╠═218d06e7-c755-41b3-bfaa-1dfd6a3ccded

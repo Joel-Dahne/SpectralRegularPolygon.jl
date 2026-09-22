@@ -21,7 +21,7 @@ The enclosure is given by computing `μ = sqrt(area(u.domain)) * m /
 n`, where `m` is an upper bound of `u` in the boundary computed using
 [`maximum_boundary_enclosure`](@ref) and `n` is a lower bound of the
 norm of `u` computed using [`norm_lower_enclosure`](@ref). By Lemma
-2.2 in the paper there is then an eigenvalue in the interval ``[λ / (1
+1.2 in the paper there is then an eigenvalue in the interval ``[λ / (1
 + μ), λ / (1 - μ)]``.
 """
 function eigenvalue_enclosure(

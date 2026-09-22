@@ -19,7 +19,7 @@ end
 
 # ╔═╡ ec091e68-4e03-4985-829e-fc1941f10e0c
 md"""
-# Proof of Lemma 2.13
+# Proof of Lemma 2.12
 """
 
 # ╔═╡ 862a900f-4179-41d7-b4fc-95517effcf76

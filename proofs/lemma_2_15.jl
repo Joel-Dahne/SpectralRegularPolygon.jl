@@ -4,96 +4,249 @@
 using Markdown
 using InteractiveUtils
 
-# ╔═╡ 4cf93e40-85b4-11f0-0b09-df73f8553fa5
+# ╔═╡ 580af86c-85b6-11f0-05e7-e9613df5232a
 begin
     using Pkg
     Pkg.activate("..", io = devnull)
     using SpectralRegularPolygons
     using Arblib
-    using PlutoUI
 
     import SpectralRegularPolygons as SRP
 
     setprecision(Arb, 128)
 end
 
-# ╔═╡ 33a8bf7d-e4d2-4051-ba4a-16977a14d443
+# ╔═╡ 3f5fec32-8fd2-4cf5-9c74-e380a5853da1
 md"""
 # Proof of Lemma 2.15
 """
 
-# ╔═╡ 5fc3ce43-cfcc-4111-aff2-ce878397f097
+# ╔═╡ 0c0d1542-c675-4aaf-8bdf-07221c25e8eb
 md"""
 ## Goal
-We want to prove that for $N \geq N_0$, the regular $N$-sided polygon of area $\pi$ contains a disc of radius $R_{\text{inner}}$ and is contained in a disc of size $R_{\text{outer}}$. Here $N_0$, $R_{\text{inner}}$ and $R_{\text{outer}}$ are given by:
+We want to prove that for $N \geq N_0$ and all $x \in \mathbb{D}_{R_{\text{inner}}}$ we have
+
+$$\left|\frac{V_l(f_N^{-1}(x)^N)c_N}{f_N'(f_N^{-1}(x))f_N^{-1}(x)}\right| \leq C_{V_l},$$
+
+for $l = 1,\ 2,\ 3,\ 4$ and where $C_{V_l}$ are given by:
 """
 
-# ╔═╡ a59af2f5-80e6-4b16-9961-d2d62eb6d1be
+# ╔═╡ aff645f1-6bc1-4b18-878e-9bdfce4ee2ae
+C_V_1 = SRP.C_V_1
+
+# ╔═╡ c6db017d-4648-4cf1-a242-38305afca079
+C_V_2 = SRP.C_V_2
+
+# ╔═╡ b68730ae-0b72-4ddb-86f1-a5b56d55cb60
+C_V_3 = SRP.C_V_3
+
+# ╔═╡ f2ffa3dc-4cfa-431a-8902-5c01d9fd6b42
+C_V_4 = SRP.C_V_4
+
+# ╔═╡ 9c53b9ef-4870-43b8-b955-0b3cc68d542a
+md"""
+We also have that $N_0$ and $R_{\text{inner}}$ are given by:
+"""
+
+# ╔═╡ f4c0e02d-2ac3-4acd-9d66-addfd551fca8
 N₀ = SRP.N₀
 
-# ╔═╡ bb4667b5-bb3c-4cbf-8216-a8f05d8051e3
+# ╔═╡ d59a52c3-4281-4964-9567-fbaad28148a4
 R_inner = SRP.R_inner
 
-# ╔═╡ 945657ac-d0e5-433a-813a-40bfdf4cbcd4
-R_outer = SRP.R_outer
+# ╔═╡ 510fba1b-42c1-43eb-8fa0-95f4e3ef887b
+md"""
+The function $f_N(z)$ is given by
 
-# ╔═╡ 501b94c5-e1c0-43ec-bbc0-74ca2fc6ebf1
+$$f_N(z) = c_N\ z\ {}_2F_1\left(\frac{2}{N}, \frac{1}{N}, 1 + \frac{1}{N}; z^N\right)$$
+"""
+
+# ╔═╡ 92ae3ec0-8330-4f72-b093-6cb4184c67e0
 md"""
 ## Proof
-The inradius of a regular $N$-sided polygon of area $\pi$ is given by
-
-$$I_N = \sqrt{\frac{\pi}{N\tan(\pi/N)}}$$
-
-and the circumradius by
-
-$$C_N = \sqrt{\frac{\pi}{\frac{N}{2}\sin(2\pi/N)}}.$$
-
-The inradius in an increasing function in $N$ and the circumradius in a decreasing function in $N$. It therefore suffices to verify that
-
-$$I_{N_0} > R_{\text{inner}}$$
-
-and
-
-$$C_{N_0} < R_{\text{outer}},$$
-
-and the statement follows for all $N \geq N_0$. Computing $I_{N_0}$ and $C_{N_0}$ we get:
+### Step 1 - bound $f_N^{-1}(x)$
+As a first step, we want to find an $R < 1$ such that for all $x \in \mathbb{D}_{R_{\text{inner}}}$ we have $f_N^{-1}(x) \in \mathbb{D}_R$. For this we make the following guess for $R$:
 """
 
-# ╔═╡ 6ece39a2-2a2f-43b8-b999-0a3ef450a04c
-I_N_0 = sqrt(π / (N₀ * tanpi(Arb(1 // N₀))))
+# ╔═╡ 7724b725-ad79-4f07-b128-92a778ffaccf
+R = Arb("0.951")
 
-# ╔═╡ e368dc1a-5f8d-458a-9a92-e1b41eb9fbaa
-string(I_N_0, digits = 5)
-
-# ╔═╡ bdcba7fd-86d5-4a88-ab79-e3f83dcac661
-C_N_0 = sqrt(π / (N₀ // 2 * sinpi(Arb(2 // N₀))))
-
-# ╔═╡ 0a6d8a1f-d4f7-4e47-8ce2-d92054aaca34
-string(C_N_0, digits = 5)
-
-# ╔═╡ bfc91c06-da88-4fdb-afd1-4a8a4d9eeeb1
+# ╔═╡ e370ed08-5c81-4725-b2b1-d7ff3671859a
 md"""
-Finally, we verify that the required bounds hold:
+and then verify that it satisfies the requirement. Note that since $f_N$ is continuous it suffices to verify that $f_N$ maps $\mathbb{D}_R$ to a set that contains $\mathbb{D}_{R_{\text{inner}}}$. We therefore need to show that for $|z| = R$ we have
+
+$$|f_N(z)| > R_{\text{inner}}.$$
+
+From the monotonicity of $C_N$ and $|z| = R$ we get
+
+$$|f_N(z)| \geq C_{N_0}R\left|{}_2F_1\left(\frac{2}{N}, \frac{1}{N}, 1 + \frac{1}{N}; z^N\right)\right|.$$
+
+From $|z| = R$ we get $z^N \in \mathbb{D}_{R^N_0}$, we enclose the absolute value of the ${}_2 F_1$ function on this whole disc.
 """
 
-# ╔═╡ 2bbfb9e5-db35-4248-b3e9-1db3aaaf88c9
-@assert_proof I_N_0 >= Arb(R_inner)
+# ╔═╡ 6d0d96b1-e115-4400-9bc9-779787c7aac4
+abs_hypgeom2f1_enclosure = let
+    inv_N = Acb((0, 1 // N₀))
+    z_pow_N = add_error(Acb(0), Arb(R)^N₀)
+    abs(SRP.hypgeom2f1(2inv_N, inv_N, 1 + inv_N, z_pow_N))
+end
 
-# ╔═╡ 789a0a04-5aa5-48de-84a0-277631076b87
-@assert_proof C_N_0 <= Arb(R_outer)
+# ╔═╡ 0e8957bf-ba22-452e-8298-431e755a0248
+md"""
+Giving the following lower bound for $f(z)$
+"""
+
+# ╔═╡ c8b728d8-bb50-485c-a07c-b94ee856134b
+f_N_lower_bound = SRP.c_N(Arb(1 // N₀)) * R * abs_hypgeom2f1_enclosure
+
+# ╔═╡ 3c7e96b8-4041-4449-84a5-926464afda10
+md"""
+We can now veryify that indeed $|f_N(z)| > R_{\text{inner}}$
+"""
+
+# ╔═╡ c0433aef-5b65-46ee-83f8-bfbccc9cd0df
+@assert_proof f_N_lower_bound > Arb(R_inner)
+
+# ╔═╡ b973d37b-9a60-4104-9274-b35a05a6ab35
+md"""
+### Step 2: Bound functions on $\mathbb{D}_R$
+From step 1 we get that to bound
+
+$$\left|\frac{V_l(f_N^{-1}(x)^N)c_N}{f_N'(f_N^{-1}(x))f_N^{-1}(x)}\right|$$
+
+for $x \in \mathbb{D}_{R_{\text{inner}}}$ it suffices to bound
+
+$$\left|\frac{V_l(z^N)c_N}{zf_N'(z)}\right|$$
+
+for $z \in \mathbb{D}_R$.
+"""
+
+# ╔═╡ 48f7a74c-98c6-4309-a577-f5846b0f09d9
+md"""
+We have
+
+$$f_N'(z) = \frac{c_N}{(1 - z^N)^{2/N}}.$$
+
+Allowing us to rewrite it as
+
+$$\left|\frac{V_l(z^N)}{z}(1 - z^N)^{2/N}\right|.$$
+
+The second factor can then be bounded by
+
+$$\left|(1 - z^N)^{2/N}\right| \leq (1 + R^N)^{2/N} \leq (1 + R^{N_0})^{2/N_0}.$$
+
+For the first factor we have the bound
+
+$$\left|\frac{V_l(z^N)}{z}\right| \leq D_{l,R^{N_0}}|z|^{N - 1} \leq D_{l,R^{N_0}}R^{N_0 - 1}$$
+
+with $D_{l,R^{N_0}}$ given by:
+"""
+
+# ╔═╡ f6c46421-3a58-445d-87ca-8f14aaa1ef90
+D_1 = SRP.V_div_z_bound(1, R^N₀)
+
+# ╔═╡ 2431a4e9-b5ac-4d0d-ba88-33195e69d356
+D_2 = SRP.V_div_z_bound(2, R^N₀)
+
+# ╔═╡ 9b39af1b-50e7-462a-ae9a-55e1fd81ce66
+D_3 = SRP.V_div_z_bound(3, R^N₀)
+
+# ╔═╡ 00d85aed-532e-46e8-b17f-8dffbee9201d
+D_4 = SRP.V_div_z_bound(4, R^N₀)
+
+# ╔═╡ c9209495-54a6-445f-aa92-521e4b506e14
+md"""
+With the above we get the bound
+
+$$\left|\frac{V_l(z^N)c_N}{zf_N'(z)}\right| \leq D_{l,R^{N_0}}R^{N_0 - 1} (1 + R^{N_0})^{2/N_0}$$
+
+which is straightforward to compute:
+"""
+
+# ╔═╡ 306843ed-caa8-46a4-b502-b9eb29f50f6a
+V_1_quotient_bound = D_1 * R^(N₀-1) * (1 + R^N₀)^Arb(2 // N₀)
+
+# ╔═╡ 0fa5c344-c01f-4f60-9453-5b6b23518987
+V_2_quotient_bound = D_2 * R^(N₀-1) * (1 + R^N₀)^Arb(2 // N₀)
+
+# ╔═╡ f88d675e-3cd1-462f-8088-c6c7fbc6aeba
+V_3_quotient_bound = D_3 * R^(N₀-1) * (1 + R^N₀)^Arb(2 // N₀)
+
+# ╔═╡ 97188473-44af-4cd0-a96e-3863703ec71a
+V_4_quotient_bound = D_4 * R^(N₀-1) * (1 + R^N₀)^Arb(2 // N₀)
+
+# ╔═╡ 937a9361-dbc9-4a37-965f-c67c1044e173
+md"""
+We can now verify that the inequalities hold.
+"""
+
+# ╔═╡ 296b6791-55d5-4e3a-a588-07e532a50233
+@assert_proof V_1_quotient_bound <= Arb(C_V_1)
+
+# ╔═╡ 534cae05-8e68-4e71-b9c0-da59d8d6a5a0
+@assert_proof V_2_quotient_bound <= Arb(C_V_2)
+
+# ╔═╡ d0f31778-4df0-421d-af93-2cb282d56428
+@assert_proof V_3_quotient_bound <= Arb(C_V_3)
+
+# ╔═╡ e2294887-d1f1-4685-9db6-a7a4d88575bb
+@assert_proof V_4_quotient_bound <= Arb(C_V_4)
+
+# ╔═╡ fc28d9db-e652-4cd4-9052-ad57e85d1735
+md"""
+We print less precise bounds for inclusing in the paper.
+"""
+
+# ╔═╡ 960ac5af-fb5c-4ad7-9c26-bef9aeb549b6
+string(V_1_quotient_bound, digits = 5)
+
+# ╔═╡ 20a841ac-5687-43bc-8c9a-4d5435946733
+string(V_2_quotient_bound, digits = 5)
+
+# ╔═╡ f99dfdd9-188a-46e9-9489-42b5e4f5329e
+string(V_3_quotient_bound, digits = 5)
+
+# ╔═╡ 766ded14-8337-432d-8080-91a44b90807a
+string(V_4_quotient_bound, digits = 5)
 
 # ╔═╡ Cell order:
-# ╟─33a8bf7d-e4d2-4051-ba4a-16977a14d443
-# ╠═4cf93e40-85b4-11f0-0b09-df73f8553fa5
-# ╟─5fc3ce43-cfcc-4111-aff2-ce878397f097
-# ╠═a59af2f5-80e6-4b16-9961-d2d62eb6d1be
-# ╠═bb4667b5-bb3c-4cbf-8216-a8f05d8051e3
-# ╠═945657ac-d0e5-433a-813a-40bfdf4cbcd4
-# ╟─501b94c5-e1c0-43ec-bbc0-74ca2fc6ebf1
-# ╠═6ece39a2-2a2f-43b8-b999-0a3ef450a04c
-# ╠═e368dc1a-5f8d-458a-9a92-e1b41eb9fbaa
-# ╠═bdcba7fd-86d5-4a88-ab79-e3f83dcac661
-# ╠═0a6d8a1f-d4f7-4e47-8ce2-d92054aaca34
-# ╟─bfc91c06-da88-4fdb-afd1-4a8a4d9eeeb1
-# ╠═2bbfb9e5-db35-4248-b3e9-1db3aaaf88c9
-# ╠═789a0a04-5aa5-48de-84a0-277631076b87
+# ╟─3f5fec32-8fd2-4cf5-9c74-e380a5853da1
+# ╠═580af86c-85b6-11f0-05e7-e9613df5232a
+# ╟─0c0d1542-c675-4aaf-8bdf-07221c25e8eb
+# ╠═aff645f1-6bc1-4b18-878e-9bdfce4ee2ae
+# ╠═c6db017d-4648-4cf1-a242-38305afca079
+# ╠═b68730ae-0b72-4ddb-86f1-a5b56d55cb60
+# ╠═f2ffa3dc-4cfa-431a-8902-5c01d9fd6b42
+# ╟─9c53b9ef-4870-43b8-b955-0b3cc68d542a
+# ╠═f4c0e02d-2ac3-4acd-9d66-addfd551fca8
+# ╠═d59a52c3-4281-4964-9567-fbaad28148a4
+# ╟─510fba1b-42c1-43eb-8fa0-95f4e3ef887b
+# ╟─92ae3ec0-8330-4f72-b093-6cb4184c67e0
+# ╠═7724b725-ad79-4f07-b128-92a778ffaccf
+# ╟─e370ed08-5c81-4725-b2b1-d7ff3671859a
+# ╠═6d0d96b1-e115-4400-9bc9-779787c7aac4
+# ╟─0e8957bf-ba22-452e-8298-431e755a0248
+# ╠═c8b728d8-bb50-485c-a07c-b94ee856134b
+# ╟─3c7e96b8-4041-4449-84a5-926464afda10
+# ╠═c0433aef-5b65-46ee-83f8-bfbccc9cd0df
+# ╟─b973d37b-9a60-4104-9274-b35a05a6ab35
+# ╟─48f7a74c-98c6-4309-a577-f5846b0f09d9
+# ╠═f6c46421-3a58-445d-87ca-8f14aaa1ef90
+# ╠═2431a4e9-b5ac-4d0d-ba88-33195e69d356
+# ╠═9b39af1b-50e7-462a-ae9a-55e1fd81ce66
+# ╠═00d85aed-532e-46e8-b17f-8dffbee9201d
+# ╟─c9209495-54a6-445f-aa92-521e4b506e14
+# ╠═306843ed-caa8-46a4-b502-b9eb29f50f6a
+# ╠═0fa5c344-c01f-4f60-9453-5b6b23518987
+# ╠═f88d675e-3cd1-462f-8088-c6c7fbc6aeba
+# ╠═97188473-44af-4cd0-a96e-3863703ec71a
+# ╟─937a9361-dbc9-4a37-965f-c67c1044e173
+# ╠═296b6791-55d5-4e3a-a588-07e532a50233
+# ╠═534cae05-8e68-4e71-b9c0-da59d8d6a5a0
+# ╠═d0f31778-4df0-421d-af93-2cb282d56428
+# ╠═e2294887-d1f1-4685-9db6-a7a4d88575bb
+# ╟─fc28d9db-e652-4cd4-9052-ad57e85d1735
+# ╠═960ac5af-fb5c-4ad7-9c26-bef9aeb549b6
+# ╠═20a841ac-5687-43bc-8c9a-4d5435946733
+# ╠═f99dfdd9-188a-46e9-9489-42b5e4f5329e
+# ╠═766ded14-8337-432d-8080-91a44b90807a

@@ -1,4 +1,4 @@
-@testset "lemma 2.10" begin
+@testset "lemma 2.9" begin
     @testset "integral_d_k_V_l" begin
         # Compute with different values for a and different tolerances and
         # verify that all results agree
