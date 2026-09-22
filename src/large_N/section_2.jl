@@ -32,7 +32,7 @@ Note that this takes as input `inv(N)` and not `N`.
 """
     λ_app(inv_N::Union{Arb,ArbSeries})
 
-Compute an enclosure `λ_app` from Equation REF(11) in the paper, given
+Compute an enclosure `λ_app` from Equation REF(9) in the paper, given
 by
 ```
 λ * (1 + 4zeta(3) / N^3 + (12 - 2λ) * zeta(5) / N^5)
@@ -44,7 +44,7 @@ Note that this takes as input `inv(N)` and not `N`.
 """
     c_N(inv_N::Union{Arb,ArbSeries})
 
-Compute an enclosure of `c_N` from Equation REF(6) in the paper, given
+Compute an enclosure of `c_N` from Equation REF(4) in the paper, given
 by
 ```
 sqrt((gamma(1 - 1 / N)^2 * gamma(1 + 2 / N)) / (gamma(1 + 1 / N)^2 * gamma(1 - 2 / N)))
@@ -239,7 +239,7 @@ end
 """
     F_N_model(N₀::Int, z::Acb)
 
-Compute an [`AcbTaylorModel`](@ref) of `F_N(z)` from Equation REF(7) in
+Compute an [`AcbTaylorModel`](@ref) of `F_N(z)` from Equation REF(5) in
 the paper. The Taylor model is computed to degree 5 in terms of
 `inv(N)` and is valid for all `inv(N)` in the interval ``[0,
 inv(N₀)]``.
@@ -258,7 +258,7 @@ end
 """
     epsilon(inv_N::Union{Arb,ArbSeries})
 
-Compute `ε(N)` coming from Equation REF(24) in the paper. Note that
+Compute `ε(N)` coming from Equation REF(22) in the paper. Note that
 this takes as input `inv(N)` and not `N`.
 """
 function epsilon(inv_N::Union{Arb,ArbSeries})
@@ -291,7 +291,7 @@ end
 """
     eta(inv_N::Union{Arb,ArbSeries})
 
-Compute `η(N)` coming from Equation REF(27) in the paper. Note that
+Compute `η(N)` coming from Equation REF(25) in the paper. Note that
 this takes as input `inv(N)` and not `N`.
 """
 function eta(inv_N::Union{Arb,ArbSeries})
@@ -317,7 +317,7 @@ end
 """
     epsilon_hat(inv_N::Union{Arb,ArbSeries})
 
-Compute `hat{ε}(N)` coming from Equation REF(28) in the paper. Note
+Compute `hat{ε}(N)` coming from Equation REF(26) in the paper. Note
 that this takes as input `inv(N)` and not `N`.
 """
 function epsilon_hat(inv_N::Union{Arb,ArbSeries})

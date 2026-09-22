@@ -4,7 +4,7 @@
 """
     d(k::Int, z::Arblib.AcbOrRef, t::Arblib.AcbOrRef; analytic::Bool = false)
 
-Compute an enclosure of `d_k(z, t)` from Equation REF(21) in the paper.
+Compute an enclosure of `d_k(z, t)` from Equation REF(19) in the paper.
 
 If `analytic` is true, then return an indeterminate value if `t`
 overlaps a branch cut of the function.
@@ -345,7 +345,7 @@ end
     K_model(N₀::Int, z::Acb)
 
 Return a function which given `t` computes an [`ArbTaylorModel`](@ref)
-of `K(z, t)` from Equation REF(15) in the paper. The Taylor model is
+of `K(z, t)` from Equation REF(13) in the paper. The Taylor model is
 computed to degree 5 in terms of `inv(N)` and is valid for all
 `inv(N)` in the interval ``[0, inv(N₀)]``.
 

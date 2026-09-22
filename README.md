@@ -135,7 +135,7 @@ consists of the following files:
   paper.
 - [`src/large_N/V.jl`](src/large_N/V.jl): Contains implementations
   related to evaluating and bounding the functions $V_l$ from Equation
-  REF(13) in the paper.
+  REF(11) in the paper.
 - [`src/large_N/lemma_2_9.jl`](src/large_N/lemma_2_9.jl): Contains
   implementation related to computing the integrals that appear in
   Lemma REF(2.9).
@@ -181,9 +181,9 @@ implementation consists of the following files:
   Contains code for representing the approximate eigenfunction of a
   regular polygon. The main type is `Eigenfunction`, which internally
   consists of a `VertexExpansion` representing the expansions at the
-  vertices of the polygon (see Equation REF(30) in the paper) and an
+  vertices of the polygon (see Equation REF(28) in the paper) and an
   `InteriorExpansion` representing the expansion at the center of the
-  polygon (see Equation REF(31) in the paper).
+  polygon (see Equation REF(29) in the paper).
 - [`src/small_N/MPS/sigma.jl`](src/small_N/MPS/sigma.jl): Contains
   code for computing the $\sigma(\lambda)$ function that is used in
   the MPS.

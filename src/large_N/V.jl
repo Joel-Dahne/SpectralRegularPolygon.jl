@@ -3,7 +3,7 @@
 """
     V(l::Int, z::Arblib.AcbOrRef; analytic::Bool = false)
 
-Compute an enclosure of `V_l(z)` from Equation REF(13) in the paper.
+Compute an enclosure of `V_l(z)` from Equation REF(11) in the paper.
 
 If `analytic` is true, then return an indeterminate value if `z`
 overlaps a branch cut of the function.

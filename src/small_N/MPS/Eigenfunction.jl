@@ -4,7 +4,7 @@ abstract type AbstractInteriorExpansion{T} end
 """
     VertexExpansion{T}(θ::T, coefficients::Vector{T})
 
-Represents a vertex expansion corresponding to Equation REF(30) in the
+Represents a vertex expansion corresponding to Equation REF(28) in the
 paper.
 """
 struct VertexExpansion{T} <: AbstractVertexExpansion{T}
@@ -15,7 +15,7 @@ end
 """
     InteriorExpansion{T}(coefficients::Vector{T}, symmetry::Int)
 
-Represents an interior expansion corresponding to Equation REF(31) in
+Represents an interior expansion corresponding to Equation REF(29) in
 the paper. The `symmetry` argument forces the eigenfunction to have a
 `symmetry` fold symmetry around the point at which it is centered.
 """
